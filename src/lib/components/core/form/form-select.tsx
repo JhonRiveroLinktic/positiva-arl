@@ -50,7 +50,7 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
     const selectId = id || name || label.toLowerCase().replace(/\s+/g, "-")
 
     return (
-      <FormItem className={className}>
+      <FormItem className={`${className} w-full`}>
         <FormLabel htmlFor={selectId} className="text-gray-700 font-medium">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
