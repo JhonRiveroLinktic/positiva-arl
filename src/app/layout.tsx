@@ -4,11 +4,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: 'Positiva - Sistema de Gestión',
   description: 'Sistema de gestión de datos para Positiva',
-  generator: 'v0.dev',
   icons: {
-    icon: '/positiva-circulo.png',
-    shortcut: '/positiva-circulo.png',
-    apple: '/positiva-circulo.png',
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
   },
 }
 
@@ -19,8 +18,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/favicon.ico" />
+      </head>
       <body
-        className={`antialiased`}
+        className={`antialiased w-full`}
       >
         {children}
       </body>
