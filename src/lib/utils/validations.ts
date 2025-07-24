@@ -129,7 +129,7 @@ export const createValidationRules = {
 
   date: (message = "Selecciona una fecha válida") => ({
     required: message,
-    validate: (value: string) => {
+    validate: (value: Date | undefined) => {
       if (!value) return message
       const date = new Date(value)
       if (isNaN(date.getTime())) {

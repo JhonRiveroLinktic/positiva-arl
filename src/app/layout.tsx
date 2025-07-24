@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: 'Positiva - Sistema de Gestión',
@@ -27,6 +28,7 @@ export default function RootLayout({
         className={`antialiased w-full`}
       >
         {children}
+        <Toaster position="top-right" expand={false} richColors closeButton />
       </body>
     </html>
   );
