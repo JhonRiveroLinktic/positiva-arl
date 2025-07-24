@@ -1,6 +1,6 @@
 "use client"
 
-import { forwardRef, useState } from "react"
+import { forwardRef, useState, useEffect, useRef } from "react"
 import {
   Command,
   CommandInput,
@@ -57,12 +57,27 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
     const selectId = id || name || label.toLowerCase().replace(/\s+/g, "-")
     const [open, setOpen] = useState(false)
     const [inputValue, setInputValue] = useState("")
+    const popoverRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+      if (!open) return
+      function handleClickOutside(event: MouseEvent) {
+        if (
+          popoverRef.current &&
+          !popoverRef.current.contains(event.target as Node)
+        ) {
+          setOpen(false)
+        }
+      }
+      document.addEventListener("mousedown", handleClickOutside)
+      return () => document.removeEventListener("mousedown", handleClickOutside)
+    }, [open])
 
     const selectedOption = options.find((opt) => opt.value === value)
 
     return (
       <FormItem className={`${className} w-full`}>
-        <FormLabel htmlFor={selectId} className="text-gray-700 font-medium">
+        <FormLabel htmlFor={selectId} className="text-[#0A0A0A] font-medium">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </FormLabel>
@@ -90,7 +105,7 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
               {selectedOption ? selectedOption.label : <span className="text-muted-foreground">{placeholder}</span>}
             </Button>
             {open && (
-              <div className="absolute z-50 mt-1 w-full bg-white border rounded-md shadow-lg">
+              <div ref={popoverRef} className="absolute z-50 mt-1 w-full bg-white border rounded-md shadow-lg">
                 <Command shouldFilter={false}>
                   <CommandInput
                     placeholder="Buscar..."

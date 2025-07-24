@@ -61,7 +61,7 @@ export const FormDatePicker = forwardRef<HTMLButtonElement, FormDatePickerProps>
 
     return (
       <FormItem className={className}>
-        <FormLabel htmlFor={dateId} className="text-gray-700 font-medium">
+        <FormLabel htmlFor={dateId} className="text-[#0A0A0A] font-medium">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </FormLabel>

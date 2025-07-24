@@ -2,7 +2,7 @@
 import React from "react"
 
 import { toast as sonnerToast } from "sonner"
-import { CheckCircle, XCircle, AlertCircle, Info } from "lucide-react"
+import { CheckCircle, XCircle, AlertCircle, Info, X } from "lucide-react"
 
 export interface ToastOptions {
   title?: string
@@ -48,42 +48,47 @@ export function toast(options: ToastOptions | string) {
     }
   }
 
-  const content = (
-    <div className="flex items-start gap-3">
+  // Usar una función para renderizar el contenido y recibir el close
+  const content = (close?: () => void) => (
+    <div className="flex items-start gap-3 w-full">
       {getIcon()}
       <div className="flex-1 min-w-0">
         {title && <div className="font-semibold text-sm">{title}</div>}
         {description && <div className="text-sm opacity-90 mt-1">{description}</div>}
       </div>
+      <button
+        onClick={close}
+        className="ml-2 p-1 rounded hover:bg-black/10 transition-colors"
+        aria-label="Cerrar"
+        tabIndex={0}
+        type="button"
+      >
+        <X className="w-4 h-4" />
+      </button>
     </div>
   )
 
+  // Helper para usar la API de sonner correctamente
+  function toastWithClose(toastFn: (message: () => React.ReactNode, data?: any) => string | number, className: string) {
+    let toastId: string | number | undefined
+    toastId = toastFn(() => content(() => sonnerToast.dismiss(toastId)), {
+      duration: duration ?? 4000,
+      className,
+    })
+    return toastId
+  }
+
   switch (variant) {
     case "success":
-      return sonnerToast.success(content, {
-        duration,
-        className: getClassName(),
-      })
+      return toastWithClose(sonnerToast.success, getClassName())
     case "destructive":
-      return sonnerToast.error(content, {
-        duration,
-        className: getClassName(),
-      })
+      return toastWithClose(sonnerToast.error, getClassName())
     case "warning":
-      return sonnerToast.warning(content, {
-        duration,
-        className: getClassName(),
-      })
+      return toastWithClose(sonnerToast.warning, getClassName())
     case "info":
-      return sonnerToast.info(content, {
-        duration,
-        className: getClassName(),
-      })
+      return toastWithClose(sonnerToast.info, getClassName())
     default:
-      return sonnerToast(content, {
-        duration,
-        className: getClassName(),
-      })
+      return toastWithClose(sonnerToast, getClassName())
   }
 }
 

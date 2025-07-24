@@ -7,7 +7,7 @@ import { Input } from "@/lib/components/ui/input"
 import { FormControl, FormItem, FormLabel, FormMessage } from "@/lib/components/ui/form"
 import { cn } from "@/lib/utils/utils"
 
-interface FormInputProps {
+interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string
   placeholder?: string
   type?: "text" | "email" | "tel" | "password" | "number"
@@ -47,7 +47,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
 
     return (
       <FormItem className={className}>
-        <FormLabel htmlFor={inputId} className="text-gray-700 font-medium">
+        <FormLabel htmlFor={inputId} className="text-[#0A0A0A] font-medium">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </FormLabel>

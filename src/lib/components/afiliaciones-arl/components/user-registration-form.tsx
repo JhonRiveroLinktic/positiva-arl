@@ -203,8 +203,11 @@ export function UserRegistrationForm() {
             <FormInput
               label="Teléfono"
               type="tel"
-              placeholder="3001234567"
+              placeholder="Número de teléfono (ej: 3001234567)"
               required
+              maxLength={10}
+              pattern="\d{10}"
+              inputMode="numeric"
               error={!!fieldState.error}
               errorMessage={fieldState.error?.message}
               {...field}
