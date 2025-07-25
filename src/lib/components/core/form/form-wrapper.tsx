@@ -5,7 +5,7 @@ import type { UseFormReturn, FieldValues } from "react-hook-form"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/lib/components/ui/card"
 import { Button } from "@/lib/components/ui/button"
-import { Save, RotateCcw, X } from "lucide-react"
+import { Save, RotateCcw, X, Upload } from "lucide-react"
 import { FormProvider } from "react-hook-form"
 
 interface FormWrapperProps<T extends FieldValues = FieldValues> {
@@ -105,7 +105,7 @@ export function FormWrapper<T extends FieldValues = FieldValues>({
     <Card className={`${className} w-full`}>
       <CardHeader className={headerClassName}>
         <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 text-2xl">
             {title}
             {isEditing && onCancelEdit && (
               <Button
@@ -121,7 +121,17 @@ export function FormWrapper<T extends FieldValues = FieldValues>({
           </div>
 
           {showMassiveUpload && massiveUploadComponent && (
-            <div className="flex items-center gap-2">{massiveUploadComponent}</div>
+            <div className="flex items-center gap-2">
+               <Button
+                  variant="outline"
+                  size="lg"
+                  className="flex items-center gap-2 bg-transparent"
+                >
+                  <Upload className="h-4 w-4" />
+                  Carga masiva
+              </Button>
+            </div>
+            
           )}
         </CardTitle>
       </CardHeader>
@@ -131,12 +141,13 @@ export function FormWrapper<T extends FieldValues = FieldValues>({
           <div className="space-y-6">{children}</div>
           <div className={`flex flex-col gap-4 ${footerClassName || ""}`}>
             {footerContent}
-            <div className="flex gap-4">
+            <div className="flex gap-8 mt-4">
               <Button
                 type="submit"
+                size="lg"
                 variant={submitButtonVariant}
                 disabled={isSubmitting || !isFormValid}
-                className={`flex items-center gap-2 ${submitButtonClassName}`}
+                className={`flex items-center gap-2 !py-5 !px-8 cursor-pointer ${submitButtonClassName}`}
               >
                 {submitButtonIcon}
                 {getSubmitButtonText()}
@@ -144,17 +155,18 @@ export function FormWrapper<T extends FieldValues = FieldValues>({
               {showClearButton && onClear && (
                 <Button
                   type="button"
+                  size="lg"
                   variant={clearButtonVariant}
                   onClick={onClear}
                   disabled={isSubmitting}
-                  className={`flex items-center gap-2 ${clearButtonClassName || ""}`}
+                  className={`flex items-center gap-2 cursor-pointer ${clearButtonClassName || ""}`}
                 >
                   {clearButtonIcon}
                   {clearButtonText}
                 </Button>
               )}
               {isEditing && onCancelEdit && (
-                <Button type="button" variant="outline" onClick={onCancelEdit} disabled={isSubmitting}>
+                <Button type="button" size="lg" variant="outline" onClick={onCancelEdit} disabled={isSubmitting}>
                   Cancelar Edición
                 </Button>
               )}

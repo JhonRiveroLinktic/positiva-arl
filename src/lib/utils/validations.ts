@@ -19,7 +19,6 @@ const DANGEROUS_PATTERNS = {
 // Sanitización de input general removiendo caracteres peligrosos y espacios al inicio
 export function sanitizeInput(value: string): string {
   if (!value || typeof value !== "string") return ""
-
   return value
     .trimStart()
     .replace(DANGEROUS_PATTERNS.sqlInjection, "")
@@ -49,7 +48,6 @@ export function sanitizePhone(value: string): string {
 // Detectar contenido peligroso en un string
 export function hasDangerousContent(value: string): boolean {
   if (!value) return false
-
   return (
     DANGEROUS_PATTERNS.sqlInjection.test(value) ||
     DANGEROUS_PATTERNS.xssScript.test(value) ||
@@ -57,6 +55,175 @@ export function hasDangerousContent(value: string): boolean {
     value.includes("javascript:") ||
     value.includes("data:text/html")
   )
+}
+
+/**
+ * Calculate verification digit for a Colombian NIT using Module 11 method
+ * @param myNit - Tax Identification Number (NIT) without verification digit
+ * @returns Calculated verification digit, or null if NIT is invalid
+ */
+export function calculateNitVerificationDigit(myNit: string | null): number | null {
+  if (!myNit) {
+    return null
+  }
+
+  // Convert to string and clean the NIT
+  const cleanNit = myNit.toString().replace(/\s/g, "").replace(/,/g, "").replace(/\./g, "").replace(/-/g, "")
+
+  // Validate if NIT is numeric
+  if (!/^\d+$/.test(cleanNit)) {
+    return null // Return null if not a valid number
+  }
+
+  // Validate NIT length (should be between 7-15 digits)
+  if (cleanNit.length < 7 || cleanNit.length > 15) {
+    return null // Return null if NIT length is invalid
+  }
+
+  // Multipliers according to Module 11 method
+  const vpri = [0, 3, 7, 13, 17, 19, 23, 29, 37, 41, 43, 47, 53, 59, 67, 71]
+  const z = cleanNit.length
+  let x = 0
+
+  for (let i = 0; i < z; i++) {
+    const y = Number.parseInt(cleanNit[i])
+    x += y * vpri[z - i]
+  }
+
+  const y = x % 11
+  return y > 1 ? 11 - y : y
+}
+
+/**
+ * Remove verification digit from NIT
+ * @param nit - NIT that may include verification digit
+ * @returns NIT without verification digit
+ */
+export function removeNitVerificationDigit(nit: string): string {
+  if (!nit) return nit
+
+  const cleanNit = nit.replace(/\s/g, "").replace(/,/g, "").replace(/\./g, "")
+
+  // If contains hyphen, remove everything after it
+  if (cleanNit.includes("-")) {
+    return cleanNit.split("-")[0]
+  }
+
+  // If no hyphen but is numeric and has calculated verification digit at the end
+  if (/^\d+$/.test(cleanNit) && cleanNit.length > 1) {
+    const possibleNit = cleanNit.slice(0, -1)
+    const lastDigit = Number.parseInt(cleanNit.slice(-1))
+    const calculatedDigit = calculateNitVerificationDigit(possibleNit)
+
+    if (calculatedDigit === lastDigit) {
+      return possibleNit
+    }
+  }
+
+  return cleanNit
+}
+
+/**
+ * Validate NIT verification digit
+ * @param nit - Complete NIT with verification digit
+ * @returns Validation result with corrected flag and error message
+ */
+export function validateNitVerificationDigit(nit: string): {
+  isValid: boolean
+  cleanNit: string
+  verificationDigit: number | null
+  errorMessage?: string
+} {
+  const cleanNit = removeNitVerificationDigit(nit)
+
+  // Check length first
+  if (cleanNit.length < 7 || cleanNit.length > 15) {
+    return {
+      isValid: false,
+      cleanNit,
+      verificationDigit: null,
+      errorMessage: "El NIT debe tener entre 7 y 15 dígitos",
+    }
+  }
+
+  const calculatedDigit = calculateNitVerificationDigit(cleanNit)
+
+  return {
+    isValid: calculatedDigit !== null,
+    cleanNit,
+    verificationDigit: calculatedDigit,
+    errorMessage: calculatedDigit === null ? "Formato de NIT inválido" : undefined,
+  }
+}
+
+/**
+ * Remove unnecessary whitespace from all fields
+ * @param value - String value to clean
+ * @returns Cleaned string
+ */
+export function cleanWhitespace(value: string): string {
+  if (!value) return value
+  return value.trim().replace(/\s+/g, " ")
+}
+
+/**
+ * Validate and clean special characters, especially badly encoded tildes
+ * @param value - String to validate
+ * @returns Cleaned string with proper encoding
+ */
+export function validateAndCleanSpecialCharacters(value: string): string {
+  if (!value) return value
+
+  // Replace common badly encoded characters
+  return value
+    .replace(/Ã¡/g, "á")
+    .replace(/Ã©/g, "é")
+    .replace(/Ã­/g, "í")
+    .replace(/Ã³/g, "ó")
+    .replace(/Ãº/g, "ú")
+    .replace(/Ã±/g, "ñ")
+    .replace(/Ã¼/g, "ü")
+    .replace(/Ã/g, "Á")
+    .replace(/Ã‰/g, "É")
+    .replace(/Ã/g, "Í")
+    .replace(/Ã"/g, "Ó")
+    .replace(/Ãš/g, "Ú")
+    .replace(/Ã'/g, "Ñ")
+}
+
+/**
+ * Validate Colombian phone numbers
+ * @param phone - Phone number to validate
+ * @returns Validation result with error message
+ */
+export function validatePhoneNumber(phone: string): { isValid: boolean; message?: string } {
+  if (!phone) return { isValid: false, message: "El número de teléfono es requerido" }
+
+  // Colombian phone validation: ^(3\d{9}|\d{7})$
+  // Celulares: 10 digits starting with 3 (3XXXXXXXXX)
+  // Fijos: 7 digits exactly
+  const phoneRegex = /^(3\d{9}|\d{7})$/
+
+  if (!phoneRegex.test(phone)) {
+    if (phone.length < 7) {
+      return { isValid: false, message: "Teléfono muy corto (mínimo 7 dígitos para fijo)" }
+    } else if (phone.length > 10) {
+      return { isValid: false, message: "Teléfono muy largo (máximo 10 dígitos)" }
+    } else if (phone.length === 10 && !phone.startsWith("3")) {
+      return { isValid: false, message: "Celulares deben iniciar por 3" }
+    } else if (phone.length === 8 || phone.length === 9) {
+      return { isValid: false, message: "Use 7 dígitos (fijo) o 10 dígitos (celular)" }
+    } else if (phone.startsWith("0")) {
+      return { isValid: false, message: "No use ceros iniciales" }
+    } else {
+      return {
+        isValid: false,
+        message: "Formato inválido. Use 7 dígitos (fijo) o 10 dígitos iniciando por 3 (celular)",
+      }
+    }
+  }
+
+  return { isValid: true }
 }
 
 // Reglas de validación reutilizables para react-hook-form
@@ -129,7 +296,7 @@ export const createValidationRules = {
 
   date: (message = "Selecciona una fecha válida") => ({
     required: message,
-    validate: (value: Date | undefined) => {
+    validate: (value: string) => {
       if (!value) return message
       const date = new Date(value)
       if (isNaN(date.getTime())) {
