@@ -1,6 +1,12 @@
 "use client"
 
-import { forwardRef, useState, useEffect, useRef } from "react"
+import {
+  forwardRef,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react"
 import {
   Command,
   CommandInput,
@@ -8,7 +14,12 @@ import {
   CommandItem,
   CommandEmpty,
 } from "@/lib/components/ui/command"
-import { FormControl, FormItem, FormLabel, FormMessage } from "@/lib/components/ui/form"
+import {
+  FormControl,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/lib/components/ui/form"
 import { cn } from "@/lib/utils/utils"
 import { Button } from "@/lib/components/ui/button"
 
@@ -57,26 +68,58 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
     const selectId = id || name || label.toLowerCase().replace(/\s+/g, "-")
     const [open, setOpen] = useState(false)
     const [inputValue, setInputValue] = useState("")
+    const [visible, setVisible] = useState(false)
+    const [dropUp, setDropUp] = useState(false)
+
     const popoverRef = useRef<HTMLDivElement>(null)
+    const buttonRef = useRef<HTMLButtonElement>(null)
+
+    const closeDropdown = useCallback(() => {
+      setVisible(false)
+      setTimeout(() => setOpen(false), 150)
+    }, [])
 
     useEffect(() => {
       if (!open) return
-      function handleClickOutside(event: MouseEvent) {
-        if (
-          popoverRef.current &&
-          !popoverRef.current.contains(event.target as Node)
-        ) {
-          setOpen(false)
+
+      setVisible(true)
+
+      const timeout = setTimeout(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+          if (
+            popoverRef.current &&
+            !popoverRef.current.contains(event.target as Node) &&
+            buttonRef.current &&
+            !buttonRef.current.contains(event.target as Node)
+          ) {
+            closeDropdown()
+          }
         }
-      }
-      document.addEventListener("mousedown", handleClickOutside)
-      return () => document.removeEventListener("mousedown", handleClickOutside)
-    }, [open])
+
+        document.addEventListener("mousedown", handleClickOutside)
+
+        // Adapt dropdown direction
+        if (buttonRef.current) {
+          const rect = buttonRef.current.getBoundingClientRect()
+          const spaceBelow = window.innerHeight - rect.bottom
+          const spaceAbove = rect.top
+          const estimatedHeight = 300 // aprox dropdown height
+
+          setDropUp(spaceBelow < estimatedHeight && spaceAbove > estimatedHeight)
+        }
+
+        return () => {
+          document.removeEventListener("mousedown", handleClickOutside)
+        }
+      }, 0)
+
+      return () => clearTimeout(timeout)
+    }, [open, closeDropdown])
 
     const selectedOption = options.find((opt) => opt.value === value)
 
     return (
-      <FormItem className={`${className} w-full`}>
+      <FormItem className={cn("w-full", className)}>
         <FormLabel htmlFor={selectId} className="text-[#0A0A0A] font-medium">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
@@ -85,7 +128,11 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
           <div className="relative">
             <Button
               type="button"
-              ref={ref}
+              ref={(el) => {
+                buttonRef.current = el
+                if (typeof ref === "function") ref(el)
+                else if (ref) ref.current = el
+              }}
               variant="outline"
               className={cn(
                 "w-full justify-between text-left",
@@ -97,15 +144,37 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
               aria-controls={`${selectId}-combobox-list`}
               aria-invalid={error}
               aria-describedby={error ? `${selectId}-error` : undefined}
-              onClick={() => setOpen((prev) => !prev)}
+              onClick={() => {
+                if (open) {
+                  closeDropdown()
+                } else {
+                  setOpen(true)
+                }
+              }}
               onBlur={onBlur}
               disabled={disabled}
               {...props}
             >
-              {selectedOption ? selectedOption.label : <span className="text-muted-foreground">{placeholder}</span>}
+              {selectedOption ? (
+                selectedOption.label
+              ) : (
+                <span className="text-muted-foreground">{placeholder}</span>
+              )}
             </Button>
+
             {open && (
-              <div ref={popoverRef} className="absolute z-50 mt-1 w-full bg-white border rounded-md shadow-lg">
+              <div
+                ref={popoverRef}
+                className={cn(
+                  "absolute z-50 w-full bg-white border rounded-md shadow-lg transition-all duration-150 ease-out",
+                  dropUp ? "bottom-full mb-1" : "mt-1",
+                  visible
+                    ? "opacity-100 translate-y-0"
+                    : dropUp
+                      ? "opacity-0 translate-y-2"
+                      : "opacity-0 -translate-y-2"
+                )}
+              >
                 <Command shouldFilter={false}>
                   <CommandInput
                     placeholder="Buscar..."
@@ -117,7 +186,9 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
                     <CommandEmpty>No hay opciones</CommandEmpty>
                     {options
                       .filter((option) =>
-                        option.label.toLowerCase().includes(inputValue.toLowerCase())
+                        option.label
+                          .toLowerCase()
+                          .includes(inputValue.toLowerCase())
                       )
                       .map((option) => (
                         <CommandItem
@@ -127,12 +198,13 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
                           onSelect={() => {
                             if (!option.disabled) {
                               onChange?.(option.value)
-                              setOpen(false)
+                              closeDropdown()
                               setInputValue("")
                             }
                           }}
                           className={cn(
-                            option.value === value && "bg-accent text-accent-foreground",
+                            option.value === value &&
+                              "bg-accent text-accent-foreground",
                             option.disabled && "opacity-50 cursor-not-allowed"
                           )}
                         >
@@ -145,10 +217,12 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
             )}
           </div>
         </FormControl>
-        {errorMessage && <FormMessage id={`${selectId}-error`}>{errorMessage}</FormMessage>}
+        {errorMessage && (
+          <FormMessage id={`${selectId}-error`}>{errorMessage}</FormMessage>
+        )}
       </FormItem>
     )
-  },
+  }
 )
 
 FormSelect.displayName = "FormSelect"

@@ -99,7 +99,7 @@ export function UserRegistrationForm() {
       })
 
       reset()
-    } catch (error) {
+    } catch { 
       toast.error({
         title: "Error al registrar",
         description: "Ocurrió un error inesperado. Inténtalo de nuevo.",
@@ -109,7 +109,10 @@ export function UserRegistrationForm() {
 
   const handleClear = () => {
     reset()
-    toast.info("Formulario limpiado")
+    toast.info({
+      title: "Formulario limpiado",
+      description: "Datos limpiados exitosamente, puede continuar con el proceso",
+    })
   }
 
   const massiveUploadButton = (
@@ -128,12 +131,6 @@ export function UserRegistrationForm() {
       isSubmitting={isSubmitting}
       showMassiveUpload={true}
       massiveUploadComponent={massiveUploadButton}
-      footerContent={
-        <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-md">
-          <strong>Información:</strong> Todos los campos marcados con (*) son obligatorios. Los datos se validan en
-          tiempo real y se sanitizan automáticamente por seguridad.
-        </div>
-      }
     >
       <div className="grid grid-cols-1 md:grid-cols-2 items-start gap-6">
         <Controller

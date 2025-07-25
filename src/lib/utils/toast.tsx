@@ -3,6 +3,7 @@ import React from "react"
 
 import { toast as sonnerToast } from "sonner"
 import { CheckCircle, XCircle, AlertCircle, Info, X } from "lucide-react"
+import type { ExternalToast } from "sonner"
 
 export interface ToastOptions {
   title?: string
@@ -17,21 +18,6 @@ export function toast(options: ToastOptions | string) {
   }
 
   const { title, description, variant = "default", duration } = options
-
-  const getIcon = () => {
-    switch (variant) {
-      case "success":
-        return <CheckCircle className="h-5 w-5 !text-white" />
-      case "destructive":
-        return <XCircle className="h-5 w-5 !text-white" />
-      case "warning":
-        return <AlertCircle className="h-5 w-5 !text-white" />
-      case "info":
-        return <Info className="h-5 w-5 !text-white" />
-      default:
-        return undefined
-    }
-  }
 
   const getClassName = () => {
     switch (variant) {
@@ -48,31 +34,30 @@ export function toast(options: ToastOptions | string) {
     }
   }
 
-  // Usar una función para renderizar el contenido y recibir el close
   const content = (close?: () => void) => (
-    <div className="flex items-start gap-3 w-full">
-      {getIcon()}
-      <div className="flex-1 min-w-0">
-        {title && <div className="font-semibold text-sm">{title}</div>}
+    <div className="flex items-center gap-3 w-full">
+      <div className="flex flex-col flex-1 min-w-0">
+        {title && <div className="font-semibold text-base">{title}</div>}
         {description && <div className="text-sm opacity-90 mt-1">{description}</div>}
       </div>
-      <button
-        onClick={close}
-        className="ml-2 p-1 rounded hover:bg-black/10 transition-colors"
-        aria-label="Cerrar"
-        tabIndex={0}
-        type="button"
-      >
-        <X className="w-4 h-4" />
-      </button>
+      {close && (
+        <button
+          onClick={close}
+          className="p-1 rounded hover:bg-white/10 transition-colors"
+          aria-label="Cerrar"
+          tabIndex={0}
+          type="button"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
     </div>
   )
-
-  // Helper para usar la API de sonner correctamente
-  function toastWithClose(toastFn: (message: () => React.ReactNode, data?: any) => string | number, className: string) {
-    let toastId: string | number | undefined
-    toastId = toastFn(() => content(() => sonnerToast.dismiss(toastId)), {
-      duration: duration ?? 4000,
+  
+  
+  function toastWithClose(toastFn: (message: () => React.ReactNode, data?: ExternalToast | undefined) => string | number, className: string, durationOverride?: number) {
+    const toastId = toastFn(() => content(() => sonnerToast.dismiss(toastId)), {
+      duration: durationOverride ?? duration ?? 4000,
       className,
     })
     return toastId
@@ -94,9 +79,9 @@ export function toast(options: ToastOptions | string) {
 
 toast.success = (options: Omit<ToastOptions, "variant"> | string) => {
   if (typeof options === "string") {
-    return toast({ title: options, variant: "success" })
+    return toast({ title: options, variant: "success", duration: 4000 })
   }
-  return toast({ ...options, variant: "success" })
+  return toast({ ...options, variant: "success", duration: 4000 })
 }
 
 toast.error = (options: Omit<ToastOptions, "variant"> | string) => {
@@ -115,9 +100,9 @@ toast.warning = (options: Omit<ToastOptions, "variant"> | string) => {
 
 toast.info = (options: Omit<ToastOptions, "variant"> | string) => {
   if (typeof options === "string") {
-    return toast({ title: options, variant: "info" })
+    return toast({ title: options, variant: "info", duration: 2000 })
   }
-  return toast({ ...options, variant: "info" })
+  return toast({ ...options, variant: "info", duration: 2000 })
 }
 
 export function useToast() {

@@ -28,7 +28,7 @@ export default function RootLayout({
         className={`antialiased w-full`}
       >
         {children}
-        <Toaster position="top-right" expand={false} richColors closeButton />
+        <Toaster position="top-center"  />
       </body>
     </html>
   );
