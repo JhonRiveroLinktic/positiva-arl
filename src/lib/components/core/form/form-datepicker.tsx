@@ -1,6 +1,6 @@
 "use client"
 
-import { forwardRef } from "react"
+import { forwardRef, useState } from "react"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 
@@ -58,6 +58,12 @@ export const FormDatePicker = forwardRef<HTMLButtonElement, FormDatePickerProps>
     ref
   ) => {
     const dateId = id || name || label.toLowerCase().replace(/\s+/g, "-")
+    const [open, setOpen] = useState(false)
+
+    const handleDateChange = (date: Date | undefined) => {
+      onChange?.(date)
+      setOpen(false) // cerrar el calendario al seleccionar
+    }
 
     return (
       <FormItem className={className}>
@@ -66,7 +72,7 @@ export const FormDatePicker = forwardRef<HTMLButtonElement, FormDatePickerProps>
           {required && <span className="text-red-500 ml-1">*</span>}
         </FormLabel>
         <FormControl>
-          <Popover>
+          <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <Button
                 ref={ref}
@@ -92,14 +98,16 @@ export const FormDatePicker = forwardRef<HTMLButtonElement, FormDatePickerProps>
               <Calendar
                 mode="single"
                 selected={value}
-                onSelect={onChange}
+                onSelect={handleDateChange}
                 disabled={(date) => date < minDate || date > maxDate}
                 captionLayout="dropdown"
               />
             </PopoverContent>
           </Popover>
         </FormControl>
-        {errorMessage && <FormMessage id={`${dateId}-error`}>{errorMessage}</FormMessage>}
+        {errorMessage && (
+          <FormMessage id={`${dateId}-error`}>{errorMessage}</FormMessage>
+        )}
       </FormItem>
     )
   }
