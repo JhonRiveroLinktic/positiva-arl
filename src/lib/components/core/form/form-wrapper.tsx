@@ -103,7 +103,6 @@ export function FormWrapper<T extends FieldValues = FieldValues>({
 
   const content = (
     <Card className={`${className} w-full`}>
-      {/* Header */}
       <CardHeader className={headerClassName}>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -121,27 +120,18 @@ export function FormWrapper<T extends FieldValues = FieldValues>({
             )}
           </div>
 
-          {/* Massive Upload Component */}
           {showMassiveUpload && massiveUploadComponent && (
             <div className="flex items-center gap-2">{massiveUploadComponent}</div>
           )}
         </CardTitle>
       </CardHeader>
 
-      {/* Content */}
       <CardContent className={contentClassName}>
         <form onSubmit={onSubmit} className="space-y-6">
-          {/* Form Fields */}
           <div className="space-y-6">{children}</div>
-
-          {/* Footer */}
           <div className={`flex flex-col gap-4 ${footerClassName || ""}`}>
-            {/* Additional footer content */}
             {footerContent}
-
-            {/* Action Buttons */}
             <div className="flex gap-4">
-              {/* Submit Button */}
               <Button
                 type="submit"
                 variant={submitButtonVariant}
@@ -151,8 +141,6 @@ export function FormWrapper<T extends FieldValues = FieldValues>({
                 {submitButtonIcon}
                 {getSubmitButtonText()}
               </Button>
-
-              {/* Clear Button */}
               {showClearButton && onClear && (
                 <Button
                   type="button"
@@ -165,8 +153,6 @@ export function FormWrapper<T extends FieldValues = FieldValues>({
                   {clearButtonText}
                 </Button>
               )}
-
-              {/* Cancel Edit Button (alternative position) */}
               {isEditing && onCancelEdit && (
                 <Button type="button" variant="outline" onClick={onCancelEdit} disabled={isSubmitting}>
                   Cancelar Edición

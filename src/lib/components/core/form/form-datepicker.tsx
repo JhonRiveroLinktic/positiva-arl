@@ -62,14 +62,14 @@ export const FormDatePicker = forwardRef<HTMLButtonElement, FormDatePickerProps>
 
     const handleDateChange = (date: Date | undefined) => {
       onChange?.(date)
-      setOpen(false) // cerrar el calendario al seleccionar
+      setOpen(false)
     }
 
     return (
       <FormItem className={className}>
         <FormLabel htmlFor={dateId} className="text-[#0A0A0A] font-medium">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-red-500">*</span>}
         </FormLabel>
         <FormControl>
           <Popover open={open} onOpenChange={setOpen}>

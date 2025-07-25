@@ -51,7 +51,7 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
       <FormItem className={className}>
         <FormLabel htmlFor={textareaId} className="text-[#0A0A0A] font-medium">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-red-500">*</span>}
         </FormLabel>
         <FormControl>
           <div className="relative">

@@ -49,7 +49,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
       <FormItem className={className}>
         <FormLabel htmlFor={inputId} className="text-[#0A0A0A] font-medium">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-red-500">*</span>}
         </FormLabel>
         <FormControl>
           <Input

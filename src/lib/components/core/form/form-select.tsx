@@ -122,7 +122,7 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
       <FormItem className={cn("w-full", className)}>
         <FormLabel htmlFor={selectId} className="text-[#0A0A0A] font-medium">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-red-500">*</span>}
         </FormLabel>
         <FormControl>
           <div className="relative">
