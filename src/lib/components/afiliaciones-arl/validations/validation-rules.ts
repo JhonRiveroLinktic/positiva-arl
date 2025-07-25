@@ -10,6 +10,14 @@ import {
 
 export const MINIMUM_WAGE = 1423500
 
+export const MIN_DATE_AFILIATION = new Date("1901-01-01")
+
+export const getMaxDateCoverage = (): Date => {
+  const max = new Date()
+  max.setDate(max.getDate() + 30)
+  return max
+}
+
 export function validatePersonDocumentType(documentType: string): boolean {
   const naturalPersonTypes = ["CC", "TI", "CE", "CD", "PT", "SC"]
   const nitTypes = ["NI"]

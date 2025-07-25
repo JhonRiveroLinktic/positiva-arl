@@ -7,8 +7,12 @@ import { FormSelect } from "@/lib/components/core/form/form-select"
 import { FormDatePicker } from "@/lib/components/core/form/form-datepicker"
 import { FormWrapper } from "@/lib/components/core/form/form-wrapper"
 import { useCatalogStore } from "@/lib/components/core/stores/catalog-store"
-import { arlValidationRules, sanitizeFormData } from "../validations/validation-rules"
+import { useRegistroStore } from "../stores/registro-store"
+import { ListaRegistros } from "./lista-registros"
+import { arlValidationRules, sanitizeFormData, MIN_DATE_AFILIATION, getMaxDateCoverage } from "../validations/validation-rules"
 import { toast } from "@/lib/utils/toast"
+import { Button } from "@/lib/components/ui/button"
+import { Trash2 } from "lucide-react"
 import type { Registro, ARLFormData } from "../types/arl-registration"
 
 
@@ -32,6 +36,15 @@ export function ARLRegistrationForm() {
     loadEconomicActivities,
     loadWorkModes,
   } = useCatalogStore()
+
+  const {
+    registros,
+    agregarRegistro,
+    actualizarRegistro,
+    registroEditando,
+    setRegistroEditando,
+    limpiarTodosLosRegistros,
+  } = useRegistroStore()
 
   const form = useForm<ARLFormData>({
     mode: "all",
@@ -87,6 +100,12 @@ export function ARLRegistrationForm() {
     loadWorkModes,
   ])
 
+  useEffect(() => {
+    if (registroEditando) {
+      form.reset(registroEditando)
+    }
+  }, [registroEditando, form])
+
   const documentTypeOptions = (documentTypes || []).map((item) => ({
     value: item.code,
     label: `${item.code} - ${item.name}`,
@@ -140,18 +159,35 @@ export function ARLRegistrationForm() {
 
       const sanitizedData = sanitizeFormData(data)
 
-      const registro: Registro = {
-        id: Date.now().toString(),
-        ...(sanitizedData as Omit<Registro, "id">),
-        metodoSubida: undefined,
+      if (registroEditando) {
+        // Actualizar registro existente manteniendo el ID original
+        const registroActualizado: Registro = {
+          ...registroEditando,
+          ...(sanitizedData as Omit<Registro, "id">),
+        }
+
+        console.log("Registro ARL actualizado:", registroActualizado)
+        actualizarRegistro(registroActualizado)
+        setRegistroEditando(null)
+        toast.success({
+          title: "Registro actualizado",
+          description: "El registro se actualizó correctamente.",
+        })
+      } else {
+        // Crear nuevo registro con nuevo ID
+        const nuevoRegistro: Registro = {
+          id: Date.now().toString(),
+          ...(sanitizedData as Omit<Registro, "id">),
+          metodoSubida: undefined,
+        }
+
+        console.log("Nuevo registro ARL:", nuevoRegistro)
+        agregarRegistro(nuevoRegistro)
+        toast.success({
+          title: "Registro guardado",
+          description: "El registro se guardó localmente. Use 'Enviar Registros' para enviar a la base de datos.",
+        })
       }
-
-      console.log("Registro ARL:", registro)
-
-      toast.success({
-        title: "Registro guardado",
-        description: "El registro se ha guardado correctamente.",
-      })
 
       form.reset()
     } catch (error) {
@@ -183,8 +219,8 @@ export function ARLRegistrationForm() {
         massiveUploadComponent={<div className="text-sm text-gray-600">Carga masiva disponible</div>}
       >
         <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-8">Información Personal</h3>
+        <div className="w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
-
             <Controller
               name="tipoDocPersona"
               control={control}
@@ -331,10 +367,13 @@ export function ARLRegistrationForm() {
                 />
               )}
             />
+          </div>
 
-            <div className="col-span-3 my-4">
-              <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Contacto y Afiliación</h3>
-            </div>
+          <div className="col-span-3 my-4">
+            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Contacto y Afiliación</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
 
             <Controller
               name="codigoMuniResidencia"
@@ -446,7 +485,8 @@ export function ARLRegistrationForm() {
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                  minDate={new Date()}
+                  minDate={MIN_DATE_AFILIATION}
+                  maxDate={getMaxDateCoverage()}
                 />
               )}
             />
@@ -490,91 +530,118 @@ export function ARLRegistrationForm() {
               )}
             />
           </div>
+        </div>
 
-          <div className="col-span-3 my-8">
-            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Información Laboral</h3>
-          </div>
+        <div className="col-span-3 my-8">
+          <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Información Laboral</h3>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-            <Controller
-              name="codigoActividadEconomica"
-              control={control}
-              rules={arlValidationRules.codigoActividadEconomica}
-              render={({ field, fieldState }) => (
-                <FormSelect
-                  label="Actividad Económica"
-                  placeholder={loading.economicActivities ? "Cargando..." : "Seleccionar actividad"}
-                  options={economicActivityOptions}
-                  value={field.value}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                  required
-                  disabled={loading.economicActivities}
-                />
-              )}
-            />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+          <Controller
+            name="codigoActividadEconomica"
+            control={control}
+            rules={arlValidationRules.codigoActividadEconomica}
+            render={({ field, fieldState }) => (
+              <FormSelect
+                label="Actividad Económica"
+                placeholder={loading.economicActivities ? "Cargando..." : "Seleccionar actividad"}
+                options={economicActivityOptions}
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                error={!!fieldState.error}
+                errorMessage={fieldState.error?.message}
+                required
+                disabled={loading.economicActivities}
+              />
+            )}
+          />
 
-            <Controller
-              name="tipoDocEmp"
-              control={control}
-              rules={arlValidationRules.tipoDocEmp}
-              render={({ field, fieldState }) => (
-                <FormSelect
-                  label="Tipo Doc Empleador"
-                  placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar tipo"}
-                  options={documentTypeOptions}
-                  value={field.value}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                  required
-                  disabled={loading.documentTypes}
-                />
-              )}
-            />
+          <Controller
+            name="tipoDocEmp"
+            control={control}
+            rules={arlValidationRules.tipoDocEmp}
+            render={({ field, fieldState }) => (
+              <FormSelect
+                label="Tipo Doc Empleador"
+                placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar tipo"}
+                options={documentTypeOptions}
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                error={!!fieldState.error}
+                errorMessage={fieldState.error?.message}
+                required
+                disabled={loading.documentTypes}
+              />
+            )}
+          />
 
-            <Controller
-              name="numeDocEmp"
-              control={control}
-              rules={arlValidationRules.numeDocEmp}
-              render={({ field, fieldState }) => (
-                <FormInput
-                  label="Número Doc Empleador"
-                  placeholder="Número documento empleador"
-                  value={field.value}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                  required
-                />
-              )}
-            />
+          <Controller
+            name="numeDocEmp"
+            control={control}
+            rules={arlValidationRules.numeDocEmp}
+            render={({ field, fieldState }) => (
+              <FormInput
+                label="Número Doc Empleador"
+                placeholder="Número documento empleador"
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                error={!!fieldState.error}
+                errorMessage={fieldState.error?.message}
+                required
+              />
+            )}
+          />
 
-            <Controller
-              name="modoTrabajo"
-              control={control}
-              rules={arlValidationRules.modoTrabajo}
-              render={({ field, fieldState }) => (
-                <FormSelect
-                  label="Modo de Trabajo"
-                  placeholder={loading.workModes ? "Cargando..." : "Seleccionar modo"}
-                  options={workModeOptions}
-                  value={field.value}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                  required
-                  disabled={loading.workModes}
-                />
-              )}
-            />
-          </div>
+          <Controller
+            name="modoTrabajo"
+            control={control}
+            rules={arlValidationRules.modoTrabajo}
+            render={({ field, fieldState }) => (
+              <FormSelect
+                label="Modo de Trabajo"
+                placeholder={loading.workModes ? "Cargando..." : "Seleccionar modo"}
+                options={workModeOptions}
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                error={!!fieldState.error}
+                errorMessage={fieldState.error?.message}
+                required
+                disabled={loading.workModes}
+              />
+            )}
+          />
+        </div>
       </FormWrapper>
+
+      {registros.length > 0 && (
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Registros Guardados ({registros.length})</h2>
+            <Button
+              onClick={() => {
+                if (confirm(`¿Está seguro que desea eliminar todos los ${registros.length} registros? Esta acción no se puede deshacer.`)) {
+                  limpiarTodosLosRegistros()
+                  toast.success({
+                    title: "Registros eliminados",
+                    description: "Todos los registros han sido eliminados correctamente."
+                  })
+                }
+              }}
+              variant="destructive"
+              size="sm"
+              className="flex items-center gap-2 hover:bg-red-700 transition-colors"
+            >
+              <Trash2 className="h-4 w-4" />
+              Eliminar Todos
+            </Button>
+          </div>
+          <ListaRegistros />
+        </div>
+      )}
     </div>
   )
 }
