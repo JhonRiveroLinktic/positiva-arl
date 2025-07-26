@@ -35,6 +35,7 @@ export interface ListWrapperProps {
   clearAllButtonText?: string
   className?: string
   maxHeight?: string
+  extraHeader?: React.ReactNode
 }
 
 export function ListWrapper({
@@ -51,7 +52,8 @@ export function ListWrapper({
   deleteButtonText = "Eliminar",
   clearAllButtonText = "Eliminar Todos",
   className = "",
-  maxHeight = "70vh"
+  maxHeight = "70vh",
+  extraHeader
 }: ListWrapperProps) {
   const handleDelete = (id: string, record: any) => {
     if (!onDelete) return
@@ -226,6 +228,9 @@ export function ListWrapper({
           </TableBody>
         </Table>
       </div>
+      <div className="mt-6 w-full">
+        {extraHeader}
+      </div>
     </div>
   )
-} 
+}
