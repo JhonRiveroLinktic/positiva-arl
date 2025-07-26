@@ -264,6 +264,7 @@ export function ARLRegistrationForm() {
                   placeholder="Ingrese número de documento"
                   value={field.value}
                   onChange={field.onChange}
+                  maxLength={20}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
@@ -282,6 +283,7 @@ export function ARLRegistrationForm() {
                   placeholder="Primer apellido"
                   value={field.value}
                   onChange={field.onChange}
+                  maxLength={50}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
@@ -300,6 +302,7 @@ export function ARLRegistrationForm() {
                   placeholder="Segundo apellido (opcional)"
                   value={field.value}
                   onChange={field.onChange}
+                  maxLength={50}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
@@ -315,6 +318,7 @@ export function ARLRegistrationForm() {
                 <FormInput
                   label="Primer Nombre"
                   placeholder="Primer nombre"
+                  maxLength={50}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -335,6 +339,7 @@ export function ARLRegistrationForm() {
                   placeholder="Segundo nombre (opcional)"
                   value={field.value}
                   onChange={field.onChange}
+                  maxLength={50}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
@@ -417,6 +422,7 @@ export function ARLRegistrationForm() {
                   label="Dirección"
                   placeholder="Dirección completa"
                   value={field.value}
+                  maxLength={100}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
@@ -433,6 +439,7 @@ export function ARLRegistrationForm() {
               render={({ field, fieldState }) => (
                 <FormInput
                   label="Teléfono"
+                  maxLength={10}
                   placeholder="Número de teléfono (ej: 3201234567 o 8605252)"
                   value={field.value}
                   onChange={field.onChange}
@@ -605,6 +612,7 @@ export function ARLRegistrationForm() {
                 placeholder="Número documento empleador"
                 value={field.value}
                 onChange={field.onChange}
+                maxLength={20}
                 onBlur={field.onBlur}
                 error={!!fieldState.error}
                 errorMessage={fieldState.error?.message}

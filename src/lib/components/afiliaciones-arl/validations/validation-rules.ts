@@ -6,6 +6,7 @@ import {
   cleanWhitespace,
   validateAndCleanSpecialCharacters,
   VALIDATION_PATTERNS,
+  removeNitVerificationDigit
 } from "@/lib/utils/validations"
 
 export const MINIMUM_WAGE = 1423500
@@ -285,12 +286,25 @@ export const arlValidationRules = {
       }
 
       if (formValues.tipoDocEmp === "NI") {
-        const nitValidation = validateNitVerificationDigit(value)
-        if (!nitValidation.isValid) {
-          return nitValidation.errorMessage || "Formato de NIT empleador inválido"
+        if (!/^\d+$/.test(value)) { 
+            return "El NIT debe contener solo dígitos numéricos (sin guiones o caracteres especiales).";
+        }
+        const cleanNit = value.replace(/\D/g, "");
+
+        if (!cleanNit || cleanNit.length === 0) {
+            return "El NIT no puede estar vacío.";
+        }
+        if (cleanNit.length < 7 || cleanNit.length > 15) {
+            return "El NIT debe tener entre 7 y 15 dígitos (sin dígito de verificación ni guiones).";
+        }
+      } else {
+        if (!VALIDATION_PATTERNS.alphanumericNoSpaces.test(value)) {
+          return "El número de documento del empleador debe contener solo letras y números, sin caracteres especiales ni espacios.";
+        }
+        if (value.length < 5 || value.length > 20) {
+          return "El número de documento del empleador debe tener entre 5 y 20 caracteres.";
         }
       }
-
       return true
     },
   },
@@ -302,17 +316,20 @@ export const arlValidationRules = {
 }
 
 // Función helper para sanitizar datos antes del envío
-export function sanitizeFormData(data: Record<string, any>): Record<string, any> {
-  const sanitized: Record<string, any> = {}
-
-  Object.keys(data).forEach((key) => {
-    const value = data[key]
-    if (typeof value === "string" && key !== "fechaNacimiento" && key !== "fechaInicioCobertura") {
-      sanitized[key] = validateAndCleanSpecialCharacters(cleanWhitespace(value))
-    } else {
-      sanitized[key] = value
+export const sanitizeFormData = (data: any) => {
+  const sanitizedData = { ...data }
+  for (const key in sanitizedData) {
+    if (typeof sanitizedData[key] === "string") {
+      sanitizedData[key] = cleanWhitespace(sanitizedData[key])
+      if (key === "direccion") {
+        sanitizedData[key] = validateAndCleanSpecialCharacters(
+          sanitizedData[key]
+        )
+      }
+      if (key === "numeDocEmp" && sanitizedData.tipoDocEmp === "NI") {
+        sanitizedData[key] = removeNitVerificationDigit(sanitizedData[key]);
+      }
     }
-  })
-
-  return sanitized
+  }
+  return sanitizedData
 }

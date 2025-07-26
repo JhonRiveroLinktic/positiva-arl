@@ -4,7 +4,9 @@ export const VALIDATION_PATTERNS = {
   phone: /^\d{10}$/,
   name: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
   alphanumeric: /^[a-zA-Z0-9\s]+$/,
+  alphanumericNoSpaces: /^[a-zA-Z0-9]+$/,
   noSpecialChars: /^[a-zA-Z0-9\s\-_.]+$/,
+  address: /^[a-zA-Z0-9\s#\-,.]+$/,
 } as const
 
 // Caracteres peligrosos para SQL injection y XSS
@@ -100,27 +102,18 @@ export function calculateNitVerificationDigit(myNit: string | null): number | nu
  * @returns NIT without verification digit
  */
 export function removeNitVerificationDigit(nit: string): string {
-  if (!nit) return nit
+  if (!nit) return ""
 
-  const cleanNit = nit.replace(/\s/g, "").replace(/,/g, "").replace(/\./g, "")
+  // Elimina espacios, comas, puntos y cualquier guion
+  let cleanNit = nit.replace(/\s/g, "").replace(/,/g, "").replace(/\./g, "")
 
-  // If contains hyphen, remove everything after it
+  // Si contiene un guion, se asume que lo que está después es el DV y se remueve.
   if (cleanNit.includes("-")) {
-    return cleanNit.split("-")[0]
+    cleanNit = cleanNit.split("-")[0]
   }
 
-  // If no hyphen but is numeric and has calculated verification digit at the end
-  if (/^\d+$/.test(cleanNit) && cleanNit.length > 1) {
-    const possibleNit = cleanNit.slice(0, -1)
-    const lastDigit = Number.parseInt(cleanNit.slice(-1))
-    const calculatedDigit = calculateNitVerificationDigit(possibleNit)
-
-    if (calculatedDigit === lastDigit) {
-      return possibleNit
-    }
-  }
-
-  return cleanNit
+  // Asegurarse de que solo queden dígitos.
+  return cleanNit.replace(/\D/g, "")
 }
 
 /**
