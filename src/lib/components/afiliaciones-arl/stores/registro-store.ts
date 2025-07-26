@@ -30,9 +30,8 @@ export const useRegistroStore = create<RegistroState>()(
       actualizarRegistro: (registroActualizado) =>
         set((state) => ({
           registros: state.registros.map((registro) =>
-            registro.id === registroActualizado.id ? registroActualizado : registro,
+            registro.id === registroActualizado.id ? registroActualizado : registro
           ),
-          registroEditando: null,
         })),
 
       eliminarRegistro: (id) =>
@@ -67,6 +66,6 @@ export const useRegistroStore = create<RegistroState>()(
       partialize: (state) => ({
         registros: state.registros,
       }),
-    },
-  ),
+    }
+  )
 )

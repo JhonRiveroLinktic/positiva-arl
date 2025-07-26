@@ -141,7 +141,7 @@ export function FormWrapper<T extends FieldValues = FieldValues>({
           <div className="space-y-6">{children}</div>
           <div className={`flex flex-col gap-4 ${footerClassName || ""}`}>
             {footerContent}
-            <div className="flex gap-8 mt-4">
+            <div className="flex gap-6 mt-4">
               <Button
                 type="submit"
                 size="lg"

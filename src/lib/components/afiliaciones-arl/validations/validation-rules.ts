@@ -262,11 +262,6 @@ export const arlValidationRules = {
         return "El salario debe ser un número entero sin puntos, comas, espacios ni símbolos"
       }
 
-      const numericValue = Number.parseInt(value)
-      if (numericValue < MINIMUM_WAGE) {
-        return `El salario no puede ser menor al salario mínimo ($${MINIMUM_WAGE.toLocaleString()})`
-      }
-
       return true
     },
   },

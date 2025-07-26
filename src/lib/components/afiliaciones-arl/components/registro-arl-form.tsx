@@ -9,12 +9,39 @@ import { FormWrapper } from "@/lib/components/core/form/form-wrapper"
 import { useCatalogStore } from "@/lib/components/core/stores/catalog-store"
 import { useRegistroStore } from "../stores/registro-store"
 import { ListaRegistros } from "./lista-registros"
-import { arlValidationRules, sanitizeFormData, MIN_DATE_AFILIATION, getMaxDateCoverage } from "../validations/validation-rules"
+import { 
+  arlValidationRules, 
+  sanitizeFormData, 
+  MIN_DATE_AFILIATION, 
+  MINIMUM_WAGE, 
+  getMaxDateCoverage 
+} from "../validations/validation-rules"
 import { toast } from "@/lib/utils/toast"
-import { Button } from "@/lib/components/ui/button"
-import { Trash2 } from "lucide-react"
+import { useDebouncedCallback } from "@/lib/components/core/hooks/use-debounced-callback"
 import type { Registro, ARLFormData } from "../types/arl-registration"
 
+const initialDefaultValues: ARLFormData = {
+  tipoDocPersona: "",
+  numeDocPersona: "",
+  apellido1: "",
+  apellido2: "",
+  nombre1: "",
+  nombre2: "",
+  fechaNacimiento: "",
+  sexo: "",
+  codigoMuniResidencia: "",
+  direccion: "",
+  telefono: "",
+  codigoEPS: "",
+  codigoAFP: "",
+  fechaInicioCobertura: "",
+  codigoOcupacion: "",
+  salario: "",
+  codigoActividadEconomica: "",
+  tipoDocEmp: "",
+  numeDocEmp: "",
+  modoTrabajo: "",
+}
 
 export function ARLRegistrationForm() {
   const {
@@ -43,42 +70,22 @@ export function ARLRegistrationForm() {
     actualizarRegistro,
     registroEditando,
     setRegistroEditando,
-    limpiarTodosLosRegistros,
   } = useRegistroStore()
 
   const form = useForm<ARLFormData>({
     mode: "all",
     reValidateMode: "onChange",
-    defaultValues: {
-      tipoDocPersona: "",
-      numeDocPersona: "",
-      apellido1: "",
-      apellido2: "",
-      nombre1: "",
-      nombre2: "",
-      fechaNacimiento: "",
-      sexo: "",
-      codigoMuniResidencia: "",
-      direccion: "",
-      telefono: "",
-      codigoEPS: "",
-      codigoAFP: "",
-      fechaInicioCobertura: "",
-      codigoOcupacion: "",
-      salario: "",
-      codigoActividadEconomica: "",
-      tipoDocEmp: "",
-      numeDocEmp: "",
-      modoTrabajo: "",
-    },
+    defaultValues: initialDefaultValues,
   })
 
   const {
     control,
     handleSubmit,
-    trigger,
+    setValue,
     formState: { isSubmitting },
   } = form
+
+  const isEditMode = Boolean(registroEditando)
 
   useEffect(() => {
     loadDocumentTypes()
@@ -103,9 +110,21 @@ export function ARLRegistrationForm() {
   useEffect(() => {
     if (registroEditando) {
       form.reset(registroEditando)
+    } else {
+      form.reset(initialDefaultValues)
     }
   }, [registroEditando, form])
 
+  const debouncedSetSalary = useDebouncedCallback((value: string) => {
+    const numericValue = Number.parseInt(value)
+    if (isNaN(numericValue) || numericValue < MINIMUM_WAGE) {
+      setValue("salario", MINIMUM_WAGE.toString(), {
+        shouldValidate: true,
+        shouldDirty: true,
+      })
+    }
+  }, 1500)
+  
   const documentTypeOptions = (documentTypes || []).map((item) => ({
     value: item.code,
     label: `${item.code} - ${item.name}`,
@@ -146,61 +165,54 @@ export function ARLRegistrationForm() {
     label: `${item.code} - ${item.name}`,
   }))
 
-  const onSubmit = async (data: ARLFormData) => {
+  const onValidSubmit = async (data: ARLFormData) => {
     try {
-      const isValid = await trigger()
-      if (!isValid) {
-        toast.error({
-          title: "Error de validación",
-          description: "Por favor corrija los errores en el formulario antes de continuar.",
-        })
-        return
-      }
+      const sanitizedData = sanitizeFormData(data);
 
-      const sanitizedData = sanitizeFormData(data)
-
-      if (registroEditando) {
-        // Actualizar registro existente manteniendo el ID original
+      if (isEditMode && registroEditando) {
         const registroActualizado: Registro = {
           ...registroEditando,
           ...(sanitizedData as Omit<Registro, "id">),
-        }
-
-        console.log("Registro ARL actualizado:", registroActualizado)
-        actualizarRegistro(registroActualizado)
-        setRegistroEditando(null)
+        };
+        actualizarRegistro(registroActualizado);
+        setRegistroEditando(null);
         toast.success({
           title: "Registro actualizado",
           description: "El registro se actualizó correctamente.",
-        })
+        });
       } else {
-        // Crear nuevo registro con nuevo ID
         const nuevoRegistro: Registro = {
           id: Date.now().toString(),
           ...(sanitizedData as Omit<Registro, "id">),
           metodoSubida: undefined,
-        }
-
-        console.log("Nuevo registro ARL:", nuevoRegistro)
-        agregarRegistro(nuevoRegistro)
+        };
+        agregarRegistro(nuevoRegistro);
         toast.success({
           title: "Registro guardado",
-          description: "El registro se guardó localmente. Use 'Enviar Registros' para enviar a la base de datos.",
-        })
+          description: "El registro se guardó localmente.",
+        });
       }
 
-      form.reset()
+      form.reset(initialDefaultValues);
     } catch (error) {
-      console.error("Error al guardar registro:", error)
+      console.error("Error al guardar registro:", error);
       toast.error({
         title: "Error al guardar",
-        description: "Ocurrió un error al guardar el registro. Por favor intente nuevamente.",
-      })
+        description: "Ocurrió un error al guardar el registro.",
+      });
     }
-  }
+  };
+
+  const onInvalidSubmit = () => {
+    toast.error({
+      title: "Error de validación",
+      description: "Por favor corrija los errores en el formulario antes de continuar.",
+    });
+  };
 
   const handleClear = () => {
-    form.reset()
+    form.reset(initialDefaultValues)
+    setRegistroEditando(null)
     toast.info({
       title: "Formulario limpiado",
       description: "Todos los campos han sido limpiados.",
@@ -211,9 +223,10 @@ export function ARLRegistrationForm() {
     <div className="space-y-8 w-full">
       <FormWrapper
         title="Formulario de Afiliación ARL"
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(onValidSubmit, onInvalidSubmit)}
         onClear={handleClear}
         isSubmitting={isSubmitting}
+        isEditing={isEditMode}
         form={form}
         showMassiveUpload={true}
         massiveUploadComponent={<div className="text-sm text-gray-600">Carga masiva disponible</div>}
@@ -229,7 +242,7 @@ export function ARLRegistrationForm() {
                 <FormSelect
                   label="Tipo Documento"
                   placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar tipo"}
-                  options={documentTypeOptions}
+                  options={documentTypeOptions.filter((item) => item.value !== "NI")}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -510,25 +523,30 @@ export function ARLRegistrationForm() {
                 />
               )}
             />
-
-            <Controller
-              name="salario"
-              control={control}
-              rules={arlValidationRules.salario}
-              render={({ field, fieldState }) => (
-                <FormInput
-                  label="Salario (IBC)"
-                  type="number"
-                  placeholder="Ingrese salario (mínimo $1,423,500)"
-                  value={field.value}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                  required
-                />
-              )}
-            />
+            <div className="col-span-1">
+              <Controller
+                name="salario"
+                control={control}
+                rules={arlValidationRules.salario}
+                render={({ field, fieldState }) => (
+                  <FormInput
+                    label="Salario (IBC)"
+                    type="number"
+                    placeholder="Ingrese salario (mínimo 1423500)"
+                    value={field.value}
+                    onChange={(e) => {
+                      field.onChange(e.target.value);
+                      debouncedSetSalary(e.target.value);
+                    }}
+                    onBlur={field.onBlur}
+                    error={!!fieldState.error}
+                    errorMessage={fieldState.error?.message}
+                    required
+                  />
+                )}
+              />
+              <p className="text-xs mt-2 text-gray-500">Salario mínimo (SMLMV): ${MINIMUM_WAGE.toLocaleString('es-CO')}. Valores inferiores serán corregidos automáticamente.</p>
+            </div>
           </div>
         </div>
 
@@ -617,31 +635,7 @@ export function ARLRegistrationForm() {
         </div>
       </FormWrapper>
 
-      {registros.length > 0 && (
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Registros Guardados ({registros.length})</h2>
-            <Button
-              onClick={() => {
-                if (confirm(`¿Está seguro que desea eliminar todos los ${registros.length} registros? Esta acción no se puede deshacer.`)) {
-                  limpiarTodosLosRegistros()
-                  toast.success({
-                    title: "Registros eliminados",
-                    description: "Todos los registros han sido eliminados correctamente."
-                  })
-                }
-              }}
-              variant="destructive"
-              size="sm"
-              className="flex items-center gap-2 hover:bg-red-700 transition-colors"
-            >
-              <Trash2 className="h-4 w-4" />
-              Eliminar Todos
-            </Button>
-          </div>
-          <ListaRegistros />
-        </div>
-      )}
+      <ListaRegistros />
     </div>
   )
 }
