@@ -11,8 +11,10 @@ import {
   DialogClose,
 } from "@/lib/components/ui/dialog"
 import { Alert, AlertDescription } from "@/lib/components/ui/alert"
-import { Input } from "@/lib/components/ui/input"
-import { Label } from "@/lib/components/ui/label"
+import { FormProvider, useFormContext } from "@/lib/components/core/form/form-provider"
+import { FormInput } from "@/lib/components/core/form/form-input"
+import { contactValidationRules, type ContactFormData } from "../validations/contact-validation-rules"
+import { Controller } from "react-hook-form"
 import { supabase } from "@/lib/utils/supabase"
 import { toast } from "@/lib/utils/toast"
 import { useRegistroStore } from "../stores/registro-store"
@@ -26,16 +28,98 @@ interface EnvioRegistroProps {
   onClose: () => void
 }
 
+function ContactFormFields() {
+  const { control } = useFormContext()
+
+  return (
+    <div className="space-y-3">
+      <Controller
+        name="nombre"
+        control={control}
+        rules={contactValidationRules.nombre}
+        render={({ field, fieldState }) => (
+          <FormInput
+            label="Nombre Completo *"
+            placeholder="Ingrese su nombre completo"
+            value={field.value}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            error={!!fieldState.error}
+            errorMessage={fieldState.error?.message}
+            className="border-green-300 focus:border-green-500 focus:ring-green-500"
+          />
+        )}
+      />
+      <Controller
+        name="correo"
+        control={control}
+        rules={contactValidationRules.correo}
+        render={({ field, fieldState }) => (
+          <FormInput
+            label="Correo Electrónico *"
+            type="email"
+            placeholder="Ingrese su correo electrónico"
+            value={field.value}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            error={!!fieldState.error}
+            errorMessage={fieldState.error?.message}
+            className="border-green-300 focus:border-green-500 focus:ring-green-500"
+          />
+        )}
+      />
+      <Controller
+        name="telefono"
+        control={control}
+        rules={contactValidationRules.telefono}
+        render={({ field, fieldState }) => (
+          <FormInput
+            label="Teléfono (opcional)"
+            placeholder="Ej: 3108521310 (celular) o 1234567 (fijo)"
+            value={field.value}
+            onChange={field.onChange}
+            maxLength={10}
+            onBlur={field.onBlur}
+            error={!!fieldState.error}
+            errorMessage={fieldState.error?.message}
+            className="border-green-300 focus:border-green-500 focus:ring-green-500"
+          />
+        )}
+      />
+      <p className="text-xs text-green-700 mt-2">
+        * Complete nombre y correo electrónico. Teléfono es opcional.
+      </p>
+    </div>
+  )
+}
+
+function SubmitButton({ isSubmitting, registrosCount }: { isSubmitting: boolean, registrosCount: number }) {
+  return (
+    <Button
+      type="submit"
+      disabled={isSubmitting}
+      className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white"
+    >
+      {isSubmitting ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Enviando...
+        </>
+      ) : (
+        <>
+          <Send className="h-4 w-4" />
+          Sí, Enviar {registrosCount} Registro(s)
+        </>
+      )}
+    </Button>
+  )
+}
+
 export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [datosContacto, setDatosContacto] = useState({
-    nombre: "",
-    correo: "",
-    telefono: "",
-  })
   const { limpiarTodosLosRegistros } = useRegistroStore()
 
-  const handleEnviarRegistros = async () => {
+  const handleEnviarRegistros = async (data: ContactFormData, form: any) => {
     if (registros.length === 0) {
       toast.warning({
         title: "Sin registros",
@@ -44,26 +128,17 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
       return
     }
 
-                   // Validar datos de contacto requeridos
-      if (!datosContacto.nombre.trim() || !datosContacto.correo.trim()) {
-        toast.error({
-          title: "Datos de contacto requeridos",
-          description: "Complete nombre y correo electrónico para continuar.",
-        })
-        return
-      }
-
     setIsSubmitting(true)
 
     try {
-             const registrosParaEnviar = registros.map(registro => ({
-         ...convertToSupabaseFormat(registro),
-         nombre_contacto: datosContacto.nombre,
-         correo_contacto: datosContacto.correo,
-         telefono_contacto: datosContacto.telefono || undefined,
-       }))
+      const registrosParaEnviar = registros.map(registro => ({
+        ...convertToSupabaseFormat(registro),
+        nombre_contacto: data.nombre,
+        correo_contacto: data.correo,
+        telefono_contacto: data.telefono || undefined,
+      }))
 
-      const { data, error } = await supabase
+      const { data: insertedData, error } = await supabase
         .from("registros_arl_seguimiento")
         .insert(registrosParaEnviar)
         .select()
@@ -88,7 +163,7 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
       limpiarTodosLosRegistros()
       toast.success({
         title: "¡Registros enviados exitosamente!",
-        description: `Se enviaron ${data?.length || registros.length} registros correctamente.`,
+        description: `Se enviaron ${insertedData?.length || registros.length} registros correctamente.`,
       })
 
       onClose()
@@ -101,6 +176,20 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleInvalidSubmit = (errors: any) => {
+    const errorMessages = []
+    if (errors.nombre) errorMessages.push(`Nombre: ${errors.nombre.message}`)
+    if (errors.correo) errorMessages.push(`Correo: ${errors.correo.message}`)
+    if (errors.telefono) errorMessages.push(`Teléfono: ${errors.telefono.message}`)
+
+    toast.error({
+      title: "Campos requeridos",
+      description: errorMessages.length > 0 
+        ? errorMessages.join(". ")
+        : "Complete todos los campos obligatorios antes de continuar.",
+    })
   }
 
   return (
@@ -134,85 +223,44 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
             </AlertDescription>
           </Alert>
 
-          <div className="bg-green-50 p-5 rounded-md border border-gray-200">
-            <p className="text-lg text-green-800 mb-4">
-              Datos de Contacto:
-            </p>
-                         <div className="space-y-3">
-               <div className="space-y-2">
-                 <Label htmlFor="nombre-contacto" className="text-sm font-medium text-green-800">
-                   Nombre Completo *
-                 </Label>
-                 <Input
-                   id="nombre-contacto"
-                   placeholder="Ingrese su nombre completo"
-                   value={datosContacto.nombre}
-                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDatosContacto(prev => ({ ...prev, nombre: e.target.value }))}
-                   className="border-green-300 focus:border-green-500 focus:ring-green-500"
-                 />
-               </div>
-               <div className="space-y-2">
-                 <Label htmlFor="correo-contacto" className="text-sm font-medium text-green-800">
-                   Correo Electrónico *
-                 </Label>
-                 <Input
-                   id="correo-contacto"
-                   type="email"
-                   placeholder="Ingrese su correo electrónico"
-                   value={datosContacto.correo}
-                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDatosContacto(prev => ({ ...prev, correo: e.target.value }))}
-                   className="border-green-300 focus:border-green-500 focus:ring-green-500"
-                 />
-               </div>
-               <div className="space-y-2">
-                 <Label htmlFor="telefono-contacto" className="text-sm font-medium text-green-800">
-                   Teléfono (opcional)
-                 </Label>
-                 <Input
-                   id="telefono-contacto"
-                   placeholder="Ej: 3108521310 (celular) o 1234567 (fijo)"
-                   value={datosContacto.telefono}
-                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDatosContacto(prev => ({ ...prev, telefono: e.target.value }))}
-                   className="border-green-300 focus:border-green-500 focus:ring-green-500"
-                 />
-               </div>
-                               <p className="text-xs text-green-700 mt-2">
-                  * Complete nombre y correo electrónico. Teléfono es opcional.
-                </p>
-             </div>
-          </div>
-
-          <Alert variant="destructive" className="bg-green-50">
-            <AlertDescription>
-              <p className="text-sm text-black">
-                <strong>Resumen:</strong> Se enviarán {registros.length} registro(s) para procesamiento.
-              </p>
-            </AlertDescription>
-          </Alert>
-        </div>
-
-        <DialogFooter className="gap-2 sm:justify-end">
-          <DialogClose asChild>
-            <Button variant="outline" disabled={isSubmitting}>Cancelar</Button>
-          </DialogClose>
-          <Button
-            onClick={handleEnviarRegistros}
-            disabled={isSubmitting}
-            className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white"
+          <FormProvider<ContactFormData>
+            onSubmit={handleEnviarRegistros}
+            onInvalidSubmit={handleInvalidSubmit}
+            defaultValues={{
+              nombre: "",
+              correo: "",
+              telefono: "",
+            }}
+            mode="all"
+            reValidateMode="onChange"
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Enviando...
-              </>
-            ) : (
-              <>
-                <Send className="h-4 w-4" />
-                Sí, Enviar Registros
-              </>
-            )}
-          </Button>
-        </DialogFooter>
+            <div className="space-y-4">
+              <div className="p-5 rounded-md border border-gray-200">
+                <p className="text-lg text-green-800 mb-4">
+                  Datos de Contacto:
+                </p>
+                <ContactFormFields />
+              </div>
+
+              <Alert variant="destructive" className="bg-green-50">
+                <AlertDescription>
+                  <p className="text-sm text-black">
+                    <strong>Resumen:</strong> Se enviarán {registros.length} registro(s) para procesamiento.
+                  </p>
+                </AlertDescription>
+              </Alert>
+
+              <DialogFooter className="gap-2 sm:justify-end">
+                <DialogClose asChild>
+                  <Button variant="outline" disabled={isSubmitting}>
+                    Cancelar
+                  </Button>
+                </DialogClose>
+                <SubmitButton isSubmitting={isSubmitting} registrosCount={registros.length} />
+              </DialogFooter>
+            </div>
+          </FormProvider>
+        </div>
       </DialogContent>
     </Dialog>
   )
