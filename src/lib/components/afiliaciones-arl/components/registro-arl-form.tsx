@@ -546,6 +546,7 @@ export function ARLRegistrationForm() {
                   errorMessage={fieldState.error?.message}
                   required
                   disabled={loading.occupations}
+                  maxInitialOptions={100}
                 />
               )}
             />
@@ -597,6 +598,7 @@ export function ARLRegistrationForm() {
                 errorMessage={fieldState.error?.message}
                 required
                 disabled={loading.economicActivities}
+                maxInitialOptions={100}
               />
             )}
           />

@@ -6,6 +6,7 @@ import {
   useEffect,
   useRef,
   useCallback,
+  useMemo,
 } from "react"
 import {
   Command,
@@ -43,6 +44,7 @@ interface FormSelectProps {
   onBlur?: () => void
   name?: string
   id?: string
+  maxInitialOptions?: number
 }
 
 export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
@@ -61,6 +63,7 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
       onBlur,
       name,
       id,
+      maxInitialOptions = 100,
       ...props
     },
     ref,
@@ -78,6 +81,25 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
       setVisible(false)
       setTimeout(() => setOpen(false), 150)
     }, [])
+
+    // Filtrar opciones basado en el input de búsqueda
+    const filteredOptions = useMemo(() => {
+      if (!inputValue) {
+        // Si no hay búsqueda, mostrar solo las primeras opciones limitadas
+        return options.slice(0, maxInitialOptions)
+      }
+      
+      // Si hay búsqueda, filtrar en todas las opciones
+      return options.filter((option) =>
+        option.label.toLowerCase().includes(inputValue.toLowerCase())
+      )
+    }, [options, inputValue, maxInitialOptions])
+
+    // Mostrar mensaje si hay más opciones disponibles
+    const hasMoreOptions = useMemo(() => {
+      if (inputValue) return false // Si está buscando, no mostrar el mensaje
+      return options.length > maxInitialOptions
+    }, [options.length, maxInitialOptions, inputValue])
 
     useEffect(() => {
       if (!open) return
@@ -183,34 +205,36 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
                     autoFocus
                   />
                   <CommandList id={`${selectId}-combobox-list`}>
-                    <CommandEmpty>No hay opciones</CommandEmpty>
-                    {options
-                      .filter((option) =>
-                        option.label
-                          .toLowerCase()
-                          .includes(inputValue.toLowerCase())
-                      )
-                      .map((option) => (
-                        <CommandItem
-                          key={option.value}
-                          value={option.value}
-                          disabled={option.disabled}
-                          onSelect={() => {
-                            if (!option.disabled) {
-                              onChange?.(option.value)
-                              closeDropdown()
-                              setInputValue("")
-                            }
-                          }}
-                          className={cn(
-                            option.value === value &&
-                              "bg-accent text-accent-foreground",
-                            option.disabled && "opacity-50 cursor-not-allowed"
-                          )}
-                        >
-                          {option.label}
-                        </CommandItem>
-                      ))}
+                    <CommandEmpty>
+                      {inputValue ? "No hay opciones" : "Escribe para buscar más opciones"}
+                    </CommandEmpty>
+                    {filteredOptions.map((option) => (
+                      <CommandItem
+                        key={option.value}
+                        value={option.value}
+                        disabled={option.disabled}
+                        onSelect={() => {
+                          if (!option.disabled) {
+                            onChange?.(option.value)
+                            closeDropdown()
+                            setInputValue("")
+                          }
+                        }}
+                        className={cn(
+                          option.value === value &&
+                            "bg-accent text-accent-foreground",
+                          option.disabled && "opacity-50 cursor-not-allowed"
+                        )}
+                      >
+                        {option.label}
+                      </CommandItem>
+                    ))}
+                    {hasMoreOptions && (
+                      <div className="px-2 py-1.5 text-xs text-muted-foreground border-t bg-muted/50">
+                        Mostrando {maxInitialOptions} de {options.length} opciones. 
+                        Escribe para buscar en todas las opciones.
+                      </div>
+                    )}
                   </CommandList>
                 </Command>
               </div>
