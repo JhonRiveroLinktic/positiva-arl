@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, User } from "lucide-react";
+import { Home, LogOut, User } from "lucide-react";
 import Image from "next/image";
 import {
   DropdownMenu,
@@ -13,9 +13,13 @@ import {
 import LogoPositiva from "@/lib/assets/positiva.png"
 import { Button } from "../../ui/button";
 import { useAuth } from "../auth/auth-context";
+import { usePathname, useRouter } from "next/navigation"
 
 export function Header() {
   const { user, logout } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const showInicio = pathname !== "/" && pathname !== "/home";
 
   const handleLogout = () => {
     logout();
@@ -34,8 +38,15 @@ export function Header() {
             />
           </div>
 
+          
           {user && (
             <div className="flex items-center space-x-4">
+              {showInicio && (
+                <Button variant="outline" className="flex items-center" onClick={() => router.push("/home")}>
+                  <Home className="h-4 w-4" />
+                  <span>Inicio</span>
+                </Button>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="flex items-center space-x-2">
