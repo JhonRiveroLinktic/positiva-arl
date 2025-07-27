@@ -1,6 +1,0 @@
-export const SeguimientoAfiliacionesARL = () => {
-  return (
-    <>
-    </>
-  )
-}

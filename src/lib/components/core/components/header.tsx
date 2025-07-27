@@ -40,7 +40,7 @@ export function Header() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="flex items-center space-x-2">
                     <User className="h-4 w-4" />
-                    <p>Cerrar sesión</p>
+                    <p className="hidden sm:block text-sm">Cerrar sesión</p>
                     <span className="hidden sm:inline">
                       {user.nombres} {user.apellidos}
                     </span>

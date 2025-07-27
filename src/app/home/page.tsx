@@ -12,22 +12,22 @@ const forms = [
   {
     title: "Seguimiento",
     description: "Formulario de seguimiento de casos",
-    path: "/seguimiento"
+    path: "/forms/seguimiento-afiliaciones-arl"
   },
   {
     title: "Cambio de Riesgo",
     description: "Formulario para cambio de riesgo",
-    path: "/cambio-riesgo"
+    path: "/forms/cambio-riesgo"
   },
   {
     title: "Retiro de Trabajadores",
     description: "Formulario para retiro de trabajadores",
-    path: "/retiro-trabajadores"
+    path: "/forms/retiro-trabajadores"
   },
   {
     title: "Fecha de Cambios",
     description: "Formulario para reportar fecha de cambios",
-    path: "/fecha-cambios"
+    path: "/forms/fecha-cambios"
   },
 ] as const;
 
@@ -69,10 +69,10 @@ export default function HomePage() {
                     <p className="mb-6 text-gray-700 group-hover:text-gray-900 transition-colors duration-200 min-h-[40px] text-center text-base sm:text-lg font-medium w-full">
                       {form.description}
                     </p>
-                    <Button onClick={() => router.push(form.path)} className="w-full mt-2 sm:mt-4 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white font-bold py-2 sm:py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg group-hover:scale-110 transition-transform duration-200 text-base">
+                    <button onClick={() => router.push(form.path)} className="w-full mt-2 sm:mt-4 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white font-bold py-2 sm:py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg group-hover:scale-110 transition-transform duration-200 text-base">
                       Ir a {form.title}
                       <ArrowRight className="h-5 w-5" />
-                    </Button>
+                    </button>
                   </CardContent>
                 </Card>
               ))}
