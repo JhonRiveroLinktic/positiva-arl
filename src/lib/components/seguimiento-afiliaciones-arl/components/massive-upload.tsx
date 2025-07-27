@@ -313,8 +313,6 @@ export function ARLMassiveUpload({ trigger, onSuccess, onError }: ARLMassiveUplo
   )
 
   const getContactInfo = useCallback((): ContactInfo | null => {
-    // En seguimiento, no requerimos datos de contacto desde query params
-    // Los datos se ingresarán en el modal de envío
     return null
   }, [])
 
