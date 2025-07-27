@@ -23,6 +23,7 @@ import {
 } from "@/lib/components/ui/form"
 import { cn } from "@/lib/utils/utils"
 import { Button } from "@/lib/components/ui/button"
+import { ChevronDown } from "lucide-react"
 
 export interface SelectOption {
   value: string
@@ -152,7 +153,7 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
               }}
               variant="outline"
               className={cn(
-                "w-full justify-between text-left",
+                "w-full justify-between text-left pr-10", // Agregado pr-10 para espacio del chevron
                 error && "border-red-500 focus:ring-red-500",
                 disabled && "opacity-50 cursor-not-allowed"
               )}
@@ -178,6 +179,14 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
                 <span className="text-muted-foreground">{placeholder}</span>
               )}
             </Button>
+
+            {/* Chevron absoluto posicionado */}
+            <ChevronDown 
+              className={cn(
+                "absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground transition-transform duration-200 pointer-events-none",
+                open && "rotate-180"
+              )} 
+            />
 
             {open && (
               <div
