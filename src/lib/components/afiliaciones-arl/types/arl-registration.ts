@@ -23,6 +23,8 @@ export interface Registro {
   numeDocEmp: string
   modoTrabajo: string
   metodoSubida?: string
+  emailCreadorRegistro?: string
+  telefonoCreadorRegistro?: string
 }
 
 export interface RegistroARL {
@@ -50,6 +52,8 @@ export interface RegistroARL {
   metodo_subida?: string
   created_at?: string
   updated_at?: string
+  email_creador_registro?: string
+  telefono_creador_registro?: string
 }
 
 
@@ -115,5 +119,7 @@ export function convertToSupabaseFormat(formData: Partial<Registro>): RegistroAR
     tipo_doc_emp: trimmedData.tipoDocEmp || undefined,
     nume_doc_emp: trimmedData.numeDocEmp || undefined,
     metodo_subida: trimmedData.metodoSubida || undefined,
+    email_creador_registro: trimmedData.emailCreadorRegistro || undefined,
+    telefono_creador_registro: trimmedData.telefonoCreadorRegistro || undefined,
   }
 }

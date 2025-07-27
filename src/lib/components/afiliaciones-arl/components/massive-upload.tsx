@@ -215,6 +215,8 @@ export function ARLMassiveUpload({ trigger, onSuccess, onError }: ARLMassiveUplo
             id: `temp-${i}`,
             ...(sanitizedData as Omit<Registro, "id">),
             metodoSubida: "cargue masivo",
+            emailCreadorRegistro: searchParams.get("correo") || undefined,
+            telefonoCreadorRegistro: searchParams.get("telefono") || undefined,
           }
 
           const fieldErrors: string[] = []
@@ -320,7 +322,7 @@ export function ARLMassiveUpload({ trigger, onSuccess, onError }: ARLMassiveUplo
     const correo = searchParams.get("correo") || ""
     const telefono = searchParams.get("telefono") || ""
 
-    if (!nombre || !correo || !telefono) {
+    if (!nombre || !correo) {
       return null
     }
 
@@ -350,17 +352,13 @@ export function ARLMassiveUpload({ trigger, onSuccess, onError }: ARLMassiveUplo
   }, [])
 
   const config: MassiveUploadConfig = {
-    maxFileSize: 6,
-    maxRowsForInstantProcessing: 25,
     acceptedFileTypes: [".xlsx", ".xls"],
     requiredSheetName: "DATOS",
     title: "Carga Masiva de Registros ARL",
     instructions: [
       'Seleccione un archivo Excel (.xlsx) con la hoja "DATOS" con el formato correcto para afiliaciones ARL',
-      "Archivos mayores a 6MB o con más de 25 filas serán enviados directamente para procesamiento por mesa de ayuda",
     ],
     processData: processARLData,
-    uploadLargeFile,
     getContactInfo,
     validateFileStructure,
   }

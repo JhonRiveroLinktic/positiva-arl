@@ -2,6 +2,7 @@
 
 import { useForm, Controller } from "react-hook-form"
 import { useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { FormInput } from "@/lib/components/core/form/form-input"
 import { FormSelect } from "@/lib/components/core/form/form-select"
 import { FormDatePicker } from "@/lib/components/core/form/form-datepicker"
@@ -45,6 +46,7 @@ const initialDefaultValues: ARLFormData = {
 }
 
 export function ARLRegistrationForm() {
+  const searchParams = useSearchParams()
   const {
     documentTypes,
     genderCodes,
@@ -66,7 +68,6 @@ export function ARLRegistrationForm() {
   } = useCatalogStore()
 
   const {
-    registros,
     agregarRegistro,
     actualizarRegistro,
     registroEditando,
@@ -87,6 +88,19 @@ export function ARLRegistrationForm() {
   } = form
 
   const isEditMode = Boolean(registroEditando)
+
+  // Pre-llenar campos del empleador desde query params
+  useEffect(() => {
+    const typeDoc = searchParams.get("typeDoc")
+    const numeroDoc = searchParams.get("numeroDoc")
+    
+    if (typeDoc) {
+      setValue("tipoDocEmp", typeDoc)
+    }
+    if (numeroDoc) {
+      setValue("numeDocEmp", numeroDoc)
+    }
+  }, [searchParams, setValue])
 
   useEffect(() => {
     loadDocumentTypes()
@@ -169,6 +183,8 @@ export function ARLRegistrationForm() {
   const onValidSubmit = async (data: ARLFormData) => {
     try {
       const sanitizedData = sanitizeFormData(data);
+      const correo = searchParams.get("correo")
+      const telefono = searchParams.get("telefono")
 
       if (isEditMode && registroEditando) {
         const registroActualizado: Registro = {
@@ -186,6 +202,8 @@ export function ARLRegistrationForm() {
           id: Date.now().toString(),
           ...(sanitizedData as Omit<Registro, "id">),
           metodoSubida: undefined,
+          emailCreadorRegistro: correo || undefined,
+          telefonoCreadorRegistro: telefono || undefined,
         };
         agregarRegistro(nuevoRegistro);
         toast.success({

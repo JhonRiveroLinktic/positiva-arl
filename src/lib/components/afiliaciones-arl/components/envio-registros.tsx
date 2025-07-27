@@ -22,9 +22,14 @@ interface EnvioRegistroProps {
   registros: Registro[]
   open: boolean
   onClose: () => void
+  datosCreador: {
+    nombre: string
+    correo: string
+    telefono: string
+  }
 }
 
-export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) {
+export function EnvioRegistro({ registros, open, onClose, datosCreador }: EnvioRegistroProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { limpiarTodosLosRegistros } = useRegistroStore()
 
@@ -118,25 +123,18 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
               Datos de Contacto:
             </p>
             <div className="space-y-1 max-h-32 overflow-y-auto text-xs text-green-800">
-              {registros.slice(0, 5).map((r) => (
-                <div key={r.id} className="flex justify-between flex-col text-sm">
-                  <span><strong>Nombre:</strong> {r.nombre1} {r.apellido1}</span>
-                  <span><strong>Correo:</strong> {r.numeDocPersona}</span>
-                  <span><strong>Teléfono:</strong> {r.numeDocPersona}</span>
-                </div>
-              ))}
-              {registros.length > 5 && (
-                <div className="italic text-gray-500">
-                  ... y {registros.length - 5} más
-                </div>
-              )}
+              <div className="flex justify-between flex-col text-sm">
+                <span><strong>Nombre:</strong> {datosCreador.nombre}</span>
+                <span><strong>Correo:</strong> {datosCreador.correo}</span>
+                <span><strong>Teléfono:</strong> {datosCreador.telefono}</span>
+              </div>
             </div>
           </div>
 
           <Alert variant="destructive" className="bg-green-50">
             <AlertDescription>
               <p className="text-sm text-black">
-                <strong>Resumen:</strong> Se enviarán 5 registro(s) para procesamiento.
+                <strong>Resumen:</strong> Se enviarán {registros.length} registro(s) para procesamiento.
               </p>
             </AlertDescription>
           </Alert>

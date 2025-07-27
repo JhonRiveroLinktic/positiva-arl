@@ -3,6 +3,7 @@
 import { forwardRef, useState } from "react"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
+import { es } from "date-fns/locale"
 
 import { Button } from "@/lib/components/ui/button"
 import { Calendar } from "@/lib/components/ui/calendar"
@@ -90,7 +91,7 @@ export const FormDatePicker = forwardRef<HTMLButtonElement, FormDatePickerProps>
                 onBlur={onBlur}
                 disabled={disabled}
               >
-                {value ? format(value, "PPP") : <span>{placeholder}</span>}
+                {value ? format(value, "PPP", { locale: es }) : <span>{placeholder}</span>}
                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
               </Button>
             </PopoverTrigger>
