@@ -39,7 +39,6 @@ const EXCEL_COLUMN_MAPPING = {
   'Modo Trabajo': 'modoTrabajo'
 }
 
-
 interface ARLMassiveUploadProps {
   trigger?: React.ReactNode
   onSuccess?: (result: ProcessingResult) => void
@@ -314,7 +313,7 @@ export function ARLMassiveUpload({ trigger, onSuccess, onError }: ARLMassiveUplo
 
       return result
     },
-    [agregarRegistro, convertDateFormat],
+    [agregarRegistro, convertDateFormat, searchParams],
   )
 
   const getContactInfo = useCallback((): ContactInfo | null => {
@@ -338,16 +337,6 @@ export function ARLMassiveUpload({ trigger, onSuccess, onError }: ARLMassiveUplo
       isValid: missingColumns.length === 0,
       missingColumns,
       extraColumns,
-    }
-  }, [])
-
-  const uploadLargeFile = useCallback(async (file: File, contactInfo: ContactInfo, rowCount: number) => {
-    try {
-      console.log("Uploading large file:", { fileName: file.name, contactInfo, rowCount })
-
-      return { success: true }
-    } catch (error) {
-      return { success: false, error }
     }
   }, [])
 

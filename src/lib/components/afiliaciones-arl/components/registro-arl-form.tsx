@@ -374,8 +374,8 @@ export function ARLRegistrationForm() {
                 <FormDatePicker
                   label="Fecha de Nacimiento"
                   placeholder="Selecciona fecha de nacimiento"
-                  value={field.value ? new Date(field.value) : undefined}
-                  onChange={(date) => field.onChange(date ? date.toISOString().split("T")[0] : "")}
+                  value={field.value ? new Date(field.value + 'T00:00:00') : undefined}
+                  onChange={(date) => field.onChange(date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : "")}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
@@ -518,8 +518,8 @@ export function ARLRegistrationForm() {
                 <FormDatePicker
                   label="Fecha Inicio Cobertura"
                   placeholder="Selecciona fecha de inicio"
-                  value={field.value ? new Date(field.value) : undefined}
-                  onChange={(date) => field.onChange(date ? date.toISOString().split("T")[0] : "")}
+                  value={field.value ? new Date(field.value + 'T00:00:00') : undefined}
+                  onChange={(date) => field.onChange(date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : "")}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}

@@ -82,22 +82,18 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
       setTimeout(() => setOpen(false), 150)
     }, [])
 
-    // Filtrar opciones basado en el input de búsqueda
     const filteredOptions = useMemo(() => {
       if (!inputValue) {
-        // Si no hay búsqueda, mostrar solo las primeras opciones limitadas
         return options.slice(0, maxInitialOptions)
       }
       
-      // Si hay búsqueda, filtrar en todas las opciones
       return options.filter((option) =>
         option.label.toLowerCase().includes(inputValue.toLowerCase())
       )
     }, [options, inputValue, maxInitialOptions])
 
-    // Mostrar mensaje si hay más opciones disponibles
     const hasMoreOptions = useMemo(() => {
-      if (inputValue) return false // Si está buscando, no mostrar el mensaje
+      if (inputValue) return false
       return options.length > maxInitialOptions
     }, [options.length, maxInitialOptions, inputValue])
 
@@ -120,12 +116,11 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
 
         document.addEventListener("mousedown", handleClickOutside)
 
-        // Adapt dropdown direction
         if (buttonRef.current) {
           const rect = buttonRef.current.getBoundingClientRect()
           const spaceBelow = window.innerHeight - rect.bottom
           const spaceAbove = rect.top
-          const estimatedHeight = 300 // aprox dropdown height
+          const estimatedHeight = 300
 
           setDropUp(spaceBelow < estimatedHeight && spaceAbove > estimatedHeight)
         }

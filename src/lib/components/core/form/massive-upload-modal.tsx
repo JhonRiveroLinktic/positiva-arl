@@ -89,11 +89,6 @@ export function MassiveUploadModal({ config, trigger, onSuccess, onError }: Mass
   const processFile = async () => {
     if (!file) return
 
-    toast.info({
-      title: "Procesando archivo",
-      description: `Iniciando procesamiento de ${file.name}...`,
-    })
-
     setIsProcessing(true)
     setProgress(0)
     setError("")

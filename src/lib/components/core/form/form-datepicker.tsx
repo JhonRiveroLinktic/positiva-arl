@@ -66,6 +66,13 @@ export const FormDatePicker = forwardRef<HTMLButtonElement, FormDatePickerProps>
       setOpen(false)
     }
 
+    const getInitialMonth = () => {
+      if (value) {
+        return new Date(value.getFullYear(), value.getMonth(), 1)
+      }
+      return new Date()
+    }
+
     return (
       <FormItem className={className}>
         <FormLabel htmlFor={dateId} className="text-[#0A0A0A] font-medium">
@@ -102,6 +109,7 @@ export const FormDatePicker = forwardRef<HTMLButtonElement, FormDatePickerProps>
                 onSelect={handleDateChange}
                 disabled={(date) => date < minDate || date > maxDate}
                 captionLayout="dropdown"
+                defaultMonth={getInitialMonth()}
               />
             </PopoverContent>
           </Popover>
