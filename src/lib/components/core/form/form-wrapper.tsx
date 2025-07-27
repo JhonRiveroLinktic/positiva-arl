@@ -122,16 +122,8 @@ export function FormWrapper<T extends FieldValues = FieldValues>({
 
           {showMassiveUpload && massiveUploadComponent && (
             <div className="flex items-center gap-2">
-               <Button
-                  variant="outline"
-                  size="lg"
-                  className="flex items-center gap-2 bg-transparent"
-                >
-                  <Upload className="h-4 w-4" />
-                  Carga masiva
-              </Button>
+              {massiveUploadComponent}
             </div>
-            
           )}
         </CardTitle>
       </CardHeader>

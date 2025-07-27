@@ -19,6 +19,7 @@ import {
 import { toast } from "@/lib/utils/toast"
 import { useDebouncedCallback } from "@/lib/components/core/hooks/use-debounced-callback"
 import type { Registro, ARLFormData } from "../types/arl-registration"
+import { ARLMassiveUpload } from "./massive-upload"
 
 const initialDefaultValues: ARLFormData = {
   tipoDocPersona: "",
@@ -229,7 +230,7 @@ export function ARLRegistrationForm() {
         isEditing={isEditMode}
         form={form}
         showMassiveUpload={true}
-        massiveUploadComponent={<div className="text-sm text-gray-600">Carga masiva disponible</div>}
+        massiveUploadComponent={<ARLMassiveUpload />}
       >
         <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-8">Información Personal</h3>
         <div className="w-full">
