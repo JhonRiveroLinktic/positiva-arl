@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { AuthProvider } from '@/lib/components/core/auth/auth-context'
 
 export const metadata: Metadata = {
   title: 'Positiva - Sistema de Gestión',
@@ -27,7 +28,9 @@ export default function RootLayout({
       <body
         className={`antialiased w-full`}
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
         <Toaster position="top-center"  />
       </body>
     </html>

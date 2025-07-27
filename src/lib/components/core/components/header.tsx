@@ -1,6 +1,5 @@
 "use client";
 
-// import { useAuth } from "@/lib/auth-context";
 import { LogOut, User } from "lucide-react";
 import Image from "next/image";
 import {
@@ -12,13 +11,15 @@ import {
   DropdownMenuTrigger,
 } from "@/lib/components/ui/dropdown-menu";
 import LogoPositiva from "@/lib/assets/positiva.png"
+import { Button } from "../../ui/button";
+import { useAuth } from "../auth/auth-context";
 
 export function Header() {
-  // const { user, logout } = useAuth();
+  const { user, logout } = useAuth();
 
-  // const handleLogout = () => {
-  //   logout();
-  // };
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <header className="bg-white shadow-xl border-b-2 border-gray-200 w-full">
@@ -33,12 +34,13 @@ export function Header() {
             />
           </div>
 
-          {/* {user && (
+          {user && (
             <div className="flex items-center space-x-4">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center space-x-2">
+                  <Button variant="outline" className="flex items-center space-x-2">
                     <User className="h-4 w-4" />
+                    <p>Cerrar sesión</p>
                     <span className="hidden sm:inline">
                       {user.nombres} {user.apellidos}
                     </span>
@@ -63,7 +65,7 @@ export function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-          )} */}
+          )}
         </div>
       </div>
     </header>
