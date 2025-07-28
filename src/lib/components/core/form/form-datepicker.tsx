@@ -54,7 +54,7 @@ export const FormDatePicker = forwardRef<HTMLButtonElement, FormDatePickerProps>
       name,
       id,
       minDate = new Date("1900-01-01"),
-      maxDate = new Date(),
+      maxDate = new Date(new Date().getFullYear() + 10, 11),
     },
     ref
   ) => {

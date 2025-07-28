@@ -95,12 +95,43 @@ export const FechaCambiosValidationRules = {
     },
   },
 
-  modoTrabajo: {
-    required: "El modo de trabajo es requerido",
+  fechaInicioContrato: {
+    required: "La fecha de inicio de contrato es requerida",
+    validate: (value: Date) => {
+      if (!value) {
+        return "La fecha de inicio de contrato es requerida"
+      }
+      
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
+      if (value >= today) {
+        return "La fecha de inicio de contrato debe ser anterior a hoy"
+      }
+      
+      const minDate = new Date("1901-01-01")
+      if (value < minDate) {
+        return "La fecha de inicio de contrato debe ser posterior a 1901"
+      }
+      
+      return true
+    },
   },
 
-  codigoActividadEconomica: {
-    required: "La actividad económica es requerida",
+  fechaFinContrato: {
+    required: "La fecha de fin de contrato es requerida",
+    validate: (value: Date) => {
+      if (!value) {
+        return "La fecha de fin de contrato es requerida"
+      }
+      
+      const minDate = new Date("1901-01-01")
+      if (value < minDate) {
+        return "La fecha de fin de contrato debe ser posterior a 1901"
+      }
+      
+      return true
+    },
   },
 
   correoNotificacion: {

@@ -36,7 +36,7 @@ function Calendar({
       )}
       captionLayout={captionLayout}
       startMonth={new Date(1901, 0)}
-      endMonth={new Date(new Date().getFullYear() + 4, 11)}
+      endMonth={new Date(new Date().getFullYear() + 10, 11)}
       formatters={{
         formatMonthDropdown: (date) =>
           date.toLocaleString("default", { month: "short" }),

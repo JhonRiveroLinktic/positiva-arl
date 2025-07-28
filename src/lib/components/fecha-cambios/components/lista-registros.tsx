@@ -38,8 +38,16 @@ export function ListaRegistros() {
         </div>
       ),
     },
-    { key: "modoTrabajo", label: "Tipo de Vinculación" },
-    { key: "codigoActividadEconomica", label: "Actividad Económica" },
+    {
+      key: "fechas",
+      label: "Fechas de Contrato",
+      render: (_, record: Registro) => (
+        <div>
+          <div className="font-medium">Inicio: {record.fechaInicioContrato?.toLocaleDateString('es-ES')}</div>
+          <div className="text-sm text-gray-500">Fin: {record.fechaFinContrato?.toLocaleDateString('es-ES')}</div>
+        </div>
+      ),
+    },
     { key: "correoNotificacion", label: "Correo de Notificación" },
   ]
 

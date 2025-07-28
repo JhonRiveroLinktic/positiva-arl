@@ -4,8 +4,8 @@ export interface Registro {
   numeDocEmp: string
   tipoDocPersona: string
   numeDocPersona: string
-  modoTrabajo: string
-  codigoActividadEconomica: string
+  fechaInicioContrato: Date
+  fechaFinContrato: Date
   correoNotificacion: string
   metodoSubida?: string
 }
@@ -16,8 +16,8 @@ export interface FechaCambios {
   nume_doc_emp: string
   tipo_doc_persona: string
   nume_doc_persona: string
-  modo_trabajo: string
-  codigo_actividad_economica: string
+  fecha_inicio_contrato: string
+  fecha_fin_contrato: string
   correo_notificacion: string
   metodo_subida?: string
   created_at?: string
@@ -29,8 +29,8 @@ export interface FechaCambiosFormData {
   numeDocEmp: string
   tipoDocPersona: string
   numeDocPersona: string
-  modoTrabajo: string
-  codigoActividadEconomica: string
+  fechaInicioContrato: Date
+  fechaFinContrato: Date
   correoNotificacion: string
 }
 
@@ -39,9 +39,11 @@ export function trimRegistroFields(registro: Partial<Registro>): Partial<Registr
 
   for (const [key, value] of Object.entries(registro)) {
     if (typeof value === "string") {
-      trimmed[key as keyof Registro] = value.trim()
+      (trimmed as any)[key] = value.trim()
+    } else if (value instanceof Date) {
+      (trimmed as any)[key] = value
     } else {
-      trimmed[key as keyof Registro] = value
+      (trimmed as any)[key] = value
     }
   }
 
@@ -56,8 +58,8 @@ export function convertToSupabaseFormat(formData: Partial<Registro>): FechaCambi
     nume_doc_emp: trimmedData.numeDocEmp || "",
     tipo_doc_persona: trimmedData.tipoDocPersona || "",
     nume_doc_persona: trimmedData.numeDocPersona || "",
-    modo_trabajo: trimmedData.modoTrabajo || "",
-    codigo_actividad_economica: trimmedData.codigoActividadEconomica || "",
+    fecha_inicio_contrato: trimmedData.fechaInicioContrato ? trimmedData.fechaInicioContrato.toISOString().split('T')[0] : "",
+    fecha_fin_contrato: trimmedData.fechaFinContrato ? trimmedData.fechaFinContrato.toISOString().split('T')[0] : "",
     correo_notificacion: trimmedData.correoNotificacion || "",
     metodo_subida: trimmedData.metodoSubida || undefined,
   }

@@ -4,6 +4,7 @@ import { useForm, Controller } from "react-hook-form"
 import { useEffect } from "react"
 import { FormInput } from "@/lib/components/core/form/form-input"
 import { FormSelect } from "@/lib/components/core/form/form-select"
+import { FormDatePicker } from "@/lib/components/core/form/form-datepicker"
 import { FormWrapper } from "@/lib/components/core/form/form-wrapper"
 import { useCatalogStore } from "@/lib/components/core/stores/catalog-store"
 import { useRegistroStore } from "../stores/fecha-cambios-store"
@@ -21,20 +22,16 @@ const initialDefaultValues: FechaCambiosFormData = {
   numeDocEmp: "",
   tipoDocPersona: "",
   numeDocPersona: "",
-  modoTrabajo: "",
-  codigoActividadEconomica: "",
+  fechaInicioContrato: undefined as any,
+  fechaFinContrato: undefined as any,
   correoNotificacion: "",
 }
 
 export function FechaCambiosForm() {
   const {
     documentTypes,
-    economicActivities,
-    workModes,
     loading,
     loadDocumentTypes,
-    loadEconomicActivities,
-    loadWorkModes,
   } = useCatalogStore()
 
   const {
@@ -60,12 +57,8 @@ export function FechaCambiosForm() {
 
   useEffect(() => {
     loadDocumentTypes()
-    loadEconomicActivities()
-    loadWorkModes()
   }, [
     loadDocumentTypes,
-    loadEconomicActivities,
-    loadWorkModes,
   ])
 
   useEffect(() => {
@@ -81,15 +74,7 @@ export function FechaCambiosForm() {
     label: `${item.code} - ${item.name}`,
   }))
 
-  const economicActivityOptions = (economicActivities || []).map((item) => ({
-    value: item.code,
-    label: `${item.code} - ${item.name.substring(0, 60)}...`,
-  }))
 
-  const workModeOptions = (workModes || []).map((item) => ({
-    value: item.code,
-    label: `${item.code} - ${item.name}`,
-  }))
 
   const onValidSubmit = async (data: FechaCambiosFormData) => {
     try {
@@ -251,42 +236,40 @@ export function FechaCambiosForm() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
             <Controller
-              name="modoTrabajo"
+              name="fechaInicioContrato"
               control={control}
-              rules={FechaCambiosValidationRules.modoTrabajo}
+              rules={FechaCambiosValidationRules.fechaInicioContrato}
               render={({ field, fieldState }) => (
-                <FormSelect
-                  label="Tipo de Vinculacion"
-                  placeholder={loading.workModes ? "Cargando..." : "Seleccionar tipo"}
-                  options={workModeOptions}
+                <FormDatePicker
+                  label="Fecha Inicio Contrato"
+                  placeholder="Seleccionar fecha de inicio"
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                  disabled={loading.workModes}
+                  minDate={new Date("1901-01-01")}
+                  maxDate={new Date()}
                 />
               )}
             />
 
             <Controller
-              name="codigoActividadEconomica"
+              name="fechaFinContrato"
               control={control}
-              rules={FechaCambiosValidationRules.codigoActividadEconomica}
+              rules={FechaCambiosValidationRules.fechaFinContrato}
               render={({ field, fieldState }) => (
-                <FormSelect
-                  label="Actividad Economica"
-                  placeholder={loading.economicActivities ? "Cargando..." : "Seleccionar actividad"}
-                  options={economicActivityOptions}
+                <FormDatePicker
+                  label="Fecha Fin Contrato"
+                  placeholder="Seleccionar fecha de fin"
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                  disabled={loading.economicActivities}
-                  maxInitialOptions={100}
+                  minDate={new Date("1901-01-01")}
                 />
               )}
             />
