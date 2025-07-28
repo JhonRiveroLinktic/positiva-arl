@@ -14,7 +14,7 @@ import {
 } from "../validations/validation-rules"
 import { toast } from "@/lib/utils/toast"
 import type { Registro, CambioRiesgoFormData } from "../types/cambio-riesgo-registration"
-// import { CambioRiesgoMassiveUpload } from "./massive-upload"
+import { CambioRiesgoMassiveUpload } from "./massive-upload"
 
 const initialDefaultValues: CambioRiesgoFormData = {
   tipoDocEmp: "",
@@ -155,8 +155,8 @@ export function CambioRiesgoForm() {
         isEditing={isEditMode}
         form={form}
         showMassiveUpload={true}
-        >
-        {/* massiveUploadComponent={<CambioRiesgoMassiveUpload />} */}
+        massiveUploadComponent={<CambioRiesgoMassiveUpload />}
+      >
         <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-8">Informacion del Empleador</h3>
         <div className="w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
