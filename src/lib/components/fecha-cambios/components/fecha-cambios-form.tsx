@@ -6,18 +6,17 @@ import { FormInput } from "@/lib/components/core/form/form-input"
 import { FormSelect } from "@/lib/components/core/form/form-select"
 import { FormWrapper } from "@/lib/components/core/form/form-wrapper"
 import { useCatalogStore } from "@/lib/components/core/stores/catalog-store"
-import { useRegistroStore } from "../stores/registro-store"
+import { useRegistroStore } from "../stores/fecha-cambios-store"
 import { ListaRegistros } from "./lista-registros"
 import { 
-  cambioRiesgoValidationRules, 
+  FechaCambiosValidationRules, 
   sanitizeFormData
 } from "../validations/validation-rules"
 import { toast } from "@/lib/utils/toast"
-import type { Registro, CambioRiesgoFormData } from "../types/cambio-riesgo-registration"
-import { CambioRiesgoMassiveUpload } from "./massive-upload"
-import { TIPOS_VINCULACION } from "@/lib/options/tipos-vinculacion"
+import type { Registro, FechaCambiosFormData } from "../types/fecha-cambios"
+import { FechaCambiosMassiveUpload } from "./massive-upload"
 
-const initialDefaultValues: CambioRiesgoFormData = {
+const initialDefaultValues: FechaCambiosFormData = {
   tipoDocEmp: "",
   numeDocEmp: "",
   tipoDocPersona: "",
@@ -27,7 +26,7 @@ const initialDefaultValues: CambioRiesgoFormData = {
   correoNotificacion: "",
 }
 
-export function CambioRiesgoForm() {
+export function FechaCambiosForm() {
   const {
     documentTypes,
     economicActivities,
@@ -45,7 +44,7 @@ export function CambioRiesgoForm() {
     setRegistroEditando,
   } = useRegistroStore()
 
-  const form = useForm<CambioRiesgoFormData>({
+  const form = useForm<FechaCambiosFormData>({
     mode: "all",
     reValidateMode: "onChange",
     defaultValues: initialDefaultValues,
@@ -92,12 +91,7 @@ export function CambioRiesgoForm() {
     label: `${item.code} - ${item.name}`,
   }))
 
-  const vinculationTypeOptions = TIPOS_VINCULACION.map((item) => ({
-    value: item.value,
-    label: item.label,
-  }))
-  
-  const onValidSubmit = async (data: CambioRiesgoFormData) => {
+  const onValidSubmit = async (data: FechaCambiosFormData) => {
     try {
       const sanitizedData = sanitizeFormData(data);
 
@@ -154,14 +148,14 @@ export function CambioRiesgoForm() {
   return (
     <div className="space-y-8 w-full">
       <FormWrapper
-        title="Plantilla de cambio de riesgo Dependiente e Independiente"
+        title="Formulario de Cambio de Fechas"
         onSubmit={handleSubmit(onValidSubmit, onInvalidSubmit)}
         onClear={handleClear}
         isSubmitting={isSubmitting}
         isEditing={isEditMode}
         form={form}
         showMassiveUpload={true}
-        massiveUploadComponent={<CambioRiesgoMassiveUpload />}
+        massiveUploadComponent={<FechaCambiosMassiveUpload />}
       >
         <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-8">Informacion del Empleador</h3>
         <div className="w-full">
@@ -169,7 +163,7 @@ export function CambioRiesgoForm() {
             <Controller
               name="tipoDocEmp"
               control={control}
-              rules={cambioRiesgoValidationRules.tipoDocEmp}
+              rules={FechaCambiosValidationRules.tipoDocEmp}
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="Tipo Documento Empleador"
@@ -189,7 +183,7 @@ export function CambioRiesgoForm() {
             <Controller
               name="numeDocEmp"
               control={control}
-              rules={cambioRiesgoValidationRules.numeDocEmp}
+              rules={FechaCambiosValidationRules.numeDocEmp}
               render={({ field, fieldState }) => (
                 <FormInput
                   label="Documento Empleador"
@@ -214,7 +208,7 @@ export function CambioRiesgoForm() {
             <Controller
               name="tipoDocPersona"
               control={control}
-              rules={cambioRiesgoValidationRules.tipoDocPersona}
+              rules={FechaCambiosValidationRules.tipoDocPersona}
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="Tipo Documento Trabajador"
@@ -234,7 +228,7 @@ export function CambioRiesgoForm() {
             <Controller
               name="numeDocPersona"
               control={control}
-              rules={cambioRiesgoValidationRules.numeDocPersona}
+              rules={FechaCambiosValidationRules.numeDocPersona}
               render={({ field, fieldState }) => (
                 <FormInput
                   label="Documento Trabajador"
@@ -259,12 +253,12 @@ export function CambioRiesgoForm() {
             <Controller
               name="modoTrabajo"
               control={control}
-              rules={cambioRiesgoValidationRules.modoTrabajo}
+              rules={FechaCambiosValidationRules.modoTrabajo}
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="Tipo de Vinculacion"
                   placeholder={loading.workModes ? "Cargando..." : "Seleccionar tipo"}
-                  options={vinculationTypeOptions}
+                  options={workModeOptions}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -279,7 +273,7 @@ export function CambioRiesgoForm() {
             <Controller
               name="codigoActividadEconomica"
               control={control}
-              rules={cambioRiesgoValidationRules.codigoActividadEconomica}
+              rules={FechaCambiosValidationRules.codigoActividadEconomica}
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="Actividad Economica"
@@ -301,7 +295,7 @@ export function CambioRiesgoForm() {
               <Controller
                 name="correoNotificacion"
                 control={control}
-                rules={cambioRiesgoValidationRules.correoNotificacion}
+                rules={FechaCambiosValidationRules.correoNotificacion}
                 render={({ field, fieldState }) => (
                   <FormInput
                     label="Correo de Notificacion"

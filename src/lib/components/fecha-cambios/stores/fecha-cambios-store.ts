@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import type { Registro } from "../types/cambio-riesgo-registration"
+import type { Registro } from "../types/fecha-cambios"
 
 interface RegistroState {
   registros: Registro[]
@@ -62,7 +62,7 @@ export const useRegistroStore = create<RegistroState>()(
       },
     }),
     {
-      name: "cambio-riesgo-storage",
+      name: "fecha-cambios-storage",
       partialize: (state) => ({
         registros: state.registros,
       }),

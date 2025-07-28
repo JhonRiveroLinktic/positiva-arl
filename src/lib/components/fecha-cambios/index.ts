@@ -1,0 +1,6 @@
+export { FechaCambiosForm } from "./components/fecha-cambios-form"
+export { ListaRegistros } from "./components/lista-registros"
+export { EnvioRegistro } from "./components/envio-registros"
+export { FechaCambiosMassiveUpload } from "./components/massive-upload"
+export { useRegistroStore } from "./stores/fecha-cambios-store"
+export type { Registro, FechaCambiosFormData, FechaCambios } from "./types/fecha-cambios" 

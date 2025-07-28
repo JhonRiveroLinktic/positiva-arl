@@ -1,6 +1,6 @@
 export { CambioRiesgoForm } from "./components/cambio-riesgo-form"
 export { ListaRegistros } from "./components/lista-registros"
 export { EnvioRegistro } from "./components/envio-registros"
-// export { CambioRiesgoMassiveUpload } from "./components/massive-upload"
+export { CambioRiesgoMassiveUpload } from "./components/massive-upload"
 export { useRegistroStore } from "./stores/registro-store"
 export type { Registro, CambioRiesgoFormData, CambioRiesgoRegistroARL } from "./types/cambio-riesgo-registration" 

@@ -1,6 +1,6 @@
 import { Header } from "@/lib/components/core/components/header";
 import { Banner } from "@/lib/components/core/components/banner";
-import { CardDownloadExcel } from "@/lib/components/core/components/card-download-excel";
+// import { CardDownloadExcel } from "@/lib/components/core/components/card-download-excel";
 import { CambioRiesgoForm } from "@/lib/components/cambio-riesgo"
 import { Suspense } from "react";
 
