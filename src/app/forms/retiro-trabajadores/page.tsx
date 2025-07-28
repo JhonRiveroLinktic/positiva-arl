@@ -21,7 +21,7 @@ export default function RetiroTrabajadores() {
       <Header />
       <div className="w-full flex flex-col items-center justify-items-center gap-6 px-4 py-8 bg-gray-50 min-h-screen">
         <Banner 
-          title="Plantilla de retiro de trabajadores" 
+          title="Plantilla de Retiro de Trabajadores" 
           description="Complete todos los campos requeridos para procesar el retiro de trabajadores." 
         /> 
         {/* <CardDownloadExcel /> */}

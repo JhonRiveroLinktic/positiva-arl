@@ -53,13 +53,38 @@ export function trimRegistroFields(registro: Partial<Registro>): Partial<Registr
 export function convertToSupabaseFormat(formData: Partial<Registro>): RetiroTrabajadores {
   const trimmedData = trimRegistroFields(formData)
 
+  // Función auxiliar para convertir fecha a string YYYY-MM-DD
+  const formatDate = (dateValue: any): string => {
+    if (!dateValue) return ""
+    
+    // Si ya es un string en formato YYYY-MM-DD, retornarlo
+    if (typeof dateValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+      return dateValue
+    }
+    
+    // Si es una instancia de Date válida
+    if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
+      return dateValue.toISOString().split('T')[0]
+    }
+    
+    // Intentar convertir string a Date
+    if (typeof dateValue === "string") {
+      const date = new Date(dateValue)
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0]
+      }
+    }
+    
+    return ""
+  }
+
   return {
     tipo_doc_empleador: trimmedData.tipoDocEmpleador || "",
     documento_empleador: trimmedData.documentoEmpleador || "",
     tipo_doc_trabajador: trimmedData.tipoDocTrabajador || "",
     documento_trabajador: trimmedData.documentoTrabajador || "",
     tipo_vinculacion: trimmedData.tipoVinculacion || "",
-    fecha_retiro_trabajador: trimmedData.fechaRetiroTrabajador ? trimmedData.fechaRetiroTrabajador.toISOString().split('T')[0] : "",
+    fecha_retiro_trabajador: formatDate(trimmedData.fechaRetiroTrabajador),
     metodo_subida: trimmedData.metodoSubida || undefined,
     correo_notificacion: trimmedData.correoNotificacion || "",
   }

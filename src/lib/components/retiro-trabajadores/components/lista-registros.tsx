@@ -24,8 +24,8 @@ export function ListaRegistros() {
       label: "Empleador",
       render: (_, record: Registro) => (
         <div>
-          <div className="font-medium">{record.tipoDocEmp}</div>
-          <div className="text-sm text-gray-500">{record.numeDocEmp}</div>
+          <div className="font-medium">{record.tipoDocEmpleador}</div>
+          <div className="text-sm text-gray-500">{record.documentoEmpleador}</div>
         </div>
       ),
     },
@@ -34,8 +34,8 @@ export function ListaRegistros() {
       label: "Trabajador",
       render: (_, record: Registro) => (
         <div>
-          <div className="font-medium">{record.tipoDocPersona}</div>
-          <div className="text-sm text-gray-500">{record.numeDocPersona}</div>
+          <div className="font-medium">{record.tipoDocTrabajador}</div>
+          <div className="text-sm text-gray-500">{record.documentoTrabajador}</div>
         </div>
       ),
     },

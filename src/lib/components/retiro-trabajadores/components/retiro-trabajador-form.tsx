@@ -138,7 +138,7 @@ export function RetiroTrabajadoresForm() {
   return (
     <div className="space-y-8 w-full">
       <FormWrapper
-        title="Formulario de Cambio de Fechas"
+        title="Formulario de retiro de trabajadores"
         onSubmit={handleSubmit(onValidSubmit, onInvalidSubmit)}
         onClear={handleClear}
         isSubmitting={isSubmitting}
