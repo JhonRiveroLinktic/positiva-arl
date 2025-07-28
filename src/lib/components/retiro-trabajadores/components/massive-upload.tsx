@@ -8,9 +8,9 @@ import {
   type ContactInfo,
   type MassiveUploadConfig,
 } from "@/lib/components/core/form/massive-upload-modal"
-import { useRegistroStore } from "../stores/fecha-cambios-store"
-import { FechaCambiosValidationRules, sanitizeFormData } from "../validations/validation-rules"
-import type { Registro, FechaCambiosFormData } from "../types/fecha-cambios"
+import { useRegistroStore } from "../stores/retiro-trabajador-store"
+import { RetiroTrabajadoresValidationRules, sanitizeFormData } from "../validations/validation-rules"
+import type { Registro, RetiroTrabajadoresFormData } from "../types/retiro-trabajador"
 import { Upload } from "lucide-react"
 import { Button } from "@/lib/components/ui/button"
 
@@ -45,16 +45,16 @@ const EXCEL_COLUMN_MAPPING = {
   'EMAIL': 'correoNotificacion'
 }
 
-interface FechaCambiosMassiveUploadProps {
+interface RetiroTrabajadoresMassiveUploadProps {
   trigger?: React.ReactNode
   onSuccess?: (result: ProcessingResult) => void
   onError?: (error: string) => void
 }
 
-export function FechaCambiosMassiveUpload({ trigger, onSuccess, onError }: FechaCambiosMassiveUploadProps) {
+export function RetiroTrabajadoresMassiveUpload({ trigger, onSuccess, onError }: RetiroTrabajadoresMassiveUploadProps) {
   const { agregarRegistro } = useRegistroStore()
 
-  const processFechaCambiosData = useCallback(
+  const processRetiroTrabajadoresData = useCallback(
     async (data: any[], setProgress: (progress: number) => void): Promise<ProcessingResult> => {
       const result: ProcessingResult = {
         success: 0,
@@ -75,8 +75,8 @@ export function FechaCambiosMassiveUpload({ trigger, onSuccess, onError }: Fecha
         setProgress(((i + 1) / data.length) * 50)
 
         try {
-          const formData: Partial<FechaCambiosFormData> = {}
-          const originalFormData: Partial<FechaCambiosFormData> = {}
+          const formData: Partial<RetiroTrabajadoresFormData> = {}
+          const originalFormData: Partial<RetiroTrabajadoresFormData> = {}
 
           if (i < 3) {
             console.log(`Row ${i + 2} Debug:`)
@@ -91,9 +91,9 @@ export function FechaCambiosMassiveUpload({ trigger, onSuccess, onError }: Fecha
               console.log(`Direct mapping: ${excelColumn} -> ${formField} = "${value}"`)
             }
 
-            originalFormData[formField as keyof FechaCambiosFormData] = 
+            originalFormData[formField as keyof RetiroTrabajadoresFormData] = 
               value !== undefined && value !== null ? String(value).trim() : ""
-            formData[formField as keyof FechaCambiosFormData] = 
+            formData[formField as keyof RetiroTrabajadoresFormData] = 
               value !== undefined && value !== null ? String(value).trim() : ""
           })
 
@@ -113,16 +113,16 @@ export function FechaCambiosMassiveUpload({ trigger, onSuccess, onError }: Fecha
             const normalizedName = columnName.toLowerCase().trim()
             
             const formField = normalizedColumnMapping[normalizedName]
-            if (formField && !formData[formField as keyof FechaCambiosFormData]) {
+            if (formField && !formData[formField as keyof RetiroTrabajadoresFormData]) {
               const value = row[columnName]
               
               if (i < 3) {
                 console.log(`Normalized mapping: ${columnName} -> ${formField} = "${value}"`)
               }
 
-              originalFormData[formField as keyof FechaCambiosFormData] = 
+              originalFormData[formField as keyof RetiroTrabajadoresFormData] = 
                 value !== undefined && value !== null ? String(value).trim() : ""
-              formData[formField as keyof FechaCambiosFormData] = 
+              formData[formField as keyof RetiroTrabajadoresFormData] = 
                 value !== undefined && value !== null ? String(value).trim() : ""
             }
 
@@ -149,7 +149,7 @@ export function FechaCambiosMassiveUpload({ trigger, onSuccess, onError }: Fecha
             console.log("Final mapped form data:", formData)
           }
 
-          const sanitizedData = sanitizeFormData(formData as FechaCambiosFormData)
+          const sanitizedData = sanitizeFormData(formData as RetiroTrabajadoresFormData)
 
           const tempRegistro: Registro = {
             id: `temp-${i}`,
@@ -159,7 +159,7 @@ export function FechaCambiosMassiveUpload({ trigger, onSuccess, onError }: Fecha
 
           const fieldErrors: string[] = []
 
-          Object.entries(FechaCambiosValidationRules).forEach(([fieldName, rules]) => {
+          Object.entries(RetiroTrabajadoresValidationRules).forEach(([fieldName, rules]) => {
             const fieldValue = tempRegistro[fieldName as keyof Registro]
 
             if ('required' in rules && rules.required && (!fieldValue || fieldValue === "")) {
@@ -186,7 +186,7 @@ export function FechaCambiosMassiveUpload({ trigger, onSuccess, onError }: Fecha
           } else {
             const enhancedErrors = fieldErrors.map((error) => {
               const fieldName = error.split(" ")[0]
-              const actualValue = formData[fieldName as keyof FechaCambiosFormData]
+              const actualValue = formData[fieldName as keyof RetiroTrabajadoresFormData]
               const displayValue =
                 actualValue !== undefined && actualValue !== null && actualValue !== "" 
                   ? `"${actualValue}"` 
@@ -314,7 +314,7 @@ export function FechaCambiosMassiveUpload({ trigger, onSuccess, onError }: Fecha
       'Columnas esperadas: TIPO DOC EMPLEADOR, DOCUMENTO EMPLEADOR, TIPO DOC TRABAJADOR, DOCUMENTO TRABAJADOR, TIPO DE VINCULACION, ACTIVIDAD ECONOMICA, Correo de notificacion',
       'El sistema validara todas las filas antes de guardar cualquier registro (modo "todo o nada")',
     ],
-    processData: processFechaCambiosData,
+    processData: processRetiroTrabajadoresData,
     getContactInfo,
     validateFileStructure,
   }

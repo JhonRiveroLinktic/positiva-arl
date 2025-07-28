@@ -326,7 +326,7 @@ export function CambioRiesgoMassiveUpload({ trigger, onSuccess, onError }: Cambi
         trigger || (
           <Button variant="outline" className="flex items-center gap-2 bg-transparent">
             <Upload className="h-4 w-4" />
-            Carga Masiva Cambio de Riesgo
+            Carga Masiva
           </Button>
         )
       }
