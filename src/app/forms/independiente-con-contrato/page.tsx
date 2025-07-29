@@ -1,10 +1,10 @@
 import { Header } from "@/lib/components/core/components/header";
 import { Banner } from "@/lib/components/core/components/banner";
 import { CardDownloadExcel } from "@/lib/components/core/components/card-download-excel";
-import { ARLRegistrationForm } from "@/lib/components/afiliaciones-arl/components/registro-arl-form";
+import { IndependienteConContratoForm } from "@/lib/components/independiente-con-contrato"
 import { Suspense } from "react";
 
-function FormularioRegistroFallback() {
+function FormularioIndependienteConContratoPageFallback() {
   return (
     <div className="flex items-center justify-center min-h-[400px]">
       <div className="text-center">
@@ -15,20 +15,20 @@ function FormularioRegistroFallback() {
   )
 }
 
-export default function Home() {
+export default function IndependienteConContratoPage() {
   return (
     <main>
       <Header />
       <div className="w-full flex flex-col items-center justify-items-center gap-6 px-4 py-8 bg-gray-50 min-h-screen">
         <Banner 
-          title="Formulario de Afiliación ARL" 
+          title="Formulario de Afiliación ARL - Seguimiento" 
           description="Complete todos los campos requeridos para procesar su afiliación a la ARL." 
         /> 
-        <CardDownloadExcel fileTitle="Descargar Plantilla Masiva Dependiente" file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets//PLANTILLA%20MASIVA%20DEPENDIENTE.xlsx" />
-        <Suspense fallback={<FormularioRegistroFallback />}>
-          <ARLRegistrationForm />
+        <CardDownloadExcel fileTitle="Descargar Plantilla Masiva Trabajador Independiente con Contrato" file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets//02-PLANTILLA%20MASIVA%20TRABAJADOR%20INDEPENDIENTE%20CON%20CONTRATO.xlsx" />
+        <Suspense fallback={<FormularioIndependienteConContratoPageFallback />}>
+          <IndependienteConContratoForm />
         </Suspense>
       </div>
     </main>
-  );
+  )
 }

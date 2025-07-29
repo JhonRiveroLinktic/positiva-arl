@@ -29,6 +29,11 @@ const forms = [
     description: "Formulario para reportar fecha de cambios",
     path: "/forms/fecha-cambios"
   },
+  {
+    title: "Plantilla masiva Trabajador Independiente con Contrato",
+    description: "Formulario para cargar trabajadores independientes con contrato",
+    path: "/forms/independiente-con-contrato"
+  },
 ] as const;
 
 type FormType = typeof forms[number];
@@ -39,7 +44,7 @@ export default function HomePage() {
 
   let visibleForms: FormType[] = [];
   if (user?.user_type === 'tipo1') {
-    visibleForms = [forms[0]];
+    visibleForms = [forms[0], forms[4]];
   } else if (user?.user_type === 'tipo2') {
     visibleForms = [forms[1], forms[2], forms[3]];
   }
@@ -70,7 +75,7 @@ export default function HomePage() {
                       {form.description}
                     </p>
                     <button onClick={() => router.push(form.path)} className="w-full mt-2 sm:mt-4 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white font-bold py-2 sm:py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg group-hover:scale-110 transition-transform duration-200 text-base">
-                      Ir a {form.title}
+                      Ir al formulario
                       <ArrowRight className="h-5 w-5" />
                     </button>
                   </CardContent>

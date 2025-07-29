@@ -1,7 +1,12 @@
 import { Alert, AlertDescription } from "@/lib/components/ui/alert";
 import { Info, Download } from "lucide-react";
 
-export function CardDownloadExcel() {
+type Props = {
+  file?: string
+  fileTitle?: string
+}
+
+export function CardDownloadExcel({file = '', fileTitle = ''}: Props) {
   return (
     <Alert className="border-orange-200 bg-orange-50 p-4 shadow-md">
       <Info className="!h-5 !w-5 !text-orange-700" />
@@ -14,13 +19,13 @@ export function CardDownloadExcel() {
             Descarga nuestra plantilla base en Excel, diligénciala con la información de cada trabajador y súbela fácilmente mediante la opción de carga masiva.
           </p>
           <a 
-            href="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets//PLANTILLA%20MASIVA%20DEPENDIENTE.xlsx"
+            href={file}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-orange-700 hover:text-orange-900 underline font-medium text-base"
           >
             <Download className="h-5 w-5" />
-              Descargar Plantilla Masiva Dependiente
+              {fileTitle}
           </a>
         </div>
       </AlertDescription>

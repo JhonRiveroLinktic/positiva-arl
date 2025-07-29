@@ -24,7 +24,7 @@ export default function SeguimientoAfiliacionesARL() {
           title="Formulario de Afiliación ARL - Seguimiento" 
           description="Complete todos los campos requeridos para procesar su afiliación a la ARL." 
         /> 
-        <CardDownloadExcel />
+        <CardDownloadExcel fileTitle="Descargar Plantilla Masiva Dependiente" file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets//PLANTILLA%20MASIVA%20DEPENDIENTE.xlsx" />
         <Suspense fallback={<FormularioRegistroSeguimientoFallback />}>
           <SeguimientoARLRegistrationForm />
         </Suspense>
