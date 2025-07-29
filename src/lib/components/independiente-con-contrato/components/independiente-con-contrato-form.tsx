@@ -63,23 +63,9 @@ const initialDefaultValues: IndependienteConContratoFormData = {
 
 export function IndependienteConContratoForm() {
   const {
-    documentTypes,
-    genderCodes,
-    municipalities,
-    epsCodes,
-    afpCodes,
     occupations,
     economicActivities,
-    workModes,
     loading,
-    loadDocumentTypes,
-    loadGenderCodes,
-    loadMunicipalities,
-    loadEpsCodes,
-    loadAfpCodes,
-    loadOccupations,
-    loadEconomicActivities,
-    loadWorkModes,
   } = useCatalogStore()
 
   const {
@@ -100,36 +86,33 @@ export function IndependienteConContratoForm() {
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { isSubmitting },
   } = form
 
-  const [selectedDepartamento, setSelectedDepartamento] = useState<string | undefined>(
-    watch("codigoDaneDptoResidencia")
-  )
-  const [selectedDepartamentoWork, setSelectedDepartamentoWork] = useState<string | undefined>(
-    watch("departamentoLabor")
-  )
+  const currentDepartamentoResidencia = watch("codigoDaneDptoResidencia");
+  const currentDepartamentoLabor = watch("departamentoLabor");
+
+  const [selectedDepartamento, setSelectedDepartamento] = useState<string | undefined>(undefined);
+  const [selectedDepartamentoWork, setSelectedDepartamentoWork] = useState<string | undefined>(undefined);
   
   const isEditMode = Boolean(registroEditando)
 
   useEffect(() => {
-    loadDocumentTypes()
-  }, [
-    loadDocumentTypes,
-  ])
+    if (registroEditando) {
+      reset(registroEditando); 
+    } else {
+      reset(initialDefaultValues); 
+    }
+  }, [registroEditando, reset]);
 
   useEffect(() => {
-    if (registroEditando) {
-      form.reset(registroEditando)
-    } else {
-      form.reset(initialDefaultValues)
-    }
-  }, [registroEditando, form])
+    setSelectedDepartamento(currentDepartamentoResidencia);
+  }, [currentDepartamentoResidencia]);
 
-  const documentTypeOptions = (documentTypes || []).map((item) => ({
-    value: item.code,
-    label: `${item.code} - ${item.name}`,
-  }))
+  useEffect(() => {
+    setSelectedDepartamentoWork(currentDepartamentoLabor);
+  }, [currentDepartamentoLabor]);
 
   const genderOptions = genderCodeOptions.map((item) => ({
     value: item.code,
@@ -191,6 +174,8 @@ export function IndependienteConContratoForm() {
       }
 
       form.reset(initialDefaultValues);
+      setSelectedDepartamento(undefined);
+      setSelectedDepartamentoWork(undefined);
     } catch (error) {
       console.error("Error al guardar registro:", error);
       toast.error({
@@ -210,6 +195,8 @@ export function IndependienteConContratoForm() {
   const handleClear = () => {
     form.reset(initialDefaultValues)
     setRegistroEditando(null)
+    setSelectedDepartamento(undefined);
+    setSelectedDepartamentoWork(undefined);
     toast.info({
       title: "Formulario limpiado",
       description: "Todos los campos han sido limpiados.",
@@ -238,7 +225,7 @@ export function IndependienteConContratoForm() {
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="Tipo Documento Trabajador"
-                  placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar tipo"}
+                  placeholder="Seleccionar tipo"
                   options={DocumentTypesOptions.filter((i) => i.value !== 'NI')}
                   value={field.value}
                   onChange={field.onChange}
@@ -246,7 +233,6 @@ export function IndependienteConContratoForm() {
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                  disabled={loading.documentTypes}
                 />
               )}
             />
@@ -421,19 +407,17 @@ export function IndependienteConContratoForm() {
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="Código DANE Departamento"
-                  placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar Código DANE"}
+                  placeholder="Seleccionar Código DANE"
                   options={departamentosDaneOptions}
                   value={field.value}
                   onChange={(value) => {
                     field.onChange(value)
-                    setSelectedDepartamento(value)
                     setValue("codigoDaneMuniResidencia", "")
                   }}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                  disabled={loading.documentTypes}
                 />
               )}
             />
@@ -448,8 +432,6 @@ export function IndependienteConContratoForm() {
                   placeholder={
                     !selectedDepartamento
                       ? "Seleccione un departamento primero"
-                      : loading.documentTypes
-                      ? "Cargando..."
                       : "Seleccionar Código DANE"
                   }
                   options={
@@ -518,7 +500,7 @@ export function IndependienteConContratoForm() {
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="Cargo/Ocupación"
-                  placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar Cargo u ocupación"}
+                  placeholder="Seleccionar Cargo u ocupación"
                   options={occupationOptions}
                   value={field.value}
                   onChange={field.onChange}
@@ -526,7 +508,6 @@ export function IndependienteConContratoForm() {
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                  disabled={loading.documentTypes}
                 />
               )}
             />
@@ -538,7 +519,7 @@ export function IndependienteConContratoForm() {
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="NIT EPS"
-                  placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar Código EPS"}
+                  placeholder="Seleccionar Código EPS"
                   options={EPSOptions}
                   value={field.value}
                   onChange={field.onChange}
@@ -546,7 +527,6 @@ export function IndependienteConContratoForm() {
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                  disabled={loading.documentTypes}
                 />
               )}
             />
@@ -558,7 +538,7 @@ export function IndependienteConContratoForm() {
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="NIT AFP"
-                  placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar Código AFP"}
+                  placeholder="Seleccionar Código AFP"
                   options={PensionFundOptions}
                   value={field.value}
                   onChange={field.onChange}
@@ -566,7 +546,6 @@ export function IndependienteConContratoForm() {
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                  disabled={loading.documentTypes}
                 />
               )}
             />
@@ -584,7 +563,7 @@ export function IndependienteConContratoForm() {
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="Tipo de Contrato"
-                  placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar Tipo de Contrato"}
+                  placeholder="Seleccionar Tipo de Contrato"
                   options={tipoContratoOptions}
                   value={field.value}
                   onChange={field.onChange}
@@ -592,7 +571,6 @@ export function IndependienteConContratoForm() {
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                  disabled={loading.documentTypes}
                 />
               )}
             />
@@ -711,7 +689,7 @@ export function IndependienteConContratoForm() {
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="Código de Actividad a Ejecutar"
-                  placeholder={loading.economicActivities ? "Cargando..." : "Seleccionar Código de actividad"}
+                  placeholder="Seleccionar Código de actividad"
                   options={economicActivityOptions}
                   value={field.value}
                   onChange={field.onChange}
@@ -719,7 +697,6 @@ export function IndependienteConContratoForm() {
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                  disabled={loading.economicActivities}
                 />
               )}
             />
@@ -731,19 +708,17 @@ export function IndependienteConContratoForm() {
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="Departamento donde Labora"
-                  placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar Código de actividad"}
+                  placeholder="Seleccionar Código de actividad"
                   options={departamentosDaneOptions}
                   value={field.value}
                   onChange={(value) => {
                     field.onChange(value)
-                    setSelectedDepartamentoWork(value)
                     setValue("ciudadLabor", "")
                   }}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                  disabled={loading.documentTypes}
                 />
               )}
             />
@@ -758,8 +733,6 @@ export function IndependienteConContratoForm() {
                   placeholder={
                     !selectedDepartamentoWork
                       ? "Seleccione un departamento primero"
-                      : loading.documentTypes
-                      ? "Cargando..."
                       : "Seleccionar Código DANE"
                   }
                   options={
@@ -835,15 +808,14 @@ export function IndependienteConContratoForm() {
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="Tipo Documento Contratante"
-                  placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar tipo"}
-                  options={documentTypeOptions}
+                  placeholder="Seleccionar tipo"
+                  options={DocumentTypesOptions}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                  disabled={loading.documentTypes}
                 />
               )}
             />
@@ -874,7 +846,7 @@ export function IndependienteConContratoForm() {
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="Actividad Centro de Trabajo del Contratante"
-                  placeholder={loading.economicActivities ? "Cargando..." : "Seleccionar Actividad"}
+                  placeholder="Seleccionar Actividad"
                   options={economicActivityOptions}
                   value={field.value}
                   onChange={field.onChange}
@@ -882,7 +854,6 @@ export function IndependienteConContratoForm() {
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                  disabled={loading.economicActivities}
                 />
               )}
             />
@@ -893,14 +864,13 @@ export function IndependienteConContratoForm() {
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="Código Subempresa (SOLO PARA EL NIT 899999061)"
-                  placeholder={loading.documentTypes ? "Cargando..." : "Código subempresa (opcional)"}
+                  placeholder="Código subempresa (opcional)"
                   options={SubEmpresaOptions}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
-                  disabled={loading.documentTypes}
                 />
               )}
             />
