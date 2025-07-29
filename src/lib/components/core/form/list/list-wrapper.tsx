@@ -34,7 +34,6 @@ export interface ListWrapperProps {
   deleteButtonText?: string
   clearAllButtonText?: string
   className?: string
-  maxHeight?: string
   extraHeader?: React.ReactNode
 }
 
@@ -52,7 +51,6 @@ export function ListWrapper({
   deleteButtonText = "Eliminar",
   clearAllButtonText = "Eliminar Todos",
   className = "",
-  maxHeight = "70vh",
   extraHeader
 }: ListWrapperProps) {
   const handleDelete = (id: string, record: any) => {
@@ -170,7 +168,7 @@ export function ListWrapper({
         )}
       </div>
       
-      <div className={`overflow-x-auto max-h-[${maxHeight}] overflow-y-auto rounded-lg border border-orange-100 bg-white`}>
+      <div className={`overflow-x-auto !max-h-[60vh] overflow-y-auto rounded-lg border border-orange-100 bg-white`}>
         <Table>
           <TableHeader>
             <TableRow>
