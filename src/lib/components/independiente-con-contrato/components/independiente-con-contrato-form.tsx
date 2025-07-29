@@ -1,7 +1,7 @@
 "use client"
 
 import { useForm, Controller } from "react-hook-form"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { FormInput } from "@/lib/components/core/form/form-input"
 import { FormSelect } from "@/lib/components/core/form/form-select"
 import { FormDatePicker } from "@/lib/components/core/form/form-datepicker"
@@ -17,6 +17,14 @@ import { toast } from "@/lib/utils/toast"
 import type { Registro, IndependienteConContratoFormData } from "../types/independiente-types"
 // import { IndependienteConContratoMassiveUpload } from "./massive-upload"
 import { genderCodeOptions } from "@/lib/options/gender-codes"
+import { 
+  DocumentTypesOptions,
+  departamentosDaneOptions,
+  getMunicipiosDaneOptionsByDepartamento,
+  EPSOptions,
+  PensionFundOptions,
+  SubEmpresaOptions
+} from "../options"
 
 const initialDefaultValues: IndependienteConContratoFormData = {
   tipoDocTrabajador: "",
@@ -89,9 +97,18 @@ export function IndependienteConContratoForm() {
   const {
     control,
     handleSubmit,
+    watch,
+    setValue,
     formState: { isSubmitting },
   } = form
 
+  const [selectedDepartamento, setSelectedDepartamento] = useState<string | undefined>(
+    watch("codigoDaneDptoResidencia")
+  )
+  const [selectedDepartamentoWork, setSelectedDepartamentoWork] = useState<string | undefined>(
+    watch("departamentoLabor")
+  )
+  
   const isEditMode = Boolean(registroEditando)
 
   useEffect(() => {
@@ -119,14 +136,30 @@ export function IndependienteConContratoForm() {
   }))
 
   const naturalezaOptions = [
-    { value: "PUBLICO", label: "PÚBLICO" },
-    { value: "PRIVADO", label: "PRIVADO" },
+    { value: "PB", label: "PB - PÚBLICO" },
+    { value: "PR", label: "PR - PRIVADO" },
   ]
+
+  const tipoContratoOptions = [
+    { value: "AD", label: "AD - ADMINISTRATIVO" },
+    { value: "CO", label: "CO - COMERCIAL" },
+    { value: "CI", label: "CI - CIVIL" },
+  ]
+
+  const economicActivityOptions = (economicActivities || []).map((item) => ({
+    value: item.code,
+    label: `${item.code} - ${item.name.substring(0, 60)}...`,
+  }))
 
   const booleanOptions = [
     { value: "S", label: "SÍ" },
     { value: "N", label: "NO" },
   ]
+
+  const occupationOptions = (occupations || []).map((item) => ({
+    value: item.code,
+    label: `${item.code} - ${item.name}`,
+  }))
 
   const onValidSubmit = async (data: IndependienteConContratoFormData) => {
     try {
@@ -205,7 +238,7 @@ export function IndependienteConContratoForm() {
                 <FormSelect
                   label="Tipo Documento Trabajador"
                   placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar tipo"}
-                  options={documentTypeOptions.filter((i) => i.value !== 'NI')}
+                  options={DocumentTypesOptions.filter((i) => i.value !== 'NI')}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -256,6 +289,24 @@ export function IndependienteConContratoForm() {
             />
 
             <Controller
+              name="nombre2Trabajador"
+              control={control}
+              rules={IndependienteConContratoValidationRules.nombre2Trabajador}
+              render={({ field, fieldState }) => (
+                <FormInput
+                  label="Segundo Nombre"
+                  placeholder="Segundo nombre (opcional)"
+                  value={field.value}
+                  onChange={field.onChange}
+                  maxLength={100}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <Controller
               name="apellido1Trabajador"
               control={control}
               rules={IndependienteConContratoValidationRules.apellido1Trabajador}
@@ -270,24 +321,6 @@ export function IndependienteConContratoForm() {
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                />
-              )}
-            />
-
-            <Controller
-              name="nombre2Trabajador"
-              control={control}
-              rules={IndependienteConContratoValidationRules.nombre2Trabajador}
-              render={({ field, fieldState }) => (
-                <FormInput
-                  label="Segundo Nombre"
-                  placeholder="Segundo nombre (opcional)"
-                  value={field.value}
-                  onChange={field.onChange}
-                  maxLength={100}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
                 />
               )}
             />
@@ -382,9 +415,13 @@ export function IndependienteConContratoForm() {
                 <FormSelect
                   label="Código DANE Departamento"
                   placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar Código DANE"}
-                  options={documentTypeOptions}
+                  options={departamentosDaneOptions}
                   value={field.value}
-                  onChange={field.onChange}
+                  onChange={(value) => {
+                    field.onChange(value)
+                    setSelectedDepartamento(value)
+                    setValue("codigoDaneMuniResidencia", "")
+                  }}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
@@ -401,15 +438,25 @@ export function IndependienteConContratoForm() {
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="Código DANE Municipio"
-                  placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar Código DANE"}
-                  options={documentTypeOptions}
+                  placeholder={
+                    !selectedDepartamento
+                      ? "Seleccione un departamento primero"
+                      : loading.documentTypes
+                      ? "Cargando..."
+                      : "Seleccionar Código DANE"
+                  }
+                  options={
+                    selectedDepartamento
+                      ? getMunicipiosDaneOptionsByDepartamento(selectedDepartamento)
+                      : []
+                  }
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                  disabled={loading.documentTypes}
+                  disabled={!selectedDepartamento}
                 />
               )}
             />
@@ -465,7 +512,7 @@ export function IndependienteConContratoForm() {
                 <FormSelect
                   label="Cargo/Ocupación"
                   placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar Cargo u ocupación"}
-                  options={documentTypeOptions}
+                  options={occupationOptions}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -483,9 +530,9 @@ export function IndependienteConContratoForm() {
               rules={IndependienteConContratoValidationRules.codigoEPS}
               render={({ field, fieldState }) => (
                 <FormSelect
-                  label="Código EPS"
+                  label="NIT EPS"
                   placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar Código EPS"}
-                  options={documentTypeOptions}
+                  options={EPSOptions}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -503,9 +550,9 @@ export function IndependienteConContratoForm() {
               rules={IndependienteConContratoValidationRules.codigoAFP}
               render={({ field, fieldState }) => (
                 <FormSelect
-                  label="Código EPS"
+                  label="NIT AFP"
                   placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar Código AFP"}
-                  options={documentTypeOptions}
+                  options={PensionFundOptions}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -531,7 +578,7 @@ export function IndependienteConContratoForm() {
                 <FormSelect
                   label="Tipo de Contrato"
                   placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar Tipo de Contrato"}
-                  options={documentTypeOptions}
+                  options={tipoContratoOptions}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -645,15 +692,15 @@ export function IndependienteConContratoForm() {
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="Código de Actividad a Ejecutar"
-                  placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar Código de actividad"}
-                  options={documentTypeOptions}
+                  placeholder={loading.economicActivities ? "Cargando..." : "Seleccionar Código de actividad"}
+                  options={economicActivityOptions}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                  disabled={loading.documentTypes}
+                  disabled={loading.economicActivities}
                 />
               )}
             />
@@ -666,9 +713,13 @@ export function IndependienteConContratoForm() {
                 <FormSelect
                   label="Departamento donde Labora"
                   placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar Código de actividad"}
-                  options={documentTypeOptions}
+                  options={departamentosDaneOptions}
                   value={field.value}
-                  onChange={field.onChange}
+                  onChange={(value) => {
+                    field.onChange(value)
+                    setSelectedDepartamentoWork(value)
+                    setValue("ciudadLabor", "")
+                  }}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
@@ -677,7 +728,7 @@ export function IndependienteConContratoForm() {
                 />
               )}
             />
-
+            
             <Controller
               name="ciudadLabor"
               control={control}
@@ -685,15 +736,25 @@ export function IndependienteConContratoForm() {
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="Ciudad donde Labora"
-                  placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar Ciudad"}
-                  options={documentTypeOptions}
+                  placeholder={
+                    !selectedDepartamentoWork
+                      ? "Seleccione un departamento primero"
+                      : loading.documentTypes
+                      ? "Cargando..."
+                      : "Seleccionar Código DANE"
+                  }
+                  options={
+                    selectedDepartamentoWork
+                      ? getMunicipiosDaneOptionsByDepartamento(selectedDepartamentoWork)
+                      : []
+                  }
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                  disabled={loading.documentTypes}
+                  disabled={!selectedDepartamentoWork}
                 />
               )}
             />
@@ -788,15 +849,15 @@ export function IndependienteConContratoForm() {
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="Actividad Centro de Trabajo del Contratante"
-                  placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar Actividad"}
-                  options={documentTypeOptions}
+                  placeholder={loading.economicActivities ? "Cargando..." : "Seleccionar Actividad"}
+                  options={economicActivityOptions}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                  disabled={loading.documentTypes}
+                  disabled={loading.economicActivities}
                 />
               )}
             />
@@ -806,9 +867,9 @@ export function IndependienteConContratoForm() {
               control={control}
               render={({ field, fieldState }) => (
                 <FormSelect
-                  label="Código Subempresa"
+                  label="Código Subempresa (SOLO PARA EL NIT 899999061)"
                   placeholder={loading.documentTypes ? "Cargando..." : "Código subempresa (opcional)"}
-                  options={documentTypeOptions}
+                  options={SubEmpresaOptions}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
