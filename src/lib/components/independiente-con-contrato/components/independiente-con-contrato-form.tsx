@@ -10,12 +10,13 @@ import { useCatalogStore } from "@/lib/components/core/stores/catalog-store"
 import { useRegistroStore } from "../stores/registro-store"
 import { ListaRegistros } from "./lista-registros"
 import { 
+  getMaxDateCoverage,
   IndependienteConContratoValidationRules, 
   sanitizeFormData
 } from "../validations/validation-rules"
 import { toast } from "@/lib/utils/toast"
 import type { Registro, IndependienteConContratoFormData } from "../types/independiente-types"
-// import { IndependienteConContratoMassiveUpload } from "./massive-upload"
+import { IndependienteConContratoMassiveUpload } from "./massive-upload"
 import { genderCodeOptions } from "@/lib/options/gender-codes"
 import { 
   DocumentTypesOptions,
@@ -33,7 +34,7 @@ const initialDefaultValues: IndependienteConContratoFormData = {
   apellido2Trabajador: "",
   nombre1Trabajador: "",
   nombre2Trabajador: "",
-  fechaNacimientoTrabajador: undefined as any,
+  fechaNacimientoTrabajador: "",
   sexoTrabajador: "",
   emailTrabajador: "",
   codigoDaneDptoResidencia: "",
@@ -46,13 +47,13 @@ const initialDefaultValues: IndependienteConContratoFormData = {
   tipoContrato: "",
   naturalezaContrato: "",
   suministraTransporte: "",
-  fechaInicioContrato: undefined as any,
-  fechaFinContrato: undefined as any,
+  fechaInicioContrato: "",
+  fechaFinContrato: "",
   valorTotalContrato: "",
   codigoActividadEjecutar: "",
   departamentoLabor: "",
   ciudadLabor: "",
-  fechaInicioCobertura: undefined as any,
+  fechaInicioCobertura: "",
   esAfiliacionTaxista: "",
   tipoDocContratante: "",
   numeDocContratante: "",
@@ -225,8 +226,8 @@ export function IndependienteConContratoForm() {
         isEditing={isEditMode}
         form={form}
         showMassiveUpload={true}
+        massiveUploadComponent={<IndependienteConContratoMassiveUpload />}
         >
-        {/* massiveUploadComponent={<IndependienteConContratoMassiveUpload />} */}
         <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-8">Información del Trabajador</h3>
         <div className="w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
@@ -351,8 +352,14 @@ export function IndependienteConContratoForm() {
                 <FormDatePicker
                   label="Fecha de Nacimiento"
                   placeholder="Seleccionar fecha de nacimiento"
-                  value={field.value}
-                  onChange={field.onChange}
+                  value={field.value ? new Date(field.value + 'T00:00:00') : undefined}
+                  onChange={(date) =>
+                    field.onChange(
+                      date
+                        ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+                        : ""
+                    )
+                  }
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
@@ -636,8 +643,14 @@ export function IndependienteConContratoForm() {
                 <FormDatePicker
                   label="Fecha de Inicio del Contrato"
                   placeholder="Seleccionar fecha de inicio"
-                  value={field.value}
-                  onChange={field.onChange}
+                  value={field.value ? new Date(field.value + 'T00:00:00') : undefined}
+                  onChange={(date) =>
+                    field.onChange(
+                      date
+                        ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+                        : ""
+                    )
+                  }
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
@@ -654,8 +667,14 @@ export function IndependienteConContratoForm() {
                 <FormDatePicker
                   label="Fecha de Terminación del Contrato"
                   placeholder="Seleccionar fecha de terminación"
-                  value={field.value}
-                  onChange={field.onChange}
+                  value={field.value ? new Date(field.value + 'T00:00:00') : undefined}
+                  onChange={(date) =>
+                    field.onChange(
+                      date
+                        ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+                        : ""
+                    )
+                  }
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
@@ -767,13 +786,19 @@ export function IndependienteConContratoForm() {
                 <FormDatePicker
                   label="Fecha de Cobertura"
                   placeholder="Seleccionar fecha de cobertura"
-                  value={field.value}
-                  onChange={field.onChange}
+                  value={field.value ? new Date(field.value + 'T00:00:00') : undefined}
+                  onChange={(date) =>
+                    field.onChange(
+                      date
+                        ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+                        : ""
+                    )
+                  }
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                  maxDate={new Date()}
+                  maxDate={getMaxDateCoverage()}
                 />
               )}
             />

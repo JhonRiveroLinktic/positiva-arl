@@ -6,7 +6,7 @@ export interface Registro {
     apellido2Trabajador: string
     nombre1Trabajador: string
     nombre2Trabajador: string
-    fechaNacimientoTrabajador: Date
+    fechaNacimientoTrabajador: string
     sexoTrabajador: string
     emailTrabajador: string
     codigoDaneDptoResidencia: string
@@ -19,13 +19,13 @@ export interface Registro {
     tipoContrato: string
     naturalezaContrato: string
     suministraTransporte: string
-    fechaInicioContrato: Date
-    fechaFinContrato: Date
+    fechaInicioContrato: string
+    fechaFinContrato: string
     valorTotalContrato: string
     codigoActividadEjecutar: string
     departamentoLabor: string
     ciudadLabor: string
-    fechaInicioCobertura: Date
+    fechaInicioCobertura: string
     esAfiliacionTaxista: string
     tipoDocContratante: string
     numeDocContratante: string
@@ -77,7 +77,7 @@ export interface IndependienteConContratoFormData {
     apellido2Trabajador: string
     nombre1Trabajador: string
     nombre2Trabajador: string
-    fechaNacimientoTrabajador: Date
+    fechaNacimientoTrabajador: string
     sexoTrabajador: string
     emailTrabajador: string
     codigoDaneDptoResidencia: string
@@ -90,13 +90,13 @@ export interface IndependienteConContratoFormData {
     tipoContrato: string
     naturalezaContrato: string
     suministraTransporte: string
-    fechaInicioContrato: Date
-    fechaFinContrato: Date
+    fechaInicioContrato: string
+    fechaFinContrato: string
     valorTotalContrato: string
     codigoActividadEjecutar: string
     departamentoLabor: string
     ciudadLabor: string
-    fechaInicioCobertura: Date
+    fechaInicioCobertura: string
     esAfiliacionTaxista: string
     tipoDocContratante: string
     numeDocContratante: string
@@ -109,11 +109,9 @@ export function trimRegistroFields(registro: Partial<Registro>): Partial<Registr
   
     for (const [key, value] of Object.entries(registro)) {
       if (typeof value === "string") {
-        (trimmed as any)[key] = value.trim()
-      } else if (value instanceof Date) {
-        (trimmed as any)[key] = value
+        trimmed[key as keyof Registro] = value.trim()
       } else {
-        (trimmed as any)[key] = value
+        trimmed[key as keyof Registro] = value
       }
     }
   
@@ -122,32 +120,7 @@ export function trimRegistroFields(registro: Partial<Registro>): Partial<Registr
   
 export function convertToSupabaseFormat(formData: Partial<Registro>): IndependienteConContrato {
     const trimmedData = trimRegistroFields(formData)
-  
-    // Función auxiliar para convertir fecha a string YYYY-MM-DD
-    const formatDate = (dateValue: any): string => {
-      if (!dateValue) return ""
-      
-      // Si ya es un string en formato YYYY-MM-DD, retornarlo
-      if (typeof dateValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
-        return dateValue
-      }
-      
-      // Si es una instancia de Date válida
-      if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
-        return dateValue.toISOString().split('T')[0]
-      }
-      
-      // Intentar convertir string a Date
-      if (typeof dateValue === "string") {
-        const date = new Date(dateValue)
-        if (!isNaN(date.getTime())) {
-          return date.toISOString().split('T')[0]
-        }
-      }
-      
-      return ""
-    }
-  
+
     return {
       tipo_doc_trabajador: trimmedData.tipoDocTrabajador || "",
       nume_doc_trabajador: trimmedData.numeDocTrabajador || "",
@@ -155,7 +128,7 @@ export function convertToSupabaseFormat(formData: Partial<Registro>): Independie
       apellido2_trabajador: trimmedData.apellido2Trabajador || undefined,
       nombre1_trabajador: trimmedData.nombre1Trabajador || "",
       nombre2_trabajador: trimmedData.nombre2Trabajador || undefined,
-      fecha_nacimiento_trabajador: formatDate(trimmedData.fechaNacimientoTrabajador),
+      fecha_nacimiento_trabajador: trimmedData.fechaNacimientoTrabajador || "",
       sexo_trabajador: trimmedData.sexoTrabajador || "",
       email_trabajador: trimmedData.emailTrabajador || undefined,
       codigo_dane_dpto_residencia: trimmedData.codigoDaneDptoResidencia || "",
@@ -168,13 +141,13 @@ export function convertToSupabaseFormat(formData: Partial<Registro>): Independie
       tipo_contrato: trimmedData.tipoContrato || "",
       naturaleza_contrato: trimmedData.naturalezaContrato || "",
       suministra_transporte: trimmedData.suministraTransporte || "",
-      fecha_inicio_contrato: formatDate(trimmedData.fechaInicioContrato),
-      fecha_fin_contrato: formatDate(trimmedData.fechaFinContrato),
+      fecha_inicio_contrato: trimmedData.fechaInicioContrato || "",
+      fecha_fin_contrato: trimmedData.fechaFinContrato || "",
       valor_total_contrato: trimmedData.valorTotalContrato || "",
       codigo_actividad_ejecutar: trimmedData.codigoActividadEjecutar || "",
       departamento_labor: trimmedData.departamentoLabor || "",
       ciudad_labor: trimmedData.ciudadLabor || "",
-      fecha_inicio_cobertura: formatDate(trimmedData.fechaInicioCobertura),
+      fecha_inicio_cobertura: trimmedData.fechaInicioCobertura || "",
       es_afiliacion_taxista: trimmedData.esAfiliacionTaxista || "",
       tipo_doc_contratante: trimmedData.tipoDocContratante || "",
       nume_doc_contratante: trimmedData.numeDocContratante || "",

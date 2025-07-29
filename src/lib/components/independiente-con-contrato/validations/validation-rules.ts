@@ -133,30 +133,34 @@ export const IndependienteConContratoValidationRules = {
 
   fechaNacimientoTrabajador: {
     required: "La fecha de nacimiento es requerida",
-    validate: (value: Date) => {
-      if (!value) return "La fecha de nacimiento es requerida"
+    validate: (value: string) => {
+      if (!value) return "La fecha de nacimiento es requerida";
 
-      const date = new Date(value)
+      const date = new Date(value);
       if (isNaN(date.getTime())) {
-        return "Fecha inválida"
+        return "Fecha inválida";
       }
-      
-      const today = new Date()
-      const minAgeDate = new Date()
-      minAgeDate.setFullYear(today.getFullYear() - 14)
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const minAgeDate = new Date();
+      minAgeDate.setFullYear(today.getFullYear() - 14);
+      minAgeDate.setHours(0, 0, 0, 0);
 
       if (date > today) {
-        return "La fecha de nacimiento no puede ser futura"
+        return "La fecha de nacimiento no puede ser futura";
       }
       if (date < MIN_DATE_AFILIATION) {
-        return `La fecha de nacimiento no puede ser anterior a ${MIN_DATE_AFILIATION.getFullYear()}`
+        return `La fecha de nacimiento no puede ser anterior a ${MIN_DATE_AFILIATION.getFullYear()}`;
       }
       if (date > minAgeDate) {
-        return "La edad mínima es 14 años"
+        return "La edad mínima es 14 años";
       }
-      return true
+      return true;
     },
   },
+
 
   sexoTrabajador: {
     required: "El sexo del trabajador es requerido",
@@ -186,8 +190,13 @@ export const IndependienteConContratoValidationRules = {
 
   direccionResidencia: {
     required: "La dirección es requerida",
+    pattern: {
+      value: /^[A-ZÁÉÍÓÚÜÑ0-9\s#\-.,/]+$/i,
+      message:
+        "La dirección contiene caracteres inválidos. Solo se permiten letras, números y símbolos como # - , . /"
+    },
     minLength: { value: 5, message: "Mínimo 5 caracteres" },
-    maxLength: { value: 500, message: "Máximo 500 caracteres" },
+    maxLength: { value: 200, message: "Máximo 200 caracteres" },
     validate: (value: string) => {
       if (hasDangerousContent(value)) {
         return "La dirección contiene caracteres no permitidos"
@@ -236,44 +245,48 @@ export const IndependienteConContratoValidationRules = {
 
   fechaInicioContrato: {
     required: "La fecha de inicio del contrato es requerida",
-    validate: (value: Date) => {
-      if (!value) return "La fecha de inicio del contrato es requerida"
+    validate: (value: string) => {
+      if (!value) return "La fecha de inicio del contrato es requerida";
 
-      const date = new Date(value)
+      const date = new Date(value);
       if (isNaN(date.getTime())) {
-        return "Fecha inválida"
+        return "Fecha inválida";
       }
 
       if (date < MIN_DATE_AFILIATION) {
-        return `La fecha de inicio no puede ser anterior a ${MIN_DATE_AFILIATION.getFullYear()}`
+        return `La fecha de inicio no puede ser anterior a ${MIN_DATE_AFILIATION.getFullYear()}`;
       }
-      return true
+      return true;
     },
   },
 
   fechaFinContrato: {
     required: "La fecha de terminación del contrato es requerida",
-    validate: (value: Date, formValues: any) => {
-      if (!value) return "La fecha de terminación del contrato es requerida"
+    validate: (value: string, formValues: any) => {
+      if (!value) return "La fecha de terminación del contrato es requerida";
 
-      const date = new Date(value)
+      const date = new Date(value);
       if (isNaN(date.getTime())) {
-        return "Fecha inválida"
+        return "Fecha inválida";
       }
-      
+
       if (date < MIN_DATE_AFILIATION) {
-        return `La fecha de terminación no puede ser anterior a ${MIN_DATE_AFILIATION.getFullYear()}`
+        return `La fecha de terminación no puede ser anterior a ${MIN_DATE_AFILIATION.getFullYear()}`;
       }
 
       if (formValues.fechaInicioContrato) {
-        const startDate = new Date(formValues.fechaInicioContrato)
+        const startDate = new Date(formValues.fechaInicioContrato);
+        if (isNaN(startDate.getTime())) {
+          return "La fecha de inicio del contrato no es válida para la comparación.";
+        }
         if (date <= startDate) {
-          return "La fecha de terminación debe ser posterior a la fecha de inicio del contrato"
+          return "La fecha de terminación debe ser posterior a la fecha de inicio del contrato";
         }
       }
-      return true
+      return true;
     },
   },
+
 
   valorTotalContrato: {
     required: "El valor total del contrato es requerido",
@@ -305,21 +318,21 @@ export const IndependienteConContratoValidationRules = {
 
   fechaInicioCobertura: {
     required: "La fecha de cobertura es requerida",
-    validate: (value: Date) => {
-      if (!value) return "La fecha de cobertura es requerida"
-      
-      const date = new Date(value)
+    validate: (value: string) => {
+      if (!value) return "La fecha de cobertura es requerida";
+
+      const date = new Date(value);
       if (isNaN(date.getTime())) {
-        return "Fecha inválida"
+        return "Fecha inválida";
       }
 
       if (date < MIN_DATE_AFILIATION) {
-        return `La fecha de cobertura no puede ser anterior a ${MIN_DATE_AFILIATION.getFullYear()}`
+        return `La fecha de cobertura no puede ser anterior a ${MIN_DATE_AFILIATION.getFullYear()}`;
       }
       if (date > getMaxDateCoverage()) {
-        return "La fecha de cobertura no puede ser más de 30 días en el futuro"
+        return "La fecha de cobertura no puede ser más de 30 días en el futuro";
       }
-      return true
+      return true;
     },
   },
 
@@ -379,10 +392,6 @@ export const sanitizeFormData = (data: any) => {
       }
       
       sanitized[key] = cleanedString
-    } else if (value instanceof Date) {
-      sanitized[key] = value
-    } else if (typeof value === "boolean") {
-      sanitized[key] = value
     } else if (typeof value === "number") {
       sanitized[key] = value
     } else {
