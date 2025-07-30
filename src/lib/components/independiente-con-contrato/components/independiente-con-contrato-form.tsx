@@ -24,8 +24,8 @@ import {
   getMunicipiosDaneOptionsByDepartamento,
   EPSOptions,
   PensionFundOptions,
-  SubEmpresaOptions
 } from "../options"
+import { SubEmpresaOptions } from "@/lib/options/codigo-subempresa"
 
 const initialDefaultValues: IndependienteConContratoFormData = {
   tipoDocTrabajador: "",

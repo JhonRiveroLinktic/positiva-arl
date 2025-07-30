@@ -34,6 +34,11 @@ const forms = [
     description: "Formulario para cargar trabajadores independientes con contrato",
     path: "/forms/independiente-con-contrato"
   },
+  {
+    title: "Cambio Actividad Económica Independiente con Contrato",
+    description: "Formulario para cambio de actividad económica",
+    path: "/forms/cambio-actividad-economica-independiente-con-contrato"
+  },
 ] as const;
 
 type FormType = typeof forms[number];
@@ -44,7 +49,7 @@ export default function HomePage() {
 
   let visibleForms: FormType[] = [];
   if (user?.user_type === 'tipo1') {
-    visibleForms = [forms[0], forms[4]];
+    visibleForms = [forms[0], forms[4], forms[5]];
   } else if (user?.user_type === 'tipo2') {
     visibleForms = [forms[1], forms[2], forms[3]];
   }
