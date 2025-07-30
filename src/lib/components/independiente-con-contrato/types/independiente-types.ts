@@ -32,6 +32,7 @@ export interface Registro {
     actividadCentroTrabajoContratante: string
     codigoSubempresa: string
     metodoSubida?: string
+    archivos?: File[]
 }
   
 export interface IndependienteConContrato {
@@ -109,9 +110,9 @@ export function trimRegistroFields(registro: Partial<Registro>): Partial<Registr
   
     for (const [key, value] of Object.entries(registro)) {
       if (typeof value === "string") {
-        trimmed[key as keyof Registro] = value.trim()
+        trimmed[key as keyof Registro] = value.trim() as any
       } else {
-        trimmed[key as keyof Registro] = value
+        trimmed[key as keyof Registro] = value as any
       }
     }
   
