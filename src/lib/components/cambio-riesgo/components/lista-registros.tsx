@@ -65,7 +65,6 @@ export function ListaRegistros() {
         emptyMessage="No hay registros guardados"
         emptySubMessage="Complete el formulario arriba para agregar registros"
         className="relative"
-        maxHeight="60vh"
         extraHeader={registros.length > 0 ? extraHeader : null}
       />
 

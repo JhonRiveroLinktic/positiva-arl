@@ -4,10 +4,9 @@ import { useState } from "react"
 import { Send } from "lucide-react"
 import { Button } from "@/lib/components/ui/button"
 import { ListWrapper, TableColumn } from "@/lib/components/core/form/list"
-import { useRegistroStore } from "../stores/retiro-trabajador-store"
+import { useRegistroStore } from "../stores/registro-store"
 import { EnvioRegistro } from "./envio-registros"
-import type { Registro } from "../types/retiro-trabajador"
-import { TIPOS_VINCULACION } from "@/lib/options/tipos-vinculacion"
+import type { Registro } from "../types/cambio-actividad-economica-types"
 
 export function ListaRegistros() {
   const [openDialog, setOpenDialog] = useState(false)
@@ -20,41 +19,52 @@ export function ListaRegistros() {
 
   const columns: TableColumn[] = [
     {
-      key: "empleador",
-      label: "Empleador",
+      key: "documentoTrabajador",
+      label: "Documento Trabajador",
       render: (_, record: Registro) => (
         <div>
-          <div className="font-medium">{record.tipoDocEmpleador}</div>
-          <div className="text-sm text-gray-500">{record.documentoEmpleador}</div>
+          <div className="font-medium">{record.tipo_doc_trabajador}</div>
+          <div className="text-sm text-gray-500">{record.nume_doc_trabajador}</div>
         </div>
       ),
     },
     {
-      key: "trabajador",
-      label: "Trabajador",
+      key: "documentoContratante",
+      label: "Documento Contratante",
       render: (_, record: Registro) => (
         <div>
-          <div className="font-medium">{record.tipoDocTrabajador}</div>
-          <div className="text-sm text-gray-500">{record.documentoTrabajador}</div>
+          <div className="font-medium">{record.tipo_doc_contratante}</div>
+          <div className="text-sm text-gray-500">{record.nume_doc_contratante}</div>
         </div>
       ),
     },
     {
-      key: "tipoVinculacion",
-      label: "Tipo de Vinculación",
-      render: (_, record: Registro) => {
-        const tipo = TIPOS_VINCULACION.find(t => t.value === record.tipoVinculacion)
-        return <span>{tipo ? tipo.label : record.tipoVinculacion}</span>
-      },
-    },
-    {
-      key: "fechaRetiroTrabajador",
-      label: "Fecha Retiro Trabajador",
+      key: "nombreCompleto",
+      label: "Nombres/Razón social contratante",
       render: (_, record: Registro) => (
-        <span>{record.fechaRetiroTrabajador ? new Date(record.fechaRetiroTrabajador).toLocaleDateString('es-ES') : ''}</span>
+        <div className="font-medium capitalize">
+          {record.nombre_razon_social_contratante}
+        </div>
       ),
     },
-    { key: "correoNotificacion", label: "Correo de Notificación" },
+    {
+      key: "actividadEconomica",
+      label: "Actividad económica",
+      render: (_, record: Registro) => (
+        <div className="font-medium">
+          {record.nueva_actividad_economica}
+        </div>
+      ),
+    },
+    {
+      key: "correoNotificacion",
+      label: "Correo de notificación",
+      render: (_, record: Registro) => (
+        <div className="font-medium">
+          {record.correo_notificacion}
+        </div>
+      ),
+    },
   ]
 
   const extraHeader = (
@@ -89,4 +99,4 @@ export function ListaRegistros() {
       />
     </div>
   )
-} 
+}

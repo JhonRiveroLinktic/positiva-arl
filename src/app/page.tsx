@@ -24,7 +24,12 @@ export default function Home() {
           title="Formulario de Afiliación ARL" 
           description="Complete todos los campos requeridos para procesar su afiliación a la ARL." 
         /> 
-        <CardDownloadExcel />
+        <CardDownloadExcel
+          title="¿Necesitas afiliar varios empleados a la vez?"
+          description="Descarga nuestra plantilla base en Excel, diligénciala con la información de cada trabajador y súbela fácilmente mediante la opción de carga masiva."
+          fileTitle="Descargar Plantilla Masiva Dependiente" 
+          file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets//PLANTILLA%20MASIVA%20DEPENDIENTE.xlsx" 
+        />
         <Suspense fallback={<FormularioRegistroFallback />}>
           <ARLRegistrationForm />
         </Suspense>

@@ -15,14 +15,24 @@ const forms = [
     path: "/forms/seguimiento-afiliaciones-arl"
   },
   {
-    title: "Cambio de Riesgo",
-    description: "Formulario para cambio de riesgo",
-    path: "/forms/cambio-riesgo"
+    title: "Plantilla masiva Trabajador Independiente con Contrato",
+    description: "Formulario para cargar trabajadores independientes con contrato",
+    path: "/forms/independiente-con-contrato"
+  },
+  {
+    title: "Cambio Actividad Económica Independiente con Contrato",
+    description: "Formulario para cambio de actividad económica a ejecutar del trabajador",
+    path: "/forms/cambio-actividad-economica-independiente-con-contrato"
   },
   {
     title: "Retiro de Trabajadores",
     description: "Formulario para retiro de trabajadores",
     path: "/forms/retiro-trabajadores"
+  },
+  {
+    title: "Cambio de Riesgo",
+    description: "Formulario para cambio de riesgo",
+    path: "/forms/cambio-riesgo"
   },
   {
     title: "Fecha de Cambios",
@@ -41,7 +51,7 @@ export default function HomePage() {
   if (user?.user_type === 'tipo1') {
     visibleForms = [forms[0]];
   } else if (user?.user_type === 'tipo2') {
-    visibleForms = [forms[1], forms[2], forms[3]];
+    visibleForms = [forms[1], forms[2], forms[3], forms[4], forms[5]];
   }
 
   return (
@@ -59,7 +69,7 @@ export default function HomePage() {
               {visibleForms.map(form => (
                 <Card onClick={() => router.push(form.path)} key={form.path}
                   className="group relative overflow-hidden rounded-3xl border-2 border-orange-200 shadow-xl bg-gradient-to-br from-orange-50 via-white to-orange-100 hover:from-orange-50 hover:to-orange-100 hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer w-full h-full flex flex-col justify-between p-4 sm:p-6">
-                  <div className="absolute inset-0 bg-gradient-to-br from-orange-200/40 to-orange-100/10 opacity-0 group-hover:opacity-80 transition-opacity duration-300 z-0" />
+                  <div className=" bg-gradient-to-br from-orange-200/40 to-orange-100/10 opacity-0 group-hover:opacity-80 transition-opacity duration-300 z-0" />
                   <CardHeader className="z-10 relative pb-2 flex flex-col items-center">
                     <CardTitle className="text-2xl font-bold text-orange-700 group-hover:text-orange-900 transition-colors duration-200 drop-shadow-sm text-center w-full">
                       {form.title}
@@ -70,7 +80,7 @@ export default function HomePage() {
                       {form.description}
                     </p>
                     <button onClick={() => router.push(form.path)} className="w-full mt-2 sm:mt-4 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white font-bold py-2 sm:py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg group-hover:scale-110 transition-transform duration-200 text-base">
-                      Ir a {form.title}
+                      Ir al formulario
                       <ArrowRight className="h-5 w-5" />
                     </button>
                   </CardContent>

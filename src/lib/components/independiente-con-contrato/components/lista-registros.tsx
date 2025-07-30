@@ -4,10 +4,9 @@ import { useState } from "react"
 import { Send } from "lucide-react"
 import { Button } from "@/lib/components/ui/button"
 import { ListWrapper, TableColumn } from "@/lib/components/core/form/list"
-import { useRegistroStore } from "../stores/retiro-trabajador-store"
+import { useRegistroStore } from "../stores/registro-store"
 import { EnvioRegistro } from "./envio-registros"
-import type { Registro } from "../types/retiro-trabajador"
-import { TIPOS_VINCULACION } from "@/lib/options/tipos-vinculacion"
+import type { Registro } from "../types/independiente-types"
 
 export function ListaRegistros() {
   const [openDialog, setOpenDialog] = useState(false)
@@ -20,41 +19,57 @@ export function ListaRegistros() {
 
   const columns: TableColumn[] = [
     {
-      key: "empleador",
-      label: "Empleador",
-      render: (_, record: Registro) => (
-        <div>
-          <div className="font-medium">{record.tipoDocEmpleador}</div>
-          <div className="text-sm text-gray-500">{record.documentoEmpleador}</div>
-        </div>
-      ),
-    },
-    {
-      key: "trabajador",
-      label: "Trabajador",
+      key: "documento",
+      label: "Documento Trabajador",
       render: (_, record: Registro) => (
         <div>
           <div className="font-medium">{record.tipoDocTrabajador}</div>
-          <div className="text-sm text-gray-500">{record.documentoTrabajador}</div>
+          <div className="text-sm text-gray-500">{record.numeDocTrabajador}</div>
         </div>
       ),
     },
     {
-      key: "tipoVinculacion",
-      label: "Tipo de Vinculación",
-      render: (_, record: Registro) => {
-        const tipo = TIPOS_VINCULACION.find(t => t.value === record.tipoVinculacion)
-        return <span>{tipo ? tipo.label : record.tipoVinculacion}</span>
-      },
-    },
-    {
-      key: "fechaRetiroTrabajador",
-      label: "Fecha Retiro Trabajador",
+      key: "nombreCompleto",
+      label: "Nombre Trabajador",
       render: (_, record: Registro) => (
-        <span>{record.fechaRetiroTrabajador ? new Date(record.fechaRetiroTrabajador).toLocaleDateString('es-ES') : ''}</span>
+        <div>
+          <div className="font-medium capitalize">
+            {record.nombre1Trabajador} {record.nombre2Trabajador} {record.apellido1Trabajador}{" "}
+            {record.apellido2Trabajador}
+          </div>
+          <div className="text-sm text-gray-500">{record.sexoTrabajador}</div>
+        </div>
       ),
     },
-    { key: "correoNotificacion", label: "Correo de Notificación" },
+    {
+      key: "fechaNacimientoTrabajador",
+      label: "Fecha Nacimiento",
+      render: (_, record: Registro) => (
+        <span>{record.fechaNacimientoTrabajador ? new Date(record.fechaNacimientoTrabajador).toLocaleDateString('es-ES') : ''}</span>
+      ),
+    },
+    { key: "cargoOcupacion", label: "Cargo/Ocupación" },
+    { key: "tipoContrato", label: "Tipo Contrato" },
+    {
+      key: "valorTotalContrato",
+      label: "Valor Contrato",
+      render: (value: number) =>
+        `${value}`,
+    },
+    {
+      key: "fechaInicioContrato",
+      label: "Fecha Inicio",
+      render: (_, record: Registro) => (
+        <span>{record.fechaInicioContrato ? new Date(record.fechaInicioContrato).toLocaleDateString('es-ES') : ''}</span>
+      ),
+    },
+    {
+      key: "fechaFinContrato",
+      label: "Fecha Fin",
+      render: (_, record: Registro) => (
+        <span>{record.fechaFinContrato ? new Date(record.fechaFinContrato).toLocaleDateString('es-ES') : ''}</span>
+      ),
+    },
   ]
 
   const extraHeader = (
@@ -89,4 +104,4 @@ export function ListaRegistros() {
       />
     </div>
   )
-} 
+}
