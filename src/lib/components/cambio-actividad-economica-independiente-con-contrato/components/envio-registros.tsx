@@ -183,15 +183,15 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
         return
       }
 
-      const updatePromises = registrosConContrato.map(registro => 
-        supabase
+      const updatePromises = registrosConContrato.map((registro) => {
+        return supabase
           .from("independiente_con_contrato")
           .update({ 
             codigo_actividad_ejecutar: registro.nueva_actividad_economica,
             updated_at: new Date().toISOString()
           })
           .eq('id', registro.independiente_con_contrato_id)
-      )
+      })
 
       const updateResults = await Promise.allSettled(updatePromises)
       
@@ -257,7 +257,6 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
             </AlertDescription>
           </Alert>
 
-          {/* Botón de validación */}
           {!hasValidated && (
             <div className="flex justify-center">
               <Button
@@ -281,7 +280,6 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
             </div>
           )}
 
-          {/* Mostrar errores de validación */}
           {hasValidated && validationErrors.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -326,7 +324,6 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
             </div>
           )}
 
-          {/* Mostrar éxito de validación */}
           {hasValidated && validationErrors.length === 0 && (
             <Alert className="border-green-200 bg-green-50">
               <CheckCircle className="h-4 w-4 !text-green-800 mt-0.5" />
