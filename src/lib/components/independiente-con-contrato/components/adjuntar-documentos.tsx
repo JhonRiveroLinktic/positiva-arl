@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { useDropzone } from "react-dropzone"
 import { Button } from "@/lib/components/ui/button"
 import {
@@ -27,13 +27,22 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const MAX_FILES = 10
 
 export function AdjuntarDocumentos({ registro, open, onClose }: AdjuntarDocumentosProps) {
-  const [isUploading, setIsUploading] = useState(false)
-  const { actualizarRegistro } = useRegistroStore()
+  const { actualizarRegistro, getRegistroById } = useRegistroStore()
+  
+  const [currentRegistro, setCurrentRegistro] = useState<Registro>(registro)
+
+  useEffect(() => {
+    const updatedRegistro = getRegistroById(registro.id)
+    if (updatedRegistro) {
+      setCurrentRegistro(updatedRegistro)
+    } else {
+      setCurrentRegistro(registro)
+    }
+  }, [registro, getRegistroById])
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const currentFiles = registro.archivos || []
+    const currentFiles = currentRegistro.archivos || []
     
-    // Validar límite de archivos
     if (currentFiles.length + acceptedFiles.length > MAX_FILES) {
       toast.error({
         title: "Límite de archivos excedido",
@@ -42,7 +51,6 @@ export function AdjuntarDocumentos({ registro, open, onClose }: AdjuntarDocument
       return
     }
 
-    // Validar cada archivo
     const validFiles: File[] = []
     const errors: string[] = []
 
@@ -57,7 +65,6 @@ export function AdjuntarDocumentos({ registro, open, onClose }: AdjuntarDocument
         return
       }
 
-      // Verificar si ya existe un archivo con el mismo nombre
       const existingFile = currentFiles.find(f => f.name === file.name)
       if (existingFile) {
         errors.push(`${file.name}: Ya existe un archivo con este nombre`)
@@ -76,17 +83,18 @@ export function AdjuntarDocumentos({ registro, open, onClose }: AdjuntarDocument
 
     if (validFiles.length > 0) {
       const updatedRegistro: Registro = {
-        ...registro,
+        ...currentRegistro,
         archivos: [...currentFiles, ...validFiles],
       }
       actualizarRegistro(updatedRegistro)
+      setCurrentRegistro(updatedRegistro)
       
       toast.success({
         title: "Archivos adjuntados",
         description: `${validFiles.length} archivo(s) agregado(s) correctamente.`,
       })
     }
-  }, [registro, actualizarRegistro])
+  }, [currentRegistro, actualizarRegistro])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -98,14 +106,15 @@ export function AdjuntarDocumentos({ registro, open, onClose }: AdjuntarDocument
   })
 
   const removeFile = (fileName: string) => {
-    const currentFiles = registro.archivos || []
+    const currentFiles = currentRegistro.archivos || []
     const updatedFiles = currentFiles.filter(file => file.name !== fileName)
     
     const updatedRegistro: Registro = {
-      ...registro,
+      ...currentRegistro,
       archivos: updatedFiles,
     }
     actualizarRegistro(updatedRegistro)
+    setCurrentRegistro(updatedRegistro)
     
     toast.success({
       title: "Archivo eliminado",
@@ -132,7 +141,7 @@ export function AdjuntarDocumentos({ registro, open, onClose }: AdjuntarDocument
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  const currentFiles = registro.archivos || []
+  const currentFiles = currentRegistro.archivos || []
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -140,7 +149,7 @@ export function AdjuntarDocumentos({ registro, open, onClose }: AdjuntarDocument
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <File className="h-5 w-5" />
-            Adjuntar Documentos - {registro.nombre1Trabajador} {registro.apellido1Trabajador}
+            Adjuntar Documentos - {currentRegistro.nombre1Trabajador} {currentRegistro.apellido1Trabajador}
           </DialogTitle>
         </DialogHeader>
 
@@ -157,7 +166,6 @@ export function AdjuntarDocumentos({ registro, open, onClose }: AdjuntarDocument
             </AlertDescription>
           </Alert>
 
-          {/* Dropzone */}
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
@@ -182,14 +190,13 @@ export function AdjuntarDocumentos({ registro, open, onClose }: AdjuntarDocument
             )}
           </div>
 
-          {/* Lista de archivos */}
           {currentFiles.length > 0 && (
             <div className="space-y-2">
               <h4 className="font-medium text-gray-900">Archivos adjuntos ({currentFiles.length})</h4>
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {currentFiles.map((file, index) => (
                   <div
-                    key={index}
+                    key={`${file.name}-${index}`}
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border"
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
