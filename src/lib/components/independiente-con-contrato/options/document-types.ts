@@ -14,6 +14,10 @@ export const documentTypes: TypeDocumentType[] = [
     label: 'Cédula Ciudadanía',
   },
   {
+    value: 'N',
+    label: 'Nit',
+  },
+  {
     value: 'D',
     label: 'Carnet Diplomático',
   },

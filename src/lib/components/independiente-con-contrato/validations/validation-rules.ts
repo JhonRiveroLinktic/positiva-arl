@@ -351,7 +351,7 @@ export const IndependienteConContratoValidationRules = {
         return "El documento contiene caracteres no permitidos"
       }
 
-      if (formValues.tipoDocContratante === "NI") {
+      if (formValues.tipoDocContratante === "N") {
         const nitValidation = validateNitVerificationDigit(value)
         if (!nitValidation.isValid) {
           return nitValidation.errorMessage || "Formato de NIT inválido"
