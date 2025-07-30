@@ -16,19 +16,15 @@ import { Upload } from "lucide-react"
 import { Button } from "@/lib/components/ui/button"
 
 const EXCEL_COLUMN_MAPPING = {
-  'TIPO DOC EMPLEADOR': 'tipoDocEmp',
-  'DOCUMENTO EMPLEADOR': 'numeDocEmp',
-  'TIPO DOC TRABAJADOR': 'tipoDocPersona',
-  'DOCUMENTO TRABAJADOR': 'numeDocPersona',
-  'TIPO VINCULACIÓN': 'modoTrabajo',
-  'TIPO VINCULACION': 'modoTrabajo',
-  'FECHA RETIRO TRABAJADOR': 'fechaRetiroTrabajador',
-  'Correo de notificación': 'correoNotificacion',
-  'Correo de notificacion': 'correoNotificacion',
-  'email': 'correoNotificacion',
-  'EMAIL': 'correoNotificacion',
-  'Correo Notificacion': 'correoNotificacion',
-  'Correo Notificación': 'correoNotificacion',
+  'TIPO_DOCUMENTO_EMPLEADOR': 'tipoDocEmpleador',
+  'DOCUMENTO_EMPLEADOR': 'documentoEmpleador',
+  'RAZÓN SOCIAL': 'nombreRazonSocialContratante',
+  'CODIGO_SUBEMPRESA (SOLO PARA EL NIT 899999061)': 'codigoSubempresa',
+  'TIPO_DOCUMENTO_TRABAJADOR': 'tipoDocTrabajador',
+  'DOCUMENTO_TRABAJADOR': 'documentoTrabajador',
+  'TIPO_VINCULACION': 'tipoVinculacion',
+  'FECHA_RETIRO_TRABAJADOR (DD/MM/AAAA)': 'fechaRetiroTrabajador',
+  'CORREO_DE_NOTIFICACION_DONDE_SE_REMITIRAN_LOS_CERTIFICADOS_CON_LA_NOVEDAD': 'correoNotificacion',
 }
 
 interface RetiroTrabajadoresMassiveUploadProps {
@@ -40,30 +36,39 @@ interface RetiroTrabajadoresMassiveUploadProps {
 export function RetiroTrabajadoresMassiveUpload({ trigger, onSuccess, onError }: RetiroTrabajadoresMassiveUploadProps) {
   const { agregarRegistro } = useRegistroStore()
 
-  // Conversión de fechas Excel a YYYY-MM-DD
+  // Conversión de fechas Excel a YYYY-MM-DD (formato esperado DD/MM/AAAA)
   const convertDateFormat = useCallback((dateStr: any): string => {
     if (!dateStr || dateStr === "") return ""
+    
+    // Si es número de Excel
     if (typeof dateStr === "number") {
-      const date = XLSX.SSF.parse_date_code(dateStr)
-      if (date && date.y && date.m && date.d) {
-        return `${date.y}-${String(date.m).padStart(2, "0")}-${String(date.d).padStart(2, "0")}`
+      try {
+        const date = XLSX.SSF.parse_date_code(dateStr)
+        if (date && date.y && date.m && date.d) {
+          return `${date.y}-${String(date.m).padStart(2, "0")}-${String(date.d).padStart(2, "0")}`
+        }
+      } catch (error) {
+        console.warn("Error parsing Excel date:", dateStr, error)
       }
       return ""
     }
+    
     if (typeof dateStr === "string" && dateStr.trim() !== "") {
       const trimmed = dateStr.trim()
+      
+      // Formato DD/MM/AAAA (esperado)
       if (trimmed.includes("/")) {
         const parts = trimmed.split("/")
         if (parts.length === 3) {
-          const [day, month, year] = parts
-          const dayNum = Number.parseInt(day, 10)
-          const monthNum = Number.parseInt(month, 10)
-          const yearNum = Number.parseInt(year, 10)
-          if (dayNum >= 1 && dayNum <= 31 && monthNum >= 1 && monthNum <= 12 && yearNum >= 1900 && yearNum <= 2100) {
-            return `${yearNum}-${String(monthNum).padStart(2, "0")}-${String(dayNum).padStart(2, "0")}`
+          const [day, month, year] = parts.map(p => Number.parseInt(p, 10))
+          
+          if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 1900 && year <= 2100) {
+            return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
           }
         }
       }
+      
+      // Si ya está en formato YYYY-MM-DD
       if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
         const testDate = new Date(trimmed)
         if (!isNaN(testDate.getTime())) {
@@ -86,42 +91,49 @@ export function RetiroTrabajadoresMassiveUpload({ trigger, onSuccess, onError }:
         registro?: Registro
         errorData?: any
       }> = []
+      
       for (let i = 0; i < data.length; i++) {
         const row = data[i]
         setProgress(((i + 1) / data.length) * 50)
+        
         try {
           const formData: Partial<RetiroTrabajadoresFormData> = {}
-          Object.entries(EXCEL_COLUMN_MAPPING).forEach(([excelColumn, formField]) => {
-            let value = row[excelColumn]
-            if (formField === "fechaRetiroTrabajador") {
-              value = convertDateFormat(value)
-            }
-            // @ts-expect-error - TODO: fix this
-            formData[formField as keyof RetiroTrabajadoresFormData] = value !== undefined && value !== null ? String(value).trim() : ""
-          })
-          // Normalización para variantes de encabezados
-          Object.keys(row).forEach(columnName => {
-            const normalized = columnName.toLowerCase().replace(/á/g, "a").replace(/í/g, "i").replace(/é/g, "e").replace(/ó/g, "o").replace(/ú/g, "u").replace(/ñ/g, "n").trim()
-            if ((normalized.includes("correo") || normalized.includes("email")) && !formData.correoNotificacion) {
-              let value = row[columnName]
-              formData.correoNotificacion = value !== undefined && value !== null ? String(value).trim() : ""
+          
+          Object.keys(row).forEach(originalHeader => {
+            const cleanHeader = originalHeader.trim()
+            const mappedField = EXCEL_COLUMN_MAPPING[cleanHeader as keyof typeof EXCEL_COLUMN_MAPPING]
+            
+            if (mappedField) {
+              let value = row[originalHeader]
+              if (mappedField === "fechaRetiroTrabajador") {
+                value = convertDateFormat(value)
+              }
+              formData[mappedField as keyof RetiroTrabajadoresFormData] = value !== undefined && value !== null ? String(value).trim() : ""
             }
           })
+                    
           const sanitizedData = sanitizeFormData(formData as RetiroTrabajadoresFormData)
           const tempRegistro: Registro = {
             id: `temp-${i}`,
             ...(sanitizedData as Omit<Registro, "id">),
-            metodoSubida: "cargue masivo",
+            metodoSubida: "masivo",
           }
+          
           const fieldErrors: string[] = []
           Object.entries(RetiroTrabajadoresValidationRules).forEach(([fieldName, rules]) => {
             const fieldValue = tempRegistro[fieldName as keyof Registro]
+            
+            // Validar campos requeridos
             if ('required' in rules && rules.required && (!fieldValue || fieldValue === "")) {
-              fieldErrors.push(rules.required)
+              // Excepción para codigoSubempresa que es opcional
+              if (fieldName !== 'codigoSubempresa') {
+                fieldErrors.push(rules.required)
+              }
             }
+            
+            // Validar con reglas custom
             if (fieldValue && 'validate' in rules && typeof rules.validate === 'function') {
               try {
-                // @ts-expect-error - TODO: fix this
                 const validationResult = rules.validate(fieldValue as string, tempRegistro)
                 if (validationResult !== true && typeof validationResult === "string") {
                   fieldErrors.push(validationResult)
@@ -131,6 +143,7 @@ export function RetiroTrabajadoresMassiveUpload({ trigger, onSuccess, onError }:
               }
             }
           })
+          
           if (fieldErrors.length === 0) {
             validationResults.push({
               isValid: true,
@@ -163,15 +176,19 @@ export function RetiroTrabajadoresMassiveUpload({ trigger, onSuccess, onError }:
           })
         }
       }
+      
       const invalidResults = validationResults.filter((r) => !r.isValid)
       if (invalidResults.length > 0) {
         result.errors = invalidResults.map((r) => r.errorData).filter(Boolean)
         setProgress(0)
         return result
       }
+      
+      // Agregar registros válidos al store
       for (let i = 0; i < validationResults.length; i++) {
         const validResult = validationResults[i]
         setProgress(50 + ((i + 1) / validationResults.length) * 50)
+        
         if (validResult.isValid && validResult.registro) {
           try {
             const finalRegistro: Registro = {
@@ -190,6 +207,7 @@ export function RetiroTrabajadoresMassiveUpload({ trigger, onSuccess, onError }:
           }
         }
       }
+      
       return result
     },
     [agregarRegistro, convertDateFormat],
@@ -200,36 +218,31 @@ export function RetiroTrabajadoresMassiveUpload({ trigger, onSuccess, onError }:
   }, [])
 
   const validateFileStructure = useCallback((headers: string[]) => {
-    const expectedColumns = [
-      'TIPO DOC EMPLEADOR',
-      'DOCUMENTO EMPLEADOR',
-      'TIPO DOC TRABAJADOR',
-      'DOCUMENTO TRABAJADOR',
-      'TIPO VINCULACIÓN',
-      'FECHA RETIRO TRABAJADOR',
+    // Limpiar headers de espacios en blanco
+    const cleanHeaders = headers.map(h => h.trim())
+    
+    // Columnas exactas requeridas
+    const requiredColumns = [
+      'TIPO_DOCUMENTO_EMPLEADOR',
+      'DOCUMENTO_EMPLEADOR', 
+      'RAZÓN SOCIAL',
+      'TIPO_DOCUMENTO_TRABAJADOR',
+      'DOCUMENTO_TRABAJADOR',
+      'TIPO_VINCULACION',
+      'FECHA_RETIRO_TRABAJADOR (DD/MM/AAAA)',
+      'CORREO_DE_NOTIFICACION_DONDE_SE_REMITIRAN_LOS_CERTIFICADOS_CON_LA_NOVEDAD'
     ]
-    const emailColumns = Object.keys(EXCEL_COLUMN_MAPPING).filter(key => 
-      EXCEL_COLUMN_MAPPING[key as keyof typeof EXCEL_COLUMN_MAPPING] === 'correoNotificacion'
-    )
-    const missingColumns = expectedColumns.filter((col) => !headers.includes(col))
-    const hasEmailColumn = emailColumns.some(emailCol => headers.includes(emailCol)) ||
-      headers.some(header => {
-        const normalizedHeader = header.toLowerCase()
-        return normalizedHeader.includes('correo') || 
-               normalizedHeader.includes('email') || 
-               normalizedHeader.includes('notificacion') ||
-               normalizedHeader.includes('notificación')
-      })
-    if (!hasEmailColumn) {
-      missingColumns.push('Correo de notificación (alguna variación)')
-    }
-    const extraColumns = headers.filter((col) => 
-      ![...expectedColumns, ...emailColumns].includes(col) &&
-      !col.toLowerCase().includes('correo') &&
-      !col.toLowerCase().includes('email') &&
-      !col.toLowerCase().includes('notificacion') &&
-      !col.toLowerCase().includes('notificación')
-    )
+    
+    // Verificar columnas requeridas
+    const missingColumns = requiredColumns.filter(col => !cleanHeaders.includes(col))
+    
+    // Identificar columnas adicionales (que no estén en las esperadas)
+    const expectedColumns = [
+      ...requiredColumns,
+      'CODIGO_SUBEMPRESA (SOLO PARA EL NIT 899999061)' // opcional
+    ]
+    const extraColumns = cleanHeaders.filter(col => !expectedColumns.includes(col))
+    
     return {
       isValid: missingColumns.length === 0,
       missingColumns,
@@ -243,8 +256,9 @@ export function RetiroTrabajadoresMassiveUpload({ trigger, onSuccess, onError }:
     title: "Carga Masiva de Retiro de Trabajadores",
     instructions: [
       'Seleccione un archivo Excel (.xlsx) con la hoja "DATOS" con el formato correcto para retiro de trabajadores',
-      'Columnas esperadas: TIPO DOC EMPLEADOR, DOCUMENTO EMPLEADOR, TIPO DOC TRABAJADOR, DOCUMENTO TRABAJADOR, TIPO VINCULACIÓN, FECHA RETIRO TRABAJADOR, Correo de notificación',
-      'El sistema validará todas las filas antes de guardar cualquier registro (modo "todo o nada")',
+      'Columnas requeridas (exactas): TIPO_DOCUMENTO_EMPLEADOR, DOCUMENTO_EMPLEADOR, RAZÓN SOCIAL, TIPO_DOCUMENTO_TRABAJADOR, DOCUMENTO_TRABAJADOR, TIPO_VINCULACION, FECHA_RETIRO_TRABAJADOR (DD/MM/AAAA), CORREO_DE_NOTIFICACION_DONDE_SE_REMITIRAN_LOS_CERTIFICADOS_CON_LA_NOVEDAD',
+      'CODIGO_SUBEMPRESA (SOLO PARA EL NIT 899999061) es opcional',
+      'Formato de fecha esperado: DD/MM/AAAA',
     ],
     processData: processRetiroData,
     getContactInfo,

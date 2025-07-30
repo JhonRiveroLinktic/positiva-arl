@@ -54,6 +54,22 @@ export const RetiroTrabajadoresValidationRules = {
     },
   },
 
+  nombreRazonSocialContratante: {
+    required: "El nombre o razón social es requerido",
+    minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
+    maxLength: { value: 200, message: "Máximo 200 caracteres" },
+    pattern: {
+      value: /^[A-ZÁÉÍÓÚÜÑ0-9\s\-.,()]+$/i,
+      message: "Solo se permiten letras, números y algunos símbolos como - , . ( )"
+    },
+    validate: (value: string) => {
+      if (hasDangerousContent(value)) {
+        return "El nombre contiene caracteres no permitidos"
+      }
+      return true
+    }
+  },
+
   tipoDocTrabajador: {
     required: "El tipo de documento es requerido",
     validate: (value: string) => {
@@ -101,9 +117,11 @@ export const RetiroTrabajadoresValidationRules = {
 
   fechaRetiroTrabajador: {
     required: "La fecha de retiro del trabajador es requerida",
-    validate: (value: Date) => {
-      if (!value || !(value instanceof Date) || isNaN(value.getTime())) {
-        return "Debe seleccionar una fecha válida de retiro"
+    validate: (value: string) => {
+      if (!value) return "La fecha de inicio de cobertura es requerida"
+      const date = new Date(value)
+      if (isNaN(date.getTime())) {
+        return "Fecha inválida"
       }
       return true
     },
