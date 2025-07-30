@@ -104,7 +104,7 @@ export function FormWrapper<T extends FieldValues = FieldValues>({
   const content = (
     <Card className={`${className} w-full`}>
       <CardHeader className={headerClassName}>
-        <CardTitle className="flex items-center justify-between">
+        <CardTitle className="flex flex-row flex-wrap gap-5 items-center justify-between">
           <div className="flex items-center gap-2 text-2xl">
             {title}
             {isEditing && onCancelEdit && (
@@ -121,7 +121,7 @@ export function FormWrapper<T extends FieldValues = FieldValues>({
           </div>
 
           {showMassiveUpload && massiveUploadComponent && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center ml-auto gap-2">
               {massiveUploadComponent}
             </div>
           )}
@@ -133,7 +133,7 @@ export function FormWrapper<T extends FieldValues = FieldValues>({
           <div className="space-y-6">{children}</div>
           <div className={`flex flex-col gap-4 ${footerClassName || ""}`}>
             {footerContent}
-            <div className="flex gap-6 mt-4">
+            <div className="flex flex-wrap gap-6 mt-4">
               <Button
                 type="submit"
                 size="lg"

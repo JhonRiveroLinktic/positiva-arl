@@ -21,10 +21,15 @@ export default function IndependienteConContratoPage() {
       <Header />
       <div className="w-full flex flex-col items-center justify-items-center gap-6 px-4 py-8 bg-gray-50 min-h-screen">
         <Banner 
-          title="Formulario de Afiliación ARL - Seguimiento" 
-          description="Complete todos los campos requeridos para procesar su afiliación a la ARL." 
+          title="Formulario de Trabajador Independiente con Contrato" 
+          description="Complete todos los campos requeridos para procesar el formulario." 
         /> 
-        <CardDownloadExcel fileTitle="Descargar Plantilla Masiva Trabajador Independiente con Contrato" file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets//02-PLANTILLA%20MASIVA%20TRABAJADOR%20INDEPENDIENTE%20CON%20CONTRATO.xlsx" />
+        <CardDownloadExcel
+          title="¿Necesitas cargar varios registros a la vez?"
+          description="Descarga nuestra plantilla base en Excel, diligénciala con la información de cada trabajador y contratante y súbela fácilmente mediante la opción de carga masiva."
+          fileTitle="Descargar Plantilla Masiva - Trabajador Independiente con Contrato"
+          file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets//02-PLANTILLA%20MASIVA%20TRABAJADOR%20INDEPENDIENTE%20CON%20CONTRATO.xlsx"
+        />
         <Suspense fallback={<FormularioIndependienteConContratoPageFallback />}>
           <IndependienteConContratoForm />
         </Suspense>

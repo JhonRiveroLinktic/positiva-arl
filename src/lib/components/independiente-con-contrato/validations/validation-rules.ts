@@ -287,19 +287,15 @@ export const IndependienteConContratoValidationRules = {
     },
   },
 
-
   valorTotalContrato: {
     required: "El valor total del contrato es requerido",
     validate: (value: string) => {
       if (!value) return "El valor total del contrato es requerido"
 
-      const numericValue = Number.parseFloat(value.replace(/[,.]/g, ''))
-      if (isNaN(numericValue)) {
-        return "El valor debe ser un número válido"
+      if (!/^[0-9]+$/.test(value)) {
+        return "El salario debe ser un número entero sin puntos, comas, espacios ni símbolos"
       }
-      if (numericValue <= 0) {
-        return "El valor debe ser mayor a 0"
-      }
+
       return true
     },
   },

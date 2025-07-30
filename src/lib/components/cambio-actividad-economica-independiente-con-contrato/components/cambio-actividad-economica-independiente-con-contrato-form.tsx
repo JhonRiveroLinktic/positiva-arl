@@ -131,7 +131,7 @@ export function CambioActividadEconomicaIndependienteConContratoForm() {
   return (
     <div className="space-y-8 w-full">
       <FormWrapper
-        title="Formulario de Independiente con Contrato"
+        title="Cambio Actividad Económica a Ejecutar - Independiente con contrato"
         onSubmit={handleSubmit(onValidSubmit, onInvalidSubmit)}
         onClear={handleClear}
         isSubmitting={isSubmitting}

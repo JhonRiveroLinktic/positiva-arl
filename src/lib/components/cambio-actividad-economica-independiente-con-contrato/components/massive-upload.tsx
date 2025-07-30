@@ -241,7 +241,7 @@ export function IndependienteConContratoMassiveUpload({ trigger, onSuccess, onEr
   const config: MassiveUploadConfig = {
     acceptedFileTypes: [".xlsx", ".xls"],
     requiredSheetName: "DATOS",
-    title: "Carga Masiva de Independiente con Contrato",
+    title: "Carga Masiva de Cambio Actividad Económica a Ejecutar",
     instructions: [
       'Seleccione un archivo Excel (.xlsx) con la hoja "DATOS" con el formato correcto para independiente con contrato.',
       'Asegúrese de que los encabezados de las columnas coincidan exactamente con la plantilla. Las fechas deben estar en formato DD/MM/AAAA.',
