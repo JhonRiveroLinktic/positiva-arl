@@ -15,7 +15,7 @@ import { supabase } from "@/lib/utils/supabase"
 import { toast } from "@/lib/utils/toast"
 import { useRegistroStore } from "../stores/registro-store"
 import { convertToSupabaseFormat } from "../types/independiente-types"
-import { Send, Loader2, Info } from "lucide-react"
+import { Send, Loader2, Info, File } from "lucide-react"
 import type { Registro } from "../types/independiente-types"
 
 interface EnvioRegistroProps {
@@ -27,6 +27,56 @@ interface EnvioRegistroProps {
 export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { limpiarTodosLosRegistros } = useRegistroStore()
+
+  const uploadFileToStorage = async (file: File, registroId: string): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${registroId}_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`
+      const filePath = `independientes-con-contrato/${fileName}`
+
+      const { data, error } = await supabase.storage
+        .from('adjuntos-independientes')
+        .upload(filePath, file)
+
+      if (error) {
+        console.error('Error al subir archivo:', error)
+        return null
+      }
+
+      return filePath
+    } catch (error) {
+      console.error('Error inesperado al subir archivo:', error)
+      return null
+    }
+  }
+
+  const saveAttachmentMetadata = async (
+    registroId: string,
+    filePath: string,
+    originalFileName: string,
+    fileSize: number
+  ) => {
+    try {
+      const { error } = await supabase
+        .from('adjuntos_independientes')
+        .insert({
+          registro_id: registroId,
+          tipo_independiente: 'con_contrato',
+          url_archivo: filePath,
+          nombre_archivo: originalFileName,
+          peso_bytes: fileSize,
+          url_publica: `https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/adjuntos-independientes/${filePath}`
+        })
+
+      if (error) {
+        console.error('Error al guardar metadatos del archivo:', error)
+        throw error
+      }
+    } catch (error) {
+      console.error('Error inesperado al guardar metadatos:', error)
+      throw error
+    }
+  }
 
   const handleEnviarRegistros = async () => {
     if (registros.length === 0) {
@@ -44,6 +94,7 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
         convertToSupabaseFormat(registro)
       )
 
+      // Insertar registros en la tabla principal
       const { data: insertedData, error } = await supabase
         .from("independiente_con_contrato")
         .insert(registrosParaEnviar)
@@ -66,10 +117,57 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
         return
       }
 
+      // Procesar archivos adjuntos
+      let archivosSubidos = 0
+      let erroresArchivos = 0
+
+      for (const registro of registros) {
+        if (registro.archivos && registro.archivos.length > 0) {
+          // Buscar el registro insertado correspondiente
+          const registroInsertado = insertedData?.find(
+            r => r.nume_doc_trabajador === registro.numeDocTrabajador &&
+                 r.nombre1_trabajador === registro.nombre1Trabajador &&
+                 r.apellido1_trabajador === registro.apellido1Trabajador
+          )
+
+          if (registroInsertado) {
+            for (const archivo of registro.archivos) {
+              try {
+                const filePath = await uploadFileToStorage(archivo, registroInsertado.id)
+                
+                if (filePath) {
+                  await saveAttachmentMetadata(
+                    registroInsertado.id,
+                    filePath,
+                    archivo.name,
+                    archivo.size
+                  )
+                  archivosSubidos++
+                } else {
+                  erroresArchivos++
+                }
+              } catch (error) {
+                console.error('Error procesando archivo:', error)
+                erroresArchivos++
+              }
+            }
+          }
+        }
+      }
+
       limpiarTodosLosRegistros()
+      
+      const mensajeArchivos = archivosSubidos > 0 
+        ? ` Se subieron ${archivosSubidos} archivo(s) correctamente.`
+        : ""
+      
+      const mensajeErrores = erroresArchivos > 0
+        ? ` ${erroresArchivos} archivo(s) no se pudieron subir.`
+        : ""
+
       toast.success({
         title: "¡Registros enviados exitosamente!",
-        description: `Se enviaron ${insertedData?.length || registros.length} registros correctamente.`,
+        description: `Se enviaron ${insertedData?.length || registros.length} registros correctamente.${mensajeArchivos}${mensajeErrores}`,
       })
 
       onClose()
@@ -83,6 +181,10 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
       setIsSubmitting(false)
     }
   }
+
+  const totalArchivos = registros.reduce((total, registro) => {
+    return total + (registro.archivos?.length || 0)
+  }, 0)
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -109,9 +211,15 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
 
           <Alert variant="destructive" className="bg-green-50">
             <AlertDescription>
-              <p className="text-sm text-black">
-                <strong>Resumen:</strong> Se enviarán {registros.length} registro(s) para procesamiento.
-              </p>
+              <div className="text-sm text-black space-y-1">
+                <p><strong>Resumen:</strong> Se enviarán {registros.length} registro(s) para procesamiento.</p>
+                {totalArchivos > 0 && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <File className="h-4 w-4 text-blue-600" />
+                    <span>{totalArchivos} archivo(s) PDF adjunto(s)</span>
+                  </div>
+                )}
+              </div>
             </AlertDescription>
           </Alert>
 

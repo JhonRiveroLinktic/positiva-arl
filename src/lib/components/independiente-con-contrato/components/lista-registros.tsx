@@ -1,21 +1,29 @@
 "use client"
 
 import { useState } from "react"
-import { Send } from "lucide-react"
+import { Send, File, Paperclip } from "lucide-react"
 import { Button } from "@/lib/components/ui/button"
 import { ListWrapper, TableColumn } from "@/lib/components/core/form/list"
 import { useRegistroStore } from "../stores/registro-store"
 import { EnvioRegistro } from "./envio-registros"
+import { AdjuntarDocumentos } from "./adjuntar-documentos"
 import type { Registro } from "../types/independiente-types"
 
 export function ListaRegistros() {
   const [openDialog, setOpenDialog] = useState(false)
+  const [openAdjuntarDialog, setOpenAdjuntarDialog] = useState(false)
+  const [registroSeleccionado, setRegistroSeleccionado] = useState<Registro | null>(null)
   const {
     registros,
     eliminarRegistro,
     setRegistroEditando,
     limpiarTodosLosRegistros,
   } = useRegistroStore()
+
+  const handleAdjuntarDocumentos = (registro: Registro) => {
+    setRegistroSeleccionado(registro)
+    setOpenAdjuntarDialog(true)
+  }
 
   const columns: TableColumn[] = [
     {
@@ -70,6 +78,21 @@ export function ListaRegistros() {
         <span>{record.fechaFinContrato ? new Date(record.fechaFinContrato).toLocaleDateString('es-ES') : ''}</span>
       ),
     },
+    {
+      key: "archivos",
+      label: "Documentos",
+      render: (_, record: Registro) => {
+        const archivos = record.archivos || []
+        return (
+          <div className="flex items-center gap-2">
+            <File className="h-4 w-4 text-gray-400" />
+            <span className="text-sm">
+              {archivos.length > 0 ? `${archivos.length} archivo(s)` : "Sin archivos"}
+            </span>
+          </div>
+        )
+      },
+    },
   ]
 
   const extraHeader = (
@@ -81,6 +104,15 @@ export function ListaRegistros() {
       Enviar a Base de Datos
     </Button>
   )
+
+  const getCustomActions = (record: Registro) => [
+    {
+      label: "Adjuntar Documentos",
+      icon: <Paperclip className="h-4 w-4" />,
+      onClick: () => handleAdjuntarDocumentos(record),
+      variant: "outline" as const,
+    },
+  ]
 
   return (
     <div className="space-y-4" data-testid="lista-registros">
@@ -95,6 +127,7 @@ export function ListaRegistros() {
         emptySubMessage="Complete el formulario arriba para agregar registros"
         className="relative"
         extraHeader={registros.length > 0 ? extraHeader : null}
+        customActions={getCustomActions}
       />
 
       <EnvioRegistro 
@@ -102,6 +135,17 @@ export function ListaRegistros() {
         open={openDialog} 
         onClose={() => setOpenDialog(false)}
       />
+
+      {registroSeleccionado && (
+        <AdjuntarDocumentos
+          registro={registroSeleccionado}
+          open={openAdjuntarDialog}
+          onClose={() => {
+            setOpenAdjuntarDialog(false)
+            setRegistroSeleccionado(null)
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -32,6 +32,7 @@ export interface Registro {
     actividadCentroTrabajoContratante: string
     codigoSubempresa: string
     metodoSubida?: string
+    archivos?: File[]
 }
   
 export interface IndependienteConContrato {

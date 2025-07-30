@@ -35,6 +35,12 @@ export interface ListWrapperProps {
   clearAllButtonText?: string
   className?: string
   extraHeader?: React.ReactNode
+  customActions?: (record: any) => Array<{
+    label: string
+    icon: React.ReactNode
+    onClick: () => void
+    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
+  }>
 }
 
 export function ListWrapper({
@@ -51,7 +57,8 @@ export function ListWrapper({
   deleteButtonText = "Eliminar",
   clearAllButtonText = "Eliminar Todos",
   className = "",
-  extraHeader
+  extraHeader,
+  customActions
 }: ListWrapperProps) {
   const handleDelete = (id: string, record: any) => {
     if (!onDelete) return
@@ -177,7 +184,7 @@ export function ListWrapper({
                   {column.label}
                 </TableHead>
               ))}
-              {showActions && (onEdit || onDelete) && (
+              {showActions && (onEdit || onDelete || customActions) && (
                 <TableHead className="text-gray-500 p-5">Acciones</TableHead>
               )}
             </TableRow>
@@ -193,9 +200,21 @@ export function ListWrapper({
                     }
                   </TableCell>
                 ))}
-                {showActions && (onEdit || onDelete) && (
+                {showActions && (onEdit || onDelete || customActions) && (
                   <TableCell className="p-5">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
+                      {customActions && customActions(record).map((action, index) => (
+                        <Button
+                          key={index}
+                          size="sm"
+                          variant={action.variant || "outline"}
+                          onClick={action.onClick}
+                          className="flex items-center cursor-pointer gap-1"
+                        >
+                          {action.icon}
+                          {action.label}
+                        </Button>
+                      ))}
                       {onEdit && (
                         <Button
                           size="sm"
