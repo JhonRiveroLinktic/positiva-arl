@@ -17,10 +17,13 @@ import { toast } from "@/lib/utils/toast"
 import type { Registro, RetiroTrabajadoresFormData } from "../types/retiro-trabajador"
 import { RetiroTrabajadoresMassiveUpload } from "./massive-upload"
 import { TIPOS_VINCULACION } from "@/lib/options/tipos-vinculacion"
+import { SubEmpresaOptions } from "@/lib/options/codigo-subempresa"
 
 const initialDefaultValues: RetiroTrabajadoresFormData = {
   tipoDocEmpleador: "",
   documentoEmpleador: "",
+  nombreRazonSocialContratante: "",
+  codigoSubempresa: "",
   tipoDocTrabajador: "",
   documentoTrabajador: "",
   tipoVinculacion: "",
@@ -188,8 +191,44 @@ export function RetiroTrabajadoresForm() {
                 />
               )}
             />
-          </div>
 
+            <Controller
+              name="nombreRazonSocialContratante"
+              control={control}
+              rules={RetiroTrabajadoresValidationRules.nombreRazonSocialContratante}
+              render={({ field, fieldState }) => (
+                <FormInput
+                  label="Nombre completo o Razón Social"
+                  placeholder="Ingrese nombre completo o razón social"
+                  value={field.value}
+                  onChange={field.onChange}
+                  maxLength={100}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  required
+                />
+              )}
+            />
+            
+            <Controller
+              name="codigoSubempresa"
+              control={control}
+              render={({ field, fieldState }) => (
+                <FormSelect
+                  label="Código Subempresa (SOLO PARA EL NIT 899999061)"
+                  placeholder="Código subempresa (opcional)"
+                  options={SubEmpresaOptions}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                />
+              )}
+            />
+          </div>
+            
           <div className="col-span-3 my-8">
             <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Informacion del Trabajador</h3>
           </div>
@@ -267,8 +306,8 @@ export function RetiroTrabajadoresForm() {
                 <FormDatePicker
                   label="Fecha Retiro Trabajador"
                   placeholder="Seleccionar fecha de retiro"
-                  value={field.value}
-                  onChange={field.onChange}
+                  value={field.value ? new Date(field.value + 'T00:00:00') : undefined}
+                  onChange={(date) => field.onChange(date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : "")}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
@@ -297,7 +336,7 @@ export function RetiroTrabajadoresForm() {
                   />
                 )}
                 />
-                <p className="text-xs pt-1 text-gray-500 font-medium">Donde se remitirán las novedades</p>
+                <p className="text-xs pt-1 text-gray-500 font-medium">Donde se remitirán los certificados con la novedad</p>
             </div>
           </div>
         </div>

@@ -70,21 +70,6 @@ export const cambioActividadEconomicaIndependienteConContratoValidationRules = {
         }
     },
     
-    codigo_subempresa: {
-        maxLength: { value: 10, message: "Máximo 10 caracteres" },
-        pattern: {
-          value: VALIDATION_PATTERNS.alphanumericNoSpaces,
-          message: "Solo se permiten letras y números, sin espacios ni símbolos"
-        },
-        validate: (value: string) => {
-          if (!value) return true
-          if (hasDangerousContent(value)) {
-            return "El código contiene caracteres no permitidos"
-          }
-          return true
-        }
-    },
-    
     tipo_doc_trabajador: {
         required: "El tipo de documento del trabajador es requerido",
     },
