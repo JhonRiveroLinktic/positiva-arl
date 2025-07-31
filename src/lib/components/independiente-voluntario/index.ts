@@ -1,0 +1,6 @@
+export { IndependienteVoluntarioForm } from "./components/independiente-voluntario-form"
+export { ListaRegistros } from "./components/lista-registros"
+export { EnvioRegistro } from "./components/envio-registros"
+// export { IndependienteConContratoMassiveUpload } from "./components/massive-upload"
+export { useRegistroStore } from "./stores/registro-store"
+export type { Registro, IndependienteVoluntarioFormData, IndependienteVoluntario } from "./types/independiente-types" 
