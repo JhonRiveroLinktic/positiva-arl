@@ -25,15 +25,12 @@ export default function IndependienteVoluntarioPage() {
           title="Formulario de Trabajador Independiente Voluntario" 
           description="Complete todos los campos requeridos para procesar el formulario." 
         /> 
-        {/* <CardDownloadExcel
+        <CardDownloadExcel
           title="¿Necesitas cargar varios registros a la vez?"
           description="Descarga nuestra plantilla base en Excel, diligénciala con la información de cada trabajador y su cónyuge o responsable de la afiliación y súbela fácilmente mediante la opción de carga masiva."
           fileTitle="Descargar Plantilla Masiva - Trabajador Independiente Voluntario"
           file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets//04-PLANTILLA%20MASIVA%20INDEPENDIENTE%20VOLUNTARIO.xlsx"
-        /> */}
-        <Alert variant="destructive">
-          <AlertTitle className="text-base">Plantilla de cargue masivo no disponible temporalmente</AlertTitle>
-        </Alert>
+        />
         <Suspense fallback={<FormularioIndependienteVoluntarioPageFallback />}>
           <IndependienteVoluntarioForm />
         </Suspense>
