@@ -56,12 +56,19 @@ export function ListaRegistros() {
         <span>{record.fechaNacimientoTrabajador ? new Date(record.fechaNacimientoTrabajador).toLocaleDateString('es-ES') : ''}</span>
       ),
     },
-    { key: "cargoOcupacion", label: "Cargo/Ocupación" },
+    { 
+      key: "codigoOcupacion", 
+      label: "Código Ocupación",
+      render: (_, record: Registro) => (
+        <span>{record.codigoOcupacion}</span>
+      ),
+    },
     {
-      key: "ingresoBase",
+      key: "ingresoBaseCotizacion",
       label: "Ingreso base de cotización (IBC)",
-      render: (value: number) =>
-        `${value}`,
+      render: (_, record: Registro) => (
+        <span>{record.ingresoBaseCotizacion ? `$${Number(record.ingresoBaseCotizacion).toLocaleString()}` : ''}</span>
+      ),
     },
     {
       key: "fechaCobertura",

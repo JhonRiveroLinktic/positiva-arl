@@ -16,7 +16,7 @@ import {
 } from "../validations/validation-rules"
 import { toast } from "@/lib/utils/toast"
 import type { Registro, IndependienteVoluntarioFormData } from "../types/independiente-types"
-//import { IndependienteVoluntarioMassiveUpload } from "./massive-upload"
+import { IndependienteVoluntarioMassiveUpload } from "./massive-upload"
 import { genderCodeOptions } from "@/lib/options/gender-codes"
 import { 
   DocumentTypesOptions,
@@ -208,8 +208,8 @@ export function IndependienteVoluntarioForm() {
         isEditing={isEditMode}
         form={form}
         showMassiveUpload={true}
-        >
-          {/* massiveUploadComponent={<IndependienteVoluntarioMassiveUpload />} */}
+        massiveUploadComponent={<IndependienteVoluntarioMassiveUpload />}
+      >
           <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-8">Información del Trabajador</h3>
         <div className="w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
