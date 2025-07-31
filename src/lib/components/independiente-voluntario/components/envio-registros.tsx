@@ -28,8 +28,47 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { limpiarTodosLosRegistros } = useRegistroStore()
 
+  const ensureFolderExists = async (): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('adjuntos-independientes')
+        .list('independientes-voluntarios', {
+          limit: 1
+        })
+
+      if (error && error.message.includes('not found')) {
+        const tempFile = new Blob([''], { type: 'text/plain' })
+        const { error: uploadError } = await supabase.storage
+          .from('adjuntos-independientes')
+          .upload('independientes-voluntarios/temp.txt', tempFile)
+
+        if (uploadError) {
+          console.error('Error al crear carpeta:', uploadError)
+          return false
+        }
+
+        await supabase.storage
+          .from('adjuntos-independientes')
+          .remove(['independientes-voluntarios/temp.txt'])
+
+        return true
+      }
+
+      return true
+    } catch (error) {
+      console.error('Error verificando carpeta:', error)
+      return false
+    }
+  }
+
   const uploadFileToStorage = async (file: File, registroId: string): Promise<string | null> => {
     try {
+      const folderExists = await ensureFolderExists()
+      if (!folderExists) {
+        console.error('No se pudo crear la carpeta independientes-voluntarios')
+        return null
+      }
+
       const fileExt = file.name.split('.').pop()
       const fileName = `${registroId}_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`
       const filePath = `independientes-voluntarios/${fileName}`
