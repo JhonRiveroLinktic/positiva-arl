@@ -31,9 +31,6 @@ export default function IndependienteVoluntarioPage() {
           fileTitle="Descargar Plantilla Masiva - Trabajador Independiente Voluntario"
           file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets//04-PLANTILLA%20MASIVA%20INDEPENDIENTE%20VOLUNTARIO.xlsx"
         />
-        <Alert variant="destructive">
-          <AlertTitle className="text-base">Plantilla de cargue masivo no disponible temporalmente</AlertTitle>
-        </Alert>
         <Suspense fallback={<FormularioIndependienteVoluntarioPageFallback />}>
           <IndependienteVoluntarioForm />
         </Suspense>
