@@ -20,6 +20,11 @@ const forms = [
     path: "/forms/independiente-con-contrato"
   },
   {
+    title: "Plantilla masiva Trabajador Independiente Voluntario",
+    description: "Formulario para cargar trabajadores independientes voluntarios",
+    path: "/forms/independiente-voluntario"
+  },
+  {
     title: "Cambio Actividad Económica Independiente con Contrato",
     description: "Formulario para cambio de actividad económica a ejecutar del trabajador",
     path: "/forms/cambio-actividad-economica-independiente-con-contrato"
@@ -51,7 +56,7 @@ export default function HomePage() {
   if (user?.user_type === 'tipo1') {
     visibleForms = [forms[0]];
   } else if (user?.user_type === 'tipo2') {
-    visibleForms = [forms[1], forms[2], forms[3], forms[4], forms[5]];
+    visibleForms = [forms[1], forms[2], forms[3], forms[4], forms[5], forms[6]];
   }
 
   return (
