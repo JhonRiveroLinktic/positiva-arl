@@ -1,7 +1,7 @@
 import { Header } from "@/lib/components/core/components/header";
 import { Banner } from "@/lib/components/core/components/banner";
 import { CardDownloadExcel } from "@/lib/components/core/components/card-download-excel";
-import { AfiliacionEmpleadorForm } from "@/lib/components/afiliacion-empleador"
+import { AfiliacionEmpleadorFormIntegrado } from "@/lib/components/afiliacion-empleador"
 import { Suspense } from "react";
 
 function FormularioAfiliacionEmpleadorFallback() {
@@ -31,7 +31,7 @@ export default function AfiliacionEmpleadorPage() {
           file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets//02-PLANTILLA%20MASIVA%20TRABAJADOR%20INDEPENDIENTE%20CON%20CONTRATO.xlsx"
         /> */}
         <Suspense fallback={<FormularioAfiliacionEmpleadorFallback />}>
-          <AfiliacionEmpleadorForm />
+          <AfiliacionEmpleadorFormIntegrado />
         </Suspense>
       </div>
     </main>

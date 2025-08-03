@@ -147,8 +147,6 @@ export const useRegistroStore = create<RegistroState>()(
       },
 
       getArchivos: () => {
-        // Los archivos se manejan de forma especial, por ahora retornamos array vacío
-        // En una implementación real, se podrían recuperar desde un FileList o similar
         return []
       },
 
@@ -158,7 +156,7 @@ export const useRegistroStore = create<RegistroState>()(
           'representante-legal-temp', 
           'sedes-temp',
           'centros-trabajo-temp',
-          'archivos-temp'
+          // 'archivos-temp'
         ]
         keys.forEach(key => localStorage.removeItem(key))
       },

@@ -91,7 +91,7 @@ export const EmpleadorDatosValidationRules = {
   },
 
   digitoVerificacionEmpleador: {
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (!/^[0-9]$/.test(value)) {
         return "El dígito de verificación debe ser un número del 0 al 9"
@@ -173,7 +173,8 @@ export const EmpleadorDatosValidationRules = {
   },
 
   telefonoEmpleador: {
-    validate: (value: string) => {
+    required: "El teléfono del empleador es requerido	",
+    validate: (value: string | undefined) => {
       if (!value) return true
       const phoneValidation = validatePhoneNumber(value)
       if (!phoneValidation.isValid) {
@@ -187,7 +188,7 @@ export const EmpleadorDatosValidationRules = {
   },
 
   fax: {
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       const phoneValidation = validatePhoneNumber(value)
       if (!phoneValidation.isValid) {
@@ -215,17 +216,19 @@ export const EmpleadorDatosValidationRules = {
   },
 
   suministroDeTransporte: {
-    validate: (value: string) => {
+    required: "El suministro de transporte es requerido",
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (!validateSuministroTransporte(value)) {
-        return "El valor debe ser S o N"
+        return "El valor debe ser Sí o No"
       }
       return true
     },
   },
 
   naturaleza: {
-    validate: (value: string) => {
+    required: "La naturaleza es requerida",
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (!validateNature(value)) {
         return "La naturaleza debe ser 1, 2 o 3"
@@ -258,7 +261,8 @@ export const EmpleadorDatosValidationRules = {
   },
 
   origen: {
-    validate: (value: string) => {
+    required: "El origen es requerido",
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (!validateOrigin(value)) {
         return "El origen debe ser 1 o 2"
@@ -268,7 +272,8 @@ export const EmpleadorDatosValidationRules = {
   },
 
   fechaCobertura: {
-    validate: (value: string) => {
+    required: "La fecha de cobertura es requerida",
+    validate: (value: string | undefined) => {
       if (!value) return true
 
       const date = new Date(value);
@@ -287,7 +292,8 @@ export const EmpleadorDatosValidationRules = {
   },
 
   codigoArl: {
-    validate: (value: string) => {
+    required: "El código ARL es requerido",
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (hasDangerousContent(value)) {
         return "El código ARL contiene caracteres no permitidos"
@@ -297,7 +303,7 @@ export const EmpleadorDatosValidationRules = {
   },
 
   tipoDocArlAnterior: {
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (!validateLegalDocumentType(value)) {
         return "El tipo de documento debe ser válido para personas jurídicas"
@@ -307,7 +313,7 @@ export const EmpleadorDatosValidationRules = {
   },
 
   nitArlAnterior: {
-    validate: (value: string, formValues: any) => {
+    validate: (value: string | undefined, formValues: any) => {
       if (!value) return true
       
       if (hasDangerousContent(value)) {
@@ -325,7 +331,7 @@ export const EmpleadorDatosValidationRules = {
   },
 
   fechaNotificacionTraslado: {
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
 
       const date = new Date(value);
@@ -437,7 +443,7 @@ export const RepresentanteLegalValidationRules = {
       value: VALIDATION_PATTERNS.name,
       message: "Solo se permiten letras y espacios",
     },
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (hasDangerousContent(value)) {
         return "Este campo contiene caracteres no permitidos"
@@ -468,7 +474,7 @@ export const RepresentanteLegalValidationRules = {
       value: VALIDATION_PATTERNS.name,
       message: "Solo se permiten letras y espacios",
     },
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (hasDangerousContent(value)) {
         return "Este campo contiene caracteres no permitidos"
@@ -518,7 +524,7 @@ export const RepresentanteLegalValidationRules = {
   },
 
   pais: {
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (hasDangerousContent(value)) {
         return "Este campo contiene caracteres no permitidos"
@@ -550,17 +556,18 @@ export const RepresentanteLegalValidationRules = {
   },
 
   zona: {
-    validate: (value: string) => {
+    required: "La zona es requerida",
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (!validateZone(value)) {
-        return "La zona debe ser U (urbano) o R (rural)"
+        return "La zona debe ser urbana o rural"
       }
       return true
     },
   },
 
   fax: {
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       const phoneValidation = validatePhoneNumber(value)
       if (!phoneValidation.isValid) {
@@ -574,7 +581,7 @@ export const RepresentanteLegalValidationRules = {
   },
 
   telefono: {
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       const phoneValidation = validatePhoneNumber(value)
       if (!phoneValidation.isValid) {
@@ -619,7 +626,7 @@ export const RepresentanteLegalValidationRules = {
   },
 
   nitAfp: {
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       
       if (hasDangerousContent(value)) {
@@ -635,7 +642,7 @@ export const RepresentanteLegalValidationRules = {
   },
 
   nitEps: {
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       
       if (hasDangerousContent(value)) {
@@ -689,7 +696,7 @@ export const SedeValidationRules = {
 
   subempresa: {
     maxLength: { value: 200, message: "Máximo 200 caracteres" },
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (hasDangerousContent(value)) {
         return "Este campo contiene caracteres no permitidos"
@@ -786,6 +793,7 @@ export const SedeValidationRules = {
   zona: {
     required: "La zona de la sede es requerida",
     validate: (value: string) => {
+      if (!value) return true
       if (!validateZone(value)) {
         return "La zona debe ser U (urbano) o R (rural)"
       }
@@ -794,7 +802,7 @@ export const SedeValidationRules = {
   },
 
   telefono: {
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       const phoneValidation = validatePhoneNumber(value)
       if (!phoneValidation.isValid) {
@@ -808,7 +816,7 @@ export const SedeValidationRules = {
   },
 
   correoElectronico: {
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (!VALIDATION_PATTERNS.email.test(value)) {
         return "Ingrese un correo electrónico válido"
@@ -821,7 +829,7 @@ export const SedeValidationRules = {
   },
 
   tipoDocResponsable: {
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (!validateNaturalPersonDocumentType(value)) {
         return "El tipo de documento debe ser válido para personas naturales"
@@ -831,7 +839,7 @@ export const SedeValidationRules = {
   },
 
   documentoResponsable: {
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (hasDangerousContent(value)) {
         return "El documento contiene caracteres no permitidos"
@@ -848,7 +856,7 @@ export const SedeValidationRules = {
 
   sedeMision: {
     maxLength: { value: 200, message: "Máximo 200 caracteres" },
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (hasDangerousContent(value)) {
         return "Este campo contiene caracteres no permitidos"
@@ -858,7 +866,7 @@ export const SedeValidationRules = {
   },
 
   tipoDocSedeMision: {
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (!validateNaturalPersonDocumentType(value)) {
         return "El tipo de documento debe ser válido para personas naturales"
@@ -868,7 +876,7 @@ export const SedeValidationRules = {
   },
 
   documentoSedeMision: {
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (hasDangerousContent(value)) {
         return "El documento contiene caracteres no permitidos"
@@ -922,7 +930,7 @@ export const CentroTrabajoValidationRules = {
 
   subempresa: {
     maxLength: { value: 200, message: "Máximo 200 caracteres" },
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (hasDangerousContent(value)) {
         return "Este campo contiene caracteres no permitidos"
@@ -933,7 +941,7 @@ export const CentroTrabajoValidationRules = {
 
   idSubempresa: {
     maxLength: { value: 20, message: "Máximo 20 caracteres" },
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (hasDangerousContent(value)) {
         return "Este campo contiene caracteres no permitidos"
@@ -954,7 +962,7 @@ export const CentroTrabajoValidationRules = {
   },
 
   idSede: {
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       // Validar que sea un UUID válido
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i

@@ -1,6 +1,6 @@
-export { AfiliacionEmpleadorForm } from "./components/afiliacion-empleador-form"
+export { AfiliacionEmpleadorFormIntegrado } from "./components/afiliacion-empleador-form"
 export { ListaRegistros } from "./components/lista-registros"
 export { EnvioRegistro } from "./components/envio-registros"
 // export { IndependienteConContratoMassiveUpload } from "./components/massive-upload"
 export { useRegistroStore } from "./stores/registro-store"
-export type { Registro, AfiliacionEmpleadorFormData, AfiliacionEmpleadorDB } from "./types/afiliacion-empleador-types" 
+export type { RegistroCompleto, AfiliacionEmpleadorFormData } from "./types/afiliacion-empleador-types" 

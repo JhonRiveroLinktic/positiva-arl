@@ -14,7 +14,7 @@ import { Alert, AlertDescription } from "@/lib/components/ui/alert"
 import { supabase } from "@/lib/utils/supabase"
 import { toast } from "@/lib/utils/toast"
 import { useRegistroStore } from "../stores/registro-store"
-import { convertAfiliacionEmpleadorToSupabaseFormat } from "../types/afiliacion-empleador-types"
+import { convertEmpleadorDatosToSupabaseFormat } from "../types/afiliacion-empleador-types"
 import { Send, Loader2, Info, File } from "lucide-react"
 import type { Registro } from "../types/afiliacion-empleador-types"
 
@@ -91,7 +91,7 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
 
     try {
       const registrosParaEnviar = registros.map(registro => 
-        convertAfiliacionEmpleadorToSupabaseFormat(registro)
+        convertEmpleadorDatosToSupabaseFormat(registro)
       )
 
       // Insertar registros en la tabla principal

@@ -26,7 +26,6 @@ export interface EmpleadorDatos {
   tipoDocArlAnterior?: string
   nitArlAnterior?: string
   fechaNotificacionTraslado?: string
-  createdBy?: string
   metodoSubida?: string
 }
 
@@ -84,7 +83,6 @@ export interface CentroTrabajo {
   idSubempresa?: string
   actividadEconomica: string
   idSede?: string
-  createdBy?: string
 }
 
 // Tipo unificado para el formulario (datos temporales en localStorage)
@@ -140,7 +138,6 @@ export interface EmpleadorDatosDB {
   tipo_doc_arl_anterior?: string
   nit_arl_anterior?: string
   fecha_notificacion_traslado?: string
-  created_by?: string
   metodo_subida?: string
 }
 
@@ -195,7 +192,6 @@ export interface CentroTrabajoDB {
   id_subempresa?: string
   actividad_economica: string
   id_sede?: string
-  created_by?: string
 }
 
 // Funciones de conversión
@@ -276,7 +272,6 @@ export function convertEmpleadorDatosToSupabaseFormat(formData: Partial<Empleado
     tipo_doc_arl_anterior: trimmedData.tipoDocArlAnterior || undefined,
     nit_arl_anterior: trimmedData.nitArlAnterior || undefined,
     fecha_notificacion_traslado: trimmedData.fechaNotificacionTraslado || undefined,
-    created_by: trimmedData.createdBy || undefined,
     metodo_subida: trimmedData.metodoSubida || undefined,
   }
 }
@@ -340,6 +335,5 @@ export function convertCentroTrabajoToSupabaseFormat(formData: Partial<CentroTra
     id_subempresa: trimmedData.idSubempresa || undefined,
     actividad_economica: trimmedData.actividadEconomica || "",
     id_sede: trimmedData.idSede || undefined,
-    created_by: trimmedData.createdBy || undefined,
   }
 }
