@@ -90,8 +90,8 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
+      <div className="flex flex-wrap flex-row items-center justify-between border-b w-full pb-4 gap-4">
+        <h3 className="text-lg font-semibold text-gray-900">
           Sedes del Empleador
         </h3>
         <Button
@@ -129,7 +129,7 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
               </Button>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-start">
                 <Controller
                   name={`sedes.${index}.tipoDocEmpleador`}
                   control={control}

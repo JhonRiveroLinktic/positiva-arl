@@ -9,12 +9,16 @@ import {
   getMaxDateCoverage,
   EmpleadorDatosValidationRules
 } from "../../validations/validation-rules"
+import type { EmpleadorDatos } from "../../types/afiliacion-empleador-types"
+import { useCatalogStore } from "@/lib/components/core/stores/catalog-store"
+import { genderCodeOptions } from "@/lib/options/gender-codes"
 import { 
   DocumentTypesOptions,
   departamentosDaneOptions,
   getMunicipiosDaneOptionsByDepartamento,
-} from "../../options"
-import type { EmpleadorDatos } from "../../types/afiliacion-empleador-types"
+  EPSOptions,
+  PensionFundOptions,
+} from "@/lib/components/independiente-con-contrato/options"
 
 interface DatosEmpleadorProps {
   control: Control<EmpleadorDatos>
@@ -24,15 +28,61 @@ interface DatosEmpleadorProps {
 }
 
 export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmpleadorProps) {
+  const {
+    occupations,
+    economicActivities,
+    loading,
+  } = useCatalogStore()
+
+  const currentOrigen = watch("origen")
+  const currentTipoDocEmpleador = watch("tipoDocEmpleador")
   const currentDepartamentoEmpleador = watch("departamentoEmpleador")
   const [selectedDepartamentoEmpleador, setSelectedDepartamentoEmpleador] = useState<string | undefined>(undefined)
 
+  const isTraslado = currentOrigen === "2"
+  const isNit = currentTipoDocEmpleador === "N"
+
+  useEffect(() => {
+    if (!isTraslado) {
+      setValue("codigoArl", "")
+      setValue("nitArlAnterior", "")
+      setValue("fechaNotificacionTraslado", "")
+    }
+  }, [isTraslado, setValue])
+
+  useEffect(() => {
+    if (!isNit) {
+      setValue("digitoVerificacionEmpleador", "")
+    }
+  }, [isNit, setValue])
+  
   useEffect(() => {
     setSelectedDepartamentoEmpleador(currentDepartamentoEmpleador)
     if (currentDepartamentoEmpleador !== selectedDepartamentoEmpleador) {
       setValue("municipioEmpleador", "")
     }
   }, [currentDepartamentoEmpleador, setValue, selectedDepartamentoEmpleador])
+
+  const genderOptions = genderCodeOptions.map((item) => ({
+    value: item.code,
+    label: item.name,
+  }))
+
+  const tipoContratoOptions = [
+    { value: "AD", label: "AD - ADMINISTRATIVO" },
+    { value: "CO", label: "CO - COMERCIAL" },
+    { value: "CI", label: "CI - CIVIL" },
+  ]
+
+  const economicActivityOptions = (economicActivities || []).map((item) => ({
+    value: item.code,
+    label: `${item.code} - ${item.name.substring(0, 60)}...`,
+  }))
+
+  const occupationOptions = (occupations || []).map((item) => ({
+    value: item.code,
+    label: `${item.code} - ${item.name}`,
+  }))
 
   const booleanOptions = [
     { value: "S", label: "SÍ" },
@@ -61,7 +111,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         Información del Empleador
       </h3>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-start">
         <Controller
           name="tipoDocEmpleador"
           control={control}
@@ -70,7 +120,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
             <FormSelect
               label="Tipo Documento Empleador"
               placeholder="Seleccionar tipo"
-              options={DocumentTypesOptions.filter((i: { value: string }) => ["N", "NI"].includes(i.value))}
+              options={DocumentTypesOptions}
               value={field.value}
               onChange={field.onChange}
               onBlur={field.onBlur}
@@ -100,24 +150,26 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
           )}
         />
 
-        <Controller
-          name="digitoVerificacionEmpleador"
-          control={control}
-          rules={EmpleadorDatosValidationRules.digitoVerificacionEmpleador}
-          render={({ field, fieldState }) => (
-            <FormInput
-              label="Dígito Verificación"
-              placeholder="Dígito verificación"
-              value={field.value || ""}
-              onChange={field.onChange}
-              maxLength={1}
-              onBlur={field.onBlur}
-              error={!!fieldState.error}
-              errorMessage={fieldState.error?.message}
-            />
-          )}
-        />
-
+        {isNit && (
+          <Controller
+            name="digitoVerificacionEmpleador"
+            control={control}
+            rules={EmpleadorDatosValidationRules.digitoVerificacionEmpleador}
+            render={({ field, fieldState }) => (
+              <FormInput
+                label="Dígito Verificación"
+                placeholder="Dígito verificación"
+                value={field.value || ""}
+                onChange={field.onChange}
+                maxLength={1}
+                onBlur={field.onBlur}
+                error={!!fieldState.error}
+                errorMessage={fieldState.error?.message}
+              />
+            )}
+          />
+        )}
+        
         <Controller
           name="razonSocialEmpleador"
           control={control}
@@ -274,12 +326,12 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
           control={control}
           rules={EmpleadorDatosValidationRules.actEconomicaPrincipalEmpleador}
           render={({ field, fieldState }) => (
-            <FormInput
+            <FormSelect
               label="Actividad Económica Principal"
               placeholder="Código actividad económica"
+              options={economicActivityOptions}
               value={field.value}
               onChange={field.onChange}
-              maxLength={10}
               onBlur={field.onBlur}
               error={!!fieldState.error}
               errorMessage={fieldState.error?.message}
@@ -391,96 +443,97 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
           )}
         />
 
-        <Controller
-          name="codigoArl"
-          control={control}
-          rules={EmpleadorDatosValidationRules.codigoArl}
-          render={({ field, fieldState }) => (
-            <FormInput
-              label="Código ARL"
-              placeholder="Código ARL"
-              value={field.value || ""}
-              onChange={field.onChange}
-              maxLength={20}
-              onBlur={field.onBlur}
-              error={!!fieldState.error}
-              errorMessage={fieldState.error?.message}
+        {isTraslado && (
+          <>
+            <Controller
+              name="codigoArl"
+              control={control}
+              rules={EmpleadorDatosValidationRules.codigoArl}
+              render={({ field, fieldState }) => (
+                <FormInput
+                  label="Código ARL (solo cuando es traslado)"
+                  placeholder="Código ARL"
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                  maxLength={20}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                />
+              )}
             />
-          )}
-        />
 
-        <Controller
-          name="tipoDocArlAnterior"
-          control={control}
-          rules={EmpleadorDatosValidationRules.tipoDocArlAnterior}
-          render={({ field, fieldState }) => (
-            <FormSelect
-              label="Tipo Documento ARL Anterior"
-              placeholder="Seleccionar tipo"
-              options={DocumentTypesOptions.filter((i: { value: string }) => ["N", "NI"].includes(i.value))}
-              value={field.value || ""}
-              onChange={field.onChange}
-              onBlur={field.onBlur}
-              error={!!fieldState.error}
-              errorMessage={fieldState.error?.message}
+            {/* <Controller
+              name="tipoDocArlAnterior"
+              control={control}
+              rules={EmpleadorDatosValidationRules.tipoDocArlAnterior}
+              render={({ field, fieldState }) => (
+                <FormSelect
+                  label="Tipo Documento ARL Anterior (solo cuando es traslado)"
+                  placeholder="Seleccionar tipo"
+                  options={DocumentTypesOptions.filter((i: { value: string }) => ["N", "NI"].includes(i.value))}
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                />
+              )}
+            /> */}
+
+            <Controller
+              name="nitArlAnterior"
+              control={control}
+              rules={EmpleadorDatosValidationRules.nitArlAnterior}
+              render={({ field, fieldState }) => (
+                <FormInput
+                  label="NIT ARL Anterior (solo cuando es traslado)"
+                  placeholder="NIT ARL anterior"
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                  maxLength={20}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                />
+              )}
             />
-          )}
-        />
 
-        <Controller
-          name="nitArlAnterior"
-          control={control}
-          rules={EmpleadorDatosValidationRules.nitArlAnterior}
-          render={({ field, fieldState }) => (
-            <FormInput
-              label="NIT ARL Anterior"
-              placeholder="NIT ARL anterior"
-              value={field.value || ""}
-              onChange={field.onChange}
-              maxLength={20}
-              onBlur={field.onBlur}
-              error={!!fieldState.error}
-              errorMessage={fieldState.error?.message}
+            <Controller
+              name="fechaNotificacionTraslado"
+              control={control}
+              rules={EmpleadorDatosValidationRules.fechaNotificacionTraslado}
+              render={({ field, fieldState }) => (
+                <FormDatePicker
+                  label="Fecha Notificación Traslado"
+                  placeholder="Seleccionar fecha notificación"
+                  value={field.value ? new Date(field.value + 'T00:00:00') : undefined}
+                  onChange={(date) =>
+                    field.onChange(
+                      date
+                        ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+                        : ""
+                    )
+                  }
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  maxDate={new Date()}
+                />
+              )}
             />
-          )}
-        />
+          </>
+        )}
 
-        <Controller
-          name="fechaNotificacionTraslado"
-          control={control}
-          rules={EmpleadorDatosValidationRules.fechaNotificacionTraslado}
-          render={({ field, fieldState }) => (
-            <FormDatePicker
-              label="Fecha Notificación Traslado"
-              placeholder="Seleccionar fecha notificación"
-              value={field.value ? new Date(field.value + 'T00:00:00') : undefined}
-              onChange={(date) =>
-                field.onChange(
-                  date
-                    ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-                    : ""
-                )
-              }
-              onBlur={field.onBlur}
-              error={!!fieldState.error}
-              errorMessage={fieldState.error?.message}
-              maxDate={new Date()}
-            />
-          )}
-        />
-
-        {/* Campos del representante legal que van en EmpleadorDatos */}
         <Controller
           name="tipoDocRepresentanteLegal"
           control={control}
           rules={EmpleadorDatosValidationRules.tipoDocRepresentanteLegal}
           render={({ field, fieldState }) => (
             <FormSelect
-              label="Tipo Documento Representante Legal"
+              label="Tipo de Documento Representante Legal"
               placeholder="Seleccionar tipo"
-              options={DocumentTypesOptions.filter((i: { value: string }) => 
-                ["CC", "TI", "CE", "CD", "PT", "SC"].includes(i.value)
-              )}
+              options={DocumentTypesOptions.filter((i) => i.value !== 'N')}
               value={field.value}
               onChange={field.onChange}
               onBlur={field.onBlur}

@@ -25,7 +25,7 @@ export function validateLegalDocumentType(documentType: string): boolean {
 }
 
 export function validateNaturalPersonDocumentType(documentType: string): boolean {
-  const naturalPersonTypes = ["CC", "TI", "CE", "CD", "PT", "SC"]
+  const naturalPersonTypes = ["C", "D", "E", "R", "T", "U", "L"]
   return naturalPersonTypes.includes(documentType)
 }
 
@@ -114,7 +114,6 @@ export const EmpleadorDatosValidationRules = {
 
   departamentoEmpleador: {
     required: "El departamento del empleador es requerido",
-    maxLength: { value: 100, message: "Máximo 100 caracteres" },
     validate: (value: string) => {
       if (hasDangerousContent(value)) {
         return "Este campo contiene caracteres no permitidos"
@@ -125,7 +124,6 @@ export const EmpleadorDatosValidationRules = {
 
   municipioEmpleador: {
     required: "El municipio del empleador es requerido",
-    maxLength: { value: 100, message: "Máximo 100 caracteres" },
     validate: (value: string) => {
       if (hasDangerousContent(value)) {
         return "Este campo contiene caracteres no permitidos"
@@ -163,7 +161,6 @@ export const EmpleadorDatosValidationRules = {
 
   actEconomicaPrincipalEmpleador: {
     required: "La actividad económica principal es requerida",
-    maxLength: { value: 10, message: "Máximo 10 caracteres" },
     validate: (value: string) => {
       if (hasDangerousContent(value)) {
         return "Este campo contiene caracteres no permitidos"
@@ -292,7 +289,6 @@ export const EmpleadorDatosValidationRules = {
   },
 
   codigoArl: {
-    required: "El código ARL es requerido",
     validate: (value: string | undefined) => {
       if (!value) return true
       if (hasDangerousContent(value)) {
@@ -302,15 +298,15 @@ export const EmpleadorDatosValidationRules = {
     },
   },
 
-  tipoDocArlAnterior: {
-    validate: (value: string | undefined) => {
-      if (!value) return true
-      if (!validateLegalDocumentType(value)) {
-        return "El tipo de documento debe ser válido para personas jurídicas"
-      }
-      return true
-    },
-  },
+  // tipoDocArlAnterior: {
+  //   validate: (value: string | undefined) => {
+  //     if (!value) return true
+  //     if (!validateLegalDocumentType(value)) {
+  //       return "El tipo de documento debe ser válido para personas jurídicas"
+  //     }
+  //     return true
+  //   },
+  // },
 
   nitArlAnterior: {
     validate: (value: string | undefined, formValues: any) => {
@@ -535,7 +531,6 @@ export const RepresentanteLegalValidationRules = {
 
   departamento: {
     required: "El departamento del representante legal es requerido",
-    maxLength: { value: 100, message: "Máximo 100 caracteres" },
     validate: (value: string) => {
       if (hasDangerousContent(value)) {
         return "Este campo contiene caracteres no permitidos"
@@ -546,7 +541,6 @@ export const RepresentanteLegalValidationRules = {
 
   municipio: {
     required: "El municipio del representante legal es requerido",
-    maxLength: { value: 100, message: "Máximo 100 caracteres" },
     validate: (value: string) => {
       if (hasDangerousContent(value)) {
         return "Este campo contiene caracteres no permitidos"
@@ -695,7 +689,6 @@ export const SedeValidationRules = {
   },
 
   subempresa: {
-    maxLength: { value: 200, message: "Máximo 200 caracteres" },
     validate: (value: string | undefined) => {
       if (!value) return true
       if (hasDangerousContent(value)) {
@@ -707,7 +700,6 @@ export const SedeValidationRules = {
 
   departamento: {
     required: "El departamento de la sede es requerido",
-    maxLength: { value: 100, message: "Máximo 100 caracteres" },
     validate: (value: string) => {
       if (hasDangerousContent(value)) {
         return "Este campo contiene caracteres no permitidos"
@@ -718,7 +710,6 @@ export const SedeValidationRules = {
 
   municipio: {
     required: "El municipio de la sede es requerido",
-    maxLength: { value: 100, message: "Máximo 100 caracteres" },
     validate: (value: string) => {
       if (hasDangerousContent(value)) {
         return "Este campo contiene caracteres no permitidos"
@@ -729,7 +720,6 @@ export const SedeValidationRules = {
 
   actividadEconomica: {
     required: "La actividad económica de la sede es requerida",
-    maxLength: { value: 10, message: "Máximo 10 caracteres" },
     validate: (value: string) => {
       if (hasDangerousContent(value)) {
         return "Este campo contiene caracteres no permitidos"
@@ -952,7 +942,6 @@ export const CentroTrabajoValidationRules = {
 
   actividadEconomica: {
     required: "La actividad económica del centro de trabajo es requerida",
-    maxLength: { value: 10, message: "Máximo 10 caracteres" },
     validate: (value: string) => {
       if (hasDangerousContent(value)) {
         return "Este campo contiene caracteres no permitidos"
