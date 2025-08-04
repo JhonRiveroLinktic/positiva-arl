@@ -44,6 +44,11 @@ const forms = [
     description: "Formulario para reportar fecha de cambios",
     path: "/forms/fecha-cambios"
   },
+  {
+    title: "Cambio de Ocupación - Trabajador Independiente Voluntario",
+    description: "Formulario para realizar el cambio de ocupación del trabajador independiente voluntario",
+    path: "/forms/cambio-ocupacion-independiente-voluntario"
+  },
 ] as const;
 
 type FormType = typeof forms[number];
@@ -56,7 +61,7 @@ export default function HomePage() {
   if (user?.user_type === 'tipo1') {
     visibleForms = [forms[0]];
   } else if (user?.user_type === 'tipo2') {
-    visibleForms = [forms[1], forms[2], forms[3], forms[4], forms[5], forms[6]];
+    visibleForms = [forms[1], forms[2], forms[3], forms[4], forms[5], forms[6], forms[7]];
   }
 
   return (
