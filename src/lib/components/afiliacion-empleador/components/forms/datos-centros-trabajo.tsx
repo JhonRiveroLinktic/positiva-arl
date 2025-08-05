@@ -114,7 +114,7 @@ export function DatosCentrosTrabajo({ control, watch }: DatosCentrosTrabajoProps
           description: "El centro de trabajo se agregó correctamente.",
         })
       }
-    } catch (error) {
+    } catch {
       toast.error({
         title: "Error",
         description: "Ocurrió un error al guardar el centro de trabajo.",

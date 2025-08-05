@@ -94,7 +94,6 @@ export function AfiliacionEmpleadorFormIntegrado() {
 
   const isEditMode = Boolean(registroEditando)
 
-  // Cargar datos al inicializar
   useEffect(() => {
     if (registroEditando) {
       reset(registroEditando)
@@ -103,17 +102,9 @@ export function AfiliacionEmpleadorFormIntegrado() {
     }
   }, [registroEditando, reset])
 
-  // Sincronizar datos del formulario con localStorage
   useEffect(() => {
     const subscription = watch((value) => {
       if (!isEditMode) {
-        // Debug temporal para verificar datos
-        console.log("=== DATOS EN TIEMPO REAL ===")
-        console.log("Empleador datos:", value.empleadorDatos)
-        console.log("Representante legal:", value.representanteLegal)
-        console.log("============================")
-        
-        // Guardar datos temporales en localStorage
         if (value.empleadorDatos) {
           localStorage.setItem('empleador-datos-temp', JSON.stringify(value.empleadorDatos))
         }
@@ -133,16 +124,29 @@ export function AfiliacionEmpleadorFormIntegrado() {
   }, [watch, isEditMode])
 
   const onValidSubmit = async (data: AfiliacionEmpleadorFormData) => {
-    // Debug temporal para verificar datos
-    console.log("=== DATOS DEL FORMULARIO ===")
-    console.log("Empleador datos:", data.empleadorDatos)
-    console.log("Representante legal:", data.representanteLegal)
-    console.log("Sedes:", data.sedes)
-    console.log("Centros trabajo:", data.centrosTrabajo)
-    console.log("============================")
+    if (!data.sedes || data.sedes.length === 0) {
+      toast.error({
+        title: "Sede requerida",
+        description: "Debe registrar al menos una sede para la empresa.",
+      })
+      return
+    }
+
+    for (const sede of data.sedes) {
+      const centrosDeEstaSede = data.centrosTrabajo.filter(
+        centro => centro.idSede === sede.id
+      )
+      
+      if (centrosDeEstaSede.length === 0) {
+        toast.error({
+          title: "Centro de trabajo requerido",
+          description: `Debe registrar al menos un centro de trabajo para la sede "${sede.nombreSede}".`,
+        })
+        return
+      }
+    }
     
     try {
-      // Sanitizar los datos anidados
       const sanitizedData = {
         empleadorDatos: sanitizeFormData(data.empleadorDatos),
         representanteLegal: sanitizeFormData(data.representanteLegal),
@@ -175,7 +179,6 @@ export function AfiliacionEmpleadorFormIntegrado() {
         })
       }
 
-      // Limpiar datos temporales después de guardar
       limpiarDatosTemporales()
       form.reset(initialDefaultValues)
       setRegistroEditando(null)

@@ -135,7 +135,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
           )}
         />
 
-<Controller
+        <Controller
           name="empleadorDatos.documentoEmpleador"
           control={control}
           rules={EmpleadorDatosValidationRules.documentoEmpleador}

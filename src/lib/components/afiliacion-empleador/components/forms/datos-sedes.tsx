@@ -82,12 +82,13 @@ const initialSedeFormData: SedeFormData = {
   documentoSedeMision: "",
 }
 
-export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps) {
+export function DatosSedes({ control, watch }: DatosSedesProps) {
   const { fields, append, remove, update } = useFieldArray({
     control,
     name: "sedes",
   })
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const watchedSedes = watch("sedes") || []
   const [departamentoStates, setDepartamentoStates] = useState<Record<number, string>>({})
   const [isModalOpen, setIsModalOpen] = useState(false)
