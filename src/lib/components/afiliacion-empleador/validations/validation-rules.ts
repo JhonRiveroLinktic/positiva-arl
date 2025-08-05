@@ -25,7 +25,7 @@ export function validateLegalDocumentType(documentType: string): boolean {
 }
 
 export function validateNaturalPersonDocumentType(documentType: string): boolean {
-  const naturalPersonTypes = ["C", "D", "E", "R", "T", "U", "L"]
+  const naturalPersonTypes = ["C", "D", "E", "R", "T", "U", "L", "CC", "CD", "CE", "PT", "SC", "RC"]
   return naturalPersonTypes.includes(documentType)
 }
 
@@ -951,15 +951,7 @@ export const CentroTrabajoValidationRules = {
   },
 
   idSede: {
-    validate: (value: string | undefined) => {
-      if (!value) return true
-      // Validar que sea un UUID válido
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-      if (!uuidRegex.test(value)) {
-        return "El ID de sede debe ser un UUID válido"
-      }
-      return true
-    },
+    required: "El ID de la sede es requerido",
   },
 }
 

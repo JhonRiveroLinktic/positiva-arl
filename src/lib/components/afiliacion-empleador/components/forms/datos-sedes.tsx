@@ -1,6 +1,6 @@
 "use client"
 
-import { Controller, Control, FieldErrors, useFieldArray } from "react-hook-form"
+import { Controller, Control, FieldErrors, useFieldArray, useForm } from "react-hook-form"
 import { useEffect, useState } from "react"
 import { FormInput } from "@/lib/components/core/form/form-input"
 import { FormSelect } from "@/lib/components/core/form/form-select"
@@ -12,8 +12,26 @@ import {
   getMunicipiosDaneOptionsByDepartamento,
 } from "../../options"
 import { Button } from "@/lib/components/ui/button"
-import { Trash2, Plus } from "lucide-react"
+import { Trash2, Plus, Edit, Eye } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/lib/components/ui/card"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogFooter
+} from "@/lib/components/ui/dialog"
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/lib/components/ui/table"
+import { Badge } from "@/lib/components/ui/badge"
+import { toast } from "@/lib/utils/toast"
 import type { Sede, AfiliacionEmpleadorFormData } from "../../types/afiliacion-empleador-types"
 
 interface DatosSedesProps {
@@ -23,49 +41,129 @@ interface DatosSedesProps {
   setValue: (name: keyof AfiliacionEmpleadorFormData, value: any) => void
 }
 
+interface SedeFormData {
+  tipoDocEmpleador: string
+  documentoEmpleador: string
+  subempresa: string
+  departamento: string
+  municipio: string
+  actividadEconomica: string
+  fechaRadicacion: string
+  nombreSede: string
+  direccion: string
+  zona: string
+  telefono: string
+  correoElectronico: string
+  tipoDocResponsable: string
+  documentoResponsable: string
+  sedeMision: string
+  tipoDocSedeMision: string
+  documentoSedeMision: string
+}
+
+const initialSedeFormData: SedeFormData = {
+  tipoDocEmpleador: "",
+  documentoEmpleador: "",
+  subempresa: "",
+  departamento: "",
+  municipio: "",
+  actividadEconomica: "",
+  fechaRadicacion: "",
+  nombreSede: "",
+  direccion: "",
+  zona: "",
+  telefono: "",
+  correoElectronico: "",
+  tipoDocResponsable: "",
+  documentoResponsable: "",
+  sedeMision: "",
+  tipoDocSedeMision: "",
+  documentoSedeMision: "",
+}
+
 export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps) {
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, update } = useFieldArray({
     control,
     name: "sedes",
   })
 
-  const watchedSedes = watch("sedes")
+  const watchedSedes = watch("sedes") || []
   const [departamentoStates, setDepartamentoStates] = useState<Record<number, string>>({})
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [isViewing, setIsViewing] = useState(false)
+
+  const sedeForm = useForm<SedeFormData>({
+    mode: "all",
+    defaultValues: initialSedeFormData,
+  })
 
   const zonaOptions = [
     { value: "U", label: "U - URBANO" },
     { value: "R", label: "R - RURAL" }
   ]
 
-  const agregarSede = () => {
-    const nuevaSede: Sede = {
-      tipoDocEmpleador: "",
-      documentoEmpleador: "",
-      subempresa: "",
-      departamento: "",
-      municipio: "",
-      actividadEconomica: "",
-      fechaRadicacion: "",
-      nombreSede: "",
-      direccion: "",
-      zona: "",
-      telefono: "",
-      correoElectronico: "",
-      tipoDocResponsable: "",
-      documentoResponsable: "",
-      sedeMision: "",
-      tipoDocSedeMision: "",
-      documentoSedeMision: "",
+  const handleOpenModal = (index?: number, viewOnly = false) => {
+    if (index !== undefined) {
+      setEditingIndex(index)
+      const sedeData = watchedSedes[index]
+      sedeForm.reset(sedeData)
+      setIsViewing(viewOnly)
+    } else {
+      setEditingIndex(null)
+      sedeForm.reset(initialSedeFormData)
+      setIsViewing(false)
     }
-    append(nuevaSede)
+    setIsModalOpen(true)
   }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setEditingIndex(null)
+    setIsViewing(false)
+    sedeForm.reset(initialSedeFormData)
+  }
+
+  const handleSubmitSede = sedeForm.handleSubmit((data) => {
+    try {
+      if (editingIndex !== null) {
+        // Actualizar sede existente
+        update(editingIndex, data)
+        toast.success({
+          title: "Sede actualizada",
+          description: "La sede se actualizó correctamente.",
+        })
+      } else {
+        // Agregar nueva sede
+        append(data)
+        toast.success({
+          title: "Sede agregada",
+          description: "La sede se agregó correctamente.",
+        })
+      }
+      handleCloseModal()
+    } catch (error) {
+      toast.error({
+        title: "Error",
+        description: "Ocurrió un error al guardar la sede.",
+      })
+    }
+  }, (errors) => {
+    toast.error({
+      title: "Error de validación",
+      description: "Por favor corrija los errores en el formulario.",
+    })
+  })
 
   const eliminarSede = (index: number) => {
     remove(index)
-    // Limpiar estado del departamento para este índice
     const newStates = { ...departamentoStates }
     delete newStates[index]
     setDepartamentoStates(newStates)
+    toast.success({
+      title: "Sede eliminada",
+      description: "La sede se eliminó correctamente.",
+    })
   }
 
   // Manejar cambios de departamento para cada sede
@@ -88,51 +186,43 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
     }
   }, [watchedSedes, setValue, departamentoStates])
 
+  const getZonaLabel = (zona: string) => {
+    return zona === "U" ? "Urbano" : zona === "R" ? "Rural" : zona
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap flex-row items-center justify-between border-b w-full pb-4 gap-4">
         <h3 className="text-lg font-semibold text-gray-900">
           Sedes del Empleador
         </h3>
-        <Button
-          type="button"
-          onClick={agregarSede}
-          className="flex items-center gap-2"
-          variant="outline"
-        >
-          <Plus className="h-4 w-4" />
-          Agregar Sede
-        </Button>
-      </div>
-
-      {fields.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          <p>No hay sedes agregadas. Haga clic en &quot;Agregar Sede&quot; para comenzar.</p>
-        </div>
-      )}
-
-      <div className="space-y-6">
-        {fields.map((field, index) => (
-          <Card key={field.id} className="relative">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base font-medium">
-                Sede #{index + 1}
-              </CardTitle>
-              <Button
-                type="button"
-                onClick={() => eliminarSede(index)}
-                size="sm"
-                variant="destructive"
-                className="h-8 w-8 p-0"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </CardHeader>
-            <CardContent>
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogTrigger asChild>
+            <Button
+              type="button"
+              onClick={() => handleOpenModal()}
+              className="flex items-center gap-2"
+              variant="outline"
+            >
+              <Plus className="h-4 w-4" />
+              Agregar Sede
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="!min-w-11/12 max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {editingIndex !== null
+                  ? (isViewing ? "Ver Sede" : "Editar Sede") 
+                  : "Agregar Nueva Sede"
+                }
+              </DialogTitle>
+            </DialogHeader>
+            
+            <form onSubmit={handleSubmitSede} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-start">
                 <Controller
-                  name={`sedes.${index}.tipoDocEmpleador`}
-                  control={control}
+                  name="tipoDocEmpleador"
+                  control={sedeForm.control}
                   rules={SedeValidationRules.tipoDocEmpleador}
                   render={({ field, fieldState }) => (
                     <FormSelect
@@ -145,13 +235,14 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
                       required
+                      disabled={isViewing}
                     />
                   )}
                 />
 
                 <Controller
-                  name={`sedes.${index}.documentoEmpleador`}
-                  control={control}
+                  name="documentoEmpleador"
+                  control={sedeForm.control}
                   rules={SedeValidationRules.documentoEmpleador}
                   render={({ field, fieldState }) => (
                     <FormInput
@@ -164,13 +255,14 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
                       required
+                      disabled={isViewing}
                     />
                   )}
                 />
 
                 <Controller
-                  name={`sedes.${index}.subempresa`}
-                  control={control}
+                  name="subempresa"
+                  control={sedeForm.control}
                   rules={SedeValidationRules.subempresa}
                   render={({ field, fieldState }) => (
                     <FormInput
@@ -182,13 +274,14 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
+                      disabled={isViewing}
                     />
                   )}
                 />
 
                 <Controller
-                  name={`sedes.${index}.nombreSede`}
-                  control={control}
+                  name="nombreSede"
+                  control={sedeForm.control}
                   rules={SedeValidationRules.nombreSede}
                   render={({ field, fieldState }) => (
                     <FormInput
@@ -201,13 +294,14 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
                       required
+                      disabled={isViewing}
                     />
                   )}
                 />
 
                 <Controller
-                  name={`sedes.${index}.departamento`}
-                  control={control}
+                  name="departamento"
+                  control={sedeForm.control}
                   rules={SedeValidationRules.departamento}
                   render={({ field, fieldState }) => (
                     <FormSelect
@@ -220,33 +314,34 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
                       required
+                      disabled={isViewing}
                     />
                   )}
                 />
 
                 <Controller
-                  name={`sedes.${index}.municipio`}
-                  control={control}
+                  name="municipio"
+                  control={sedeForm.control}
                   rules={SedeValidationRules.municipio}
                   render={({ field, fieldState }) => (
                     <FormSelect
                       label="Municipio"
                       placeholder="Seleccionar municipio"
-                      options={getMunicipiosDaneOptionsByDepartamento(watchedSedes?.[index]?.departamento)}
+                      options={getMunicipiosDaneOptionsByDepartamento(sedeForm.watch("departamento"))}
                       value={field.value}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
                       required
-                      disabled={!watchedSedes?.[index]?.departamento}
+                      disabled={!sedeForm.watch("departamento") || isViewing}
                     />
                   )}
                 />
 
                 <Controller
-                  name={`sedes.${index}.direccion`}
-                  control={control}
+                  name="direccion"
+                  control={sedeForm.control}
                   rules={SedeValidationRules.direccion}
                   render={({ field, fieldState }) => (
                     <FormInput
@@ -259,13 +354,14 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
                       required
+                      disabled={isViewing}
                     />
                   )}
                 />
 
                 <Controller
-                  name={`sedes.${index}.zona`}
-                  control={control}
+                  name="zona"
+                  control={sedeForm.control}
                   rules={SedeValidationRules.zona}
                   render={({ field, fieldState }) => (
                     <FormSelect
@@ -278,13 +374,14 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
                       required
+                      disabled={isViewing}
                     />
                   )}
                 />
 
                 <Controller
-                  name={`sedes.${index}.actividadEconomica`}
-                  control={control}
+                  name="actividadEconomica"
+                  control={sedeForm.control}
                   rules={SedeValidationRules.actividadEconomica}
                   render={({ field, fieldState }) => (
                     <FormInput
@@ -297,13 +394,14 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
                       required
+                      disabled={isViewing}
                     />
                   )}
                 />
 
                 <Controller
-                  name={`sedes.${index}.fechaRadicacion`}
-                  control={control}
+                  name="fechaRadicacion"
+                  control={sedeForm.control}
                   rules={SedeValidationRules.fechaRadicacion}
                   render={({ field, fieldState }) => (
                     <FormDatePicker
@@ -322,13 +420,14 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       errorMessage={fieldState.error?.message}
                       required
                       maxDate={new Date()}
+                      disabled={isViewing}
                     />
                   )}
                 />
 
                 <Controller
-                  name={`sedes.${index}.telefono`}
-                  control={control}
+                  name="telefono"
+                  control={sedeForm.control}
                   rules={SedeValidationRules.telefono}
                   render={({ field, fieldState }) => (
                     <FormInput
@@ -340,13 +439,14 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
+                      disabled={isViewing}
                     />
                   )}
                 />
 
                 <Controller
-                  name={`sedes.${index}.correoElectronico`}
-                  control={control}
+                  name="correoElectronico"
+                  control={sedeForm.control}
                   rules={SedeValidationRules.correoElectronico}
                   render={({ field, fieldState }) => (
                     <FormInput
@@ -358,13 +458,14 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
+                      disabled={isViewing}
                     />
                   )}
                 />
 
                 <Controller
-                  name={`sedes.${index}.tipoDocResponsable`}
-                  control={control}
+                  name="tipoDocResponsable"
+                  control={sedeForm.control}
                   rules={SedeValidationRules.tipoDocResponsable}
                   render={({ field, fieldState }) => (
                     <FormSelect
@@ -378,13 +479,14 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
+                      disabled={isViewing}
                     />
                   )}
                 />
 
                 <Controller
-                  name={`sedes.${index}.documentoResponsable`}
-                  control={control}
+                  name="documentoResponsable"
+                  control={sedeForm.control}
                   rules={SedeValidationRules.documentoResponsable}
                   render={({ field, fieldState }) => (
                     <FormInput
@@ -396,13 +498,14 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
+                      disabled={isViewing}
                     />
                   )}
                 />
 
                 <Controller
-                  name={`sedes.${index}.sedeMision`}
-                  control={control}
+                  name="sedeMision"
+                  control={sedeForm.control}
                   rules={SedeValidationRules.sedeMision}
                   render={({ field, fieldState }) => (
                     <FormInput
@@ -414,13 +517,14 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
+                      disabled={isViewing}
                     />
                   )}
                 />
 
                 <Controller
-                  name={`sedes.${index}.tipoDocSedeMision`}
-                  control={control}
+                  name="tipoDocSedeMision"
+                  control={sedeForm.control}
                   rules={SedeValidationRules.tipoDocSedeMision}
                   render={({ field, fieldState }) => (
                     <FormSelect
@@ -434,13 +538,14 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
+                      disabled={isViewing}
                     />
                   )}
                 />
 
                 <Controller
-                  name={`sedes.${index}.documentoSedeMision`}
-                  control={control}
+                  name="documentoSedeMision"
+                  control={sedeForm.control}
                   rules={SedeValidationRules.documentoSedeMision}
                   render={({ field, fieldState }) => (
                     <FormInput
@@ -452,14 +557,102 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
+                      disabled={isViewing}
                     />
                   )}
                 />
               </div>
-            </CardContent>
-          </Card>
-        ))}
+
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={handleCloseModal}>
+                  Cancelar
+                </Button>
+                {!isViewing && (
+                  <Button type="submit">
+                    {editingIndex !== null ? "Actualizar Sede" : "Agregar Sede"}
+                  </Button>
+                )}
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
+
+      {fields.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          <p>No hay sedes agregadas. Haga clic en &quot;Agregar Sede&quot; para comenzar.</p>
+        </div>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Sedes Registradas ({fields.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>#</TableHead>
+                  <TableHead>Nombre Sede</TableHead>
+                  <TableHead>Departamento</TableHead>
+                  <TableHead>Municipio</TableHead>
+                  <TableHead>Zona</TableHead>
+                  <TableHead>Teléfono</TableHead>
+                  <TableHead>Correo</TableHead>
+                  <TableHead>Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {fields.map((field, index) => {
+                  const sede = watchedSedes[index]
+                  return (
+                    <TableRow key={field.id}>
+                      <TableCell className="font-medium">{index + 1}</TableCell>
+                      <TableCell>{sede?.nombreSede || "N/A"}</TableCell>
+                      <TableCell>{sede?.departamento || "N/A"}</TableCell>
+                      <TableCell>{sede?.municipio || "N/A"}</TableCell>
+                      <TableCell>
+                        <Badge variant={sede?.zona === "U" ? "default" : "secondary"}>
+                          {getZonaLabel(sede?.zona || "")}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{sede?.telefono || "N/A"}</TableCell>
+                      <TableCell>{sede?.correoElectronico || "N/A"}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleOpenModal(index, true)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleOpenModal(index, false)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => eliminarSede(index)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
