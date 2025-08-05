@@ -104,8 +104,19 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
 
       for (const registro of registros) {
         try {
-          // 1. Insertar datos del empleador en afiliacion_empleador_datos
+          // Debug: Verificar datos antes de convertir
+          console.log("=== DATOS ORIGINALES ===")
+          console.log("Empleador:", registro.empleadorDatos)
+          console.log("Representante:", registro.representanteLegal)
+          console.log("=========================")
+
+          // 1. Insertar datos del empleador en afiliacion_empleador_datos (PRIMERO)
           const empleadorDatosDB = convertEmpleadorDatosToSupabaseFormat(registro.empleadorDatos)
+          
+          // Debug: Verificar datos convertidos
+          console.log("=== EMPLEADOR CONVERTIDO ===")
+          console.log(empleadorDatosDB)
+          console.log("============================")
           
           const { data: empleadorInsertado, error: errorEmpleador } = await supabase
             .from("afiliacion_empleador_datos")
@@ -118,8 +129,18 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
             throw new Error(`Error al insertar datos del empleador: ${errorEmpleador.message}`)
           }
 
-          // 2. Insertar datos del representante legal en afiliacion_empleador_rep_legal
+          console.log("Empleador insertado:", empleadorInsertado)
+
+          // 2. Insertar datos del representante legal en afiliacion_empleador_rep_legal (SEGUNDO)
           const representanteLegalDB = convertRepresentanteLegalToSupabaseFormat(registro.representanteLegal)
+          
+          // Asignar el ID del empleador insertado
+          representanteLegalDB.empresa_id = empleadorInsertado.id
+          
+          // Debug: Verificar datos convertidos
+          console.log("=== REPRESENTANTE CONVERTIDO ===")
+          console.log(representanteLegalDB)
+          console.log("================================")
           
           const { data: representanteInsertado, error: errorRepresentante } = await supabase
             .from("afiliacion_empleador_rep_legal")
@@ -132,56 +153,80 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
             throw new Error(`Error al insertar datos del representante legal: ${errorRepresentante.message}`)
           }
 
-          // 3. Insertar sedes en afiliacion_empleador_sedes
-          if (registro.sedes && registro.sedes.length > 0) {
-            const sedesDB = registro.sedes.map(sede => convertSedeToSupabaseFormat(sede))
+          console.log("Representante insertado:", representanteInsertado)
+
+          // 3. Insertar sedes en afiliacion_empleador_sedes (TERCERO)
+          const sedesInsertadas: { [key: string]: string } = {} // Mapeo de ID temporal a ID real
+          
+          for (let i = 0; i < registro.sedes.length; i++) {
+            const sede = registro.sedes[i]
+            const sedeDB = convertSedeToSupabaseFormat(sede)
             
-            const { error: errorSedes } = await supabase
+            // Usar los datos del empleador para la FK, no del representante legal
+            sedeDB.tipo_doc_empleador = empleadorDatosDB.tipo_doc_empleador
+            sedeDB.documento_empleador = empleadorDatosDB.documento_empleador
+            sedeDB.empresa_id = empleadorInsertado.id
+            
+            // Debug: Verificar datos convertidos
+            console.log("=== SEDE CONVERTIDA ===")
+            console.log(sedeDB)
+            console.log("======================")
+            
+            const { data: sedeInsertada, error: errorSede } = await supabase
               .from("afiliacion_empleador_sedes")
-              .insert(sedesDB)
+              .insert(sedeDB)
+              .select()
+              .single()
 
-            if (errorSedes) {
-              console.error("Error al insertar sedes:", errorSedes)
-              throw new Error(`Error al insertar sedes: ${errorSedes.message}`)
+            if (errorSede) {
+              console.error("Error al insertar sede:", errorSede)
+              throw new Error(`Error al insertar sede: ${errorSede.message}`)
             }
-          }
 
-          // 4. Obtener las sedes insertadas para asociar centros de trabajo
-          const { data: sedesInsertadas, error: errorObtenerSedes } = await supabase
-            .from("afiliacion_empleador_sedes")
-            .select("id, nombre_sede")
-            .eq("tipo_doc_empleador", empleadorDatosDB.tipo_doc_empleador)
-            .eq("documento_empleador", empleadorDatosDB.documento_empleador)
-
-          if (errorObtenerSedes) {
-            console.error("Error al obtener sedes:", errorObtenerSedes)
-            throw new Error(`Error al obtener sedes: ${errorObtenerSedes.message}`)
-          }
-
-          // 5. Insertar centros de trabajo en afiliacion_empleador_centros_trabajo
-          if (registro.centrosTrabajo && registro.centrosTrabajo.length > 0) {
-            const centrosTrabajoDB = registro.centrosTrabajo.map(centro => {
-              const centroDB = convertCentroTrabajoToSupabaseFormat(centro)
-              
-              // Si no hay sede asociada, buscar la sede principal (primera sede)
-              if (!centroDB.id_sede && sedesInsertadas && sedesInsertadas.length > 0) {
-                centroDB.id_sede = sedesInsertadas[0].id
-              }
-              
-              return centroDB
-            })
+            console.log("Sede insertada:", sedeInsertada)
             
-            const { error: errorCentros } = await supabase
-              .from("afiliacion_empleador_centros_trabajo")
-              .insert(centrosTrabajoDB)
-
-            if (errorCentros) {
-              console.error("Error al insertar centros de trabajo:", errorCentros)
-              throw new Error(`Error al insertar centros de trabajo: ${errorCentros.message}`)
-            }
+            // Guardar el mapeo del ID temporal al ID real
+            const idTemporal = `sede-${i}`
+            sedesInsertadas[idTemporal] = sedeInsertada.id
           }
 
-          // 6. Procesar archivos adjuntos
+          // 4. Insertar centros de trabajo en afiliacion_empleador_centros_trabajo (CUARTO)
+          for (const centroTrabajo of registro.centrosTrabajo) {
+            const centroTrabajoDB = convertCentroTrabajoToSupabaseFormat(centroTrabajo)
+            
+            // Usar los datos del empleador para la FK, no del representante legal
+            centroTrabajoDB.tipo_doc_empleador = empleadorDatosDB.tipo_doc_empleador
+            centroTrabajoDB.documento_empleador = empleadorDatosDB.documento_empleador
+            centroTrabajoDB.empresa_id = empleadorInsertado.id
+            
+            // Reemplazar el ID temporal de sede con el ID real
+            if (centroTrabajoDB.id_sede && sedesInsertadas[centroTrabajoDB.id_sede]) {
+              centroTrabajoDB.id_sede = sedesInsertadas[centroTrabajoDB.id_sede]
+            } else {
+              // Si no hay sede asociada, eliminar el campo
+              delete centroTrabajoDB.id_sede
+            }
+            
+            // Debug: Verificar datos convertidos
+            console.log("=== CENTRO TRABAJO CONVERTIDO ===")
+            console.log(centroTrabajoDB)
+            console.log("=================================")
+            
+            const { data: centroInsertado, error: errorCentro } = await supabase
+              .from("afiliacion_empleador_centros_trabajo")
+              .insert(centroTrabajoDB)
+              .select()
+              .single()
+
+            if (errorCentro) {
+              console.error("Error al insertar centro de trabajo:", errorCentro)
+              throw new Error(`Error al insertar centro de trabajo: ${errorCentro.message}`)
+            }
+
+            console.log("Centro de trabajo insertado:", centroInsertado)
+          }
+
+          // 6. Procesar archivos adjuntos (QUINTO)
           if (registro.archivos && registro.archivos.length > 0) {
             for (const archivo of registro.archivos) {
               try {

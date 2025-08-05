@@ -17,6 +17,7 @@ export interface EmpleadorDatos {
   fechaRadicacion: string
   naturaleza?: string
   estado?: number
+  // Campos del representante legal integrados en la tabla empleador
   tipoDocRepresentanteLegal: string
   numeDocRepresentanteLegal: string
   nombreRepresentanteLegal: string
@@ -50,6 +51,7 @@ export interface RepresentanteLegal {
   correoElectronico: string
   nitAfp?: string
   nitEps?: string
+  empresaId?: string // FK hacia afiliacion_empleador_datos
 }
 
 // Tipos para la tabla afiliacion_empleador_sedes
@@ -72,6 +74,7 @@ export interface Sede {
   sedeMision?: string
   tipoDocSedeMision?: string
   documentoSedeMision?: string
+  empresaId?: string // FK hacia afiliacion_empleador_datos
 }
 
 // Tipos para la tabla afiliacion_empleador_centros_trabajo
@@ -83,6 +86,7 @@ export interface CentroTrabajo {
   idSubempresa?: string
   actividadEconomica: string
   idSede?: string
+  empresaId?: string // FK hacia afiliacion_empleador_datos
 }
 
 // Tipo unificado para el formulario (datos temporales en localStorage)
@@ -129,6 +133,7 @@ export interface EmpleadorDatosDB {
   fecha_radicacion: string
   naturaleza?: string
   estado?: number
+  // Campos del representante legal integrados
   tipo_doc_representante_legal: string
   nume_doc_representante_legal: string
   nombre_representante_legal: string
@@ -161,6 +166,7 @@ export interface RepresentanteLegalDB {
   correo_electronico: string
   nit_afp?: string
   nit_eps?: string
+  empresa_id: string // FK hacia afiliacion_empleador_datos
 }
 
 export interface SedeDB {
@@ -182,6 +188,7 @@ export interface SedeDB {
   sede_mision?: string
   tipo_doc_sede_mision?: string
   documento_sede_mision?: string
+  empresa_id: string // FK hacia afiliacion_empleador_datos
 }
 
 export interface CentroTrabajoDB {
@@ -192,6 +199,7 @@ export interface CentroTrabajoDB {
   id_subempresa?: string
   actividad_economica: string
   id_sede?: string
+  empresa_id: string // FK hacia afiliacion_empleador_datos
 }
 
 // Funciones de conversión
@@ -263,6 +271,7 @@ export function convertEmpleadorDatosToSupabaseFormat(formData: Partial<Empleado
     fecha_radicacion: trimmedData.fechaRadicacion || "",
     naturaleza: trimmedData.naturaleza || undefined,
     estado: trimmedData.estado || 1,
+    // Campos del representante legal integrados
     tipo_doc_representante_legal: trimmedData.tipoDocRepresentanteLegal || "",
     nume_doc_representante_legal: trimmedData.numeDocRepresentanteLegal || "",
     nombre_representante_legal: trimmedData.nombreRepresentanteLegal || "",
@@ -298,6 +307,7 @@ export function convertRepresentanteLegalToSupabaseFormat(formData: Partial<Repr
     correo_electronico: trimmedData.correoElectronico || "",
     nit_afp: trimmedData.nitAfp || undefined,
     nit_eps: trimmedData.nitEps || undefined,
+    empresa_id: trimmedData.empresaId || "",
   }
 }
 
@@ -322,6 +332,7 @@ export function convertSedeToSupabaseFormat(formData: Partial<Sede>): SedeDB {
     sede_mision: trimmedData.sedeMision || undefined,
     tipo_doc_sede_mision: trimmedData.tipoDocSedeMision || undefined,
     documento_sede_mision: trimmedData.documentoSedeMision || undefined,
+    empresa_id: trimmedData.empresaId || "",
   }
 }
 
@@ -335,5 +346,6 @@ export function convertCentroTrabajoToSupabaseFormat(formData: Partial<CentroTra
     id_subempresa: trimmedData.idSubempresa || undefined,
     actividad_economica: trimmedData.actividadEconomica || "",
     id_sede: trimmedData.idSede || undefined,
+    empresa_id: trimmedData.empresaId || "",
   }
 }
