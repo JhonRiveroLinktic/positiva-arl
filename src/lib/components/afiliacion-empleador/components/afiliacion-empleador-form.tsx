@@ -103,7 +103,44 @@ export function AfiliacionEmpleadorFormIntegrado() {
     }
   }, [registroEditando, reset])
 
+  // Sincronizar datos del formulario con localStorage
+  useEffect(() => {
+    const subscription = watch((value) => {
+      if (!isEditMode) {
+        // Debug temporal para verificar datos
+        console.log("=== DATOS EN TIEMPO REAL ===")
+        console.log("Empleador datos:", value.empleadorDatos)
+        console.log("Representante legal:", value.representanteLegal)
+        console.log("============================")
+        
+        // Guardar datos temporales en localStorage
+        if (value.empleadorDatos) {
+          localStorage.setItem('empleador-datos-temp', JSON.stringify(value.empleadorDatos))
+        }
+        if (value.representanteLegal) {
+          localStorage.setItem('representante-legal-temp', JSON.stringify(value.representanteLegal))
+        }
+        if (value.sedes) {
+          localStorage.setItem('sedes-temp', JSON.stringify(value.sedes))
+        }
+        if (value.centrosTrabajo) {
+          localStorage.setItem('centros-trabajo-temp', JSON.stringify(value.centrosTrabajo))
+        }
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [watch, isEditMode])
+
   const onValidSubmit = async (data: AfiliacionEmpleadorFormData) => {
+    // Debug temporal para verificar datos
+    console.log("=== DATOS DEL FORMULARIO ===")
+    console.log("Empleador datos:", data.empleadorDatos)
+    console.log("Representante legal:", data.representanteLegal)
+    console.log("Sedes:", data.sedes)
+    console.log("Centros trabajo:", data.centrosTrabajo)
+    console.log("============================")
+    
     try {
       // Sanitizar los datos anidados
       const sanitizedData = {

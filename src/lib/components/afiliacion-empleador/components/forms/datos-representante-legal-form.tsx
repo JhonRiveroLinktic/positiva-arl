@@ -66,9 +66,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
             <FormSelect
               label="Tipo de Documento"
               placeholder="Seleccionar tipo"
-              options={DocumentTypesOptions.filter((i: { value: string }) => 
-                ["CC", "TI", "CE", "CD", "PT", "SC"].includes(i.value)
-              )}
+              options={DocumentTypesOptions}
               value={field.value || ""}
               onChange={field.onChange}
               onBlur={field.onBlur}
