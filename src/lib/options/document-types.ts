@@ -18,10 +18,6 @@ export const documentTypesData: DocumentType[] = [
     "Nombre": "NIT"
   },
   {
-    "Tipo": "NI",
-    "Nombre": "NIT"
-  },
-  {
     "Tipo": "PT",
     "Nombre": "Permiso por protección temporal"
   },
