@@ -14,12 +14,21 @@ import { Alert, AlertDescription } from "@/lib/components/ui/alert"
 import { supabase } from "@/lib/utils/supabase"
 import { toast } from "@/lib/utils/toast"
 import { useRegistroStore } from "../stores/registro-store"
-import { convertEmpleadorDatosToSupabaseFormat } from "../types/afiliacion-empleador-types"
+import { 
+  convertEmpleadorDatosToSupabaseFormat,
+  convertRepresentanteLegalToSupabaseFormat,
+  convertSedeToSupabaseFormat,
+  convertCentroTrabajoToSupabaseFormat,
+  type RegistroCompleto,
+  type EmpleadorDatosDB,
+  type RepresentanteLegalDB,
+  type SedeDB,
+  type CentroTrabajoDB
+} from "../types/afiliacion-empleador-types"
 import { Send, Loader2, Info, File } from "lucide-react"
-import type { Registro } from "../types/afiliacion-empleador-types"
 
 interface EnvioRegistroProps {
-  registros: Registro[]
+  registros: RegistroCompleto[]
   open: boolean
   onClose: () => void
 }
@@ -32,10 +41,10 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
     try {
       const fileExt = file.name.split('.').pop()
       const fileName = `${registroId}_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`
-      const filePath = `afiliacion-empleador/${fileName}`
+      const filePath = `afiliacion_empleador/${fileName}`
 
       const { data, error } = await supabase.storage
-        .from('adjuntos-afiliacion-empleador')
+        .from('adjuntos-empleador')
         .upload(filePath, file)
 
       if (error) {
@@ -58,14 +67,13 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
   ) => {
     try {
       const { error } = await supabase
-        .from('adjuntos_afiliacion_empleador')
-        .insert({
+        .from('adjuntos_empleador')
+        .insert({ 
           registro_id: registroId,
-          tipo_afiliacion: 'empleador',
           url_archivo: filePath,
           nombre_archivo: originalFileName,
           peso_bytes: fileSize,
-          url_publica: `https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/adjuntos-afiliacion-empleador/${filePath}`
+          url_publica: `https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/adjuntos-empleador/${filePath}`
         })
 
       if (error) {
@@ -90,83 +98,138 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
     setIsSubmitting(true)
 
     try {
-      const registrosParaEnviar = registros.map(registro => 
-        convertEmpleadorDatosToSupabaseFormat(registro)
-      )
-
-      // Insertar registros en la tabla principal
-      const { data: insertedData, error } = await supabase
-        .from("afiliacion_empleador")
-        .insert(registrosParaEnviar)
-        .select()
-
-      if (error) {
-        console.error("Error al insertar registros:", error)
-
-        const msg = error.code === "23505"
-          ? "Algunos registros ya existen en la base de datos."
-          : error.code === "23502"
-          ? "Faltan campos requeridos en algunos registros."
-          : error.message
-
-        toast.error({
-          title: "Error al enviar registros",
-          description: msg,
-        })
-
-        return
-      }
-
-      // Procesar archivos adjuntos
-      let archivosSubidos = 0
-      let erroresArchivos = 0
+      let totalRegistrosEnviados = 0
+      let totalArchivosSubidos = 0
+      let totalErroresArchivos = 0
 
       for (const registro of registros) {
-        if (registro.archivos && registro.archivos.length > 0) {
-          // Buscar el registro insertado correspondiente
-          const registroInsertado = insertedData?.find(
-            r => r.documento_empleador === registro.documentoEmpleador &&
-                 r.razon_social_empleador === registro.razonSocialEmpleador
-          )
+        try {
+          // 1. Insertar datos del empleador en afiliacion_empleador_datos
+          const empleadorDatosDB = convertEmpleadorDatosToSupabaseFormat(registro.empleadorDatos)
+          
+          const { data: empleadorInsertado, error: errorEmpleador } = await supabase
+            .from("afiliacion_empleador_datos")
+            .insert(empleadorDatosDB)
+            .select()
+            .single()
 
-          if (registroInsertado) {
+          if (errorEmpleador) {
+            console.error("Error al insertar datos del empleador:", errorEmpleador)
+            throw new Error(`Error al insertar datos del empleador: ${errorEmpleador.message}`)
+          }
+
+          // 2. Insertar datos del representante legal en afiliacion_empleador_rep_legal
+          const representanteLegalDB = convertRepresentanteLegalToSupabaseFormat(registro.representanteLegal)
+          
+          const { data: representanteInsertado, error: errorRepresentante } = await supabase
+            .from("afiliacion_empleador_rep_legal")
+            .insert(representanteLegalDB)
+            .select()
+            .single()
+
+          if (errorRepresentante) {
+            console.error("Error al insertar datos del representante legal:", errorRepresentante)
+            throw new Error(`Error al insertar datos del representante legal: ${errorRepresentante.message}`)
+          }
+
+          // 3. Insertar sedes en afiliacion_empleador_sedes
+          if (registro.sedes && registro.sedes.length > 0) {
+            const sedesDB = registro.sedes.map(sede => convertSedeToSupabaseFormat(sede))
+            
+            const { error: errorSedes } = await supabase
+              .from("afiliacion_empleador_sedes")
+              .insert(sedesDB)
+
+            if (errorSedes) {
+              console.error("Error al insertar sedes:", errorSedes)
+              throw new Error(`Error al insertar sedes: ${errorSedes.message}`)
+            }
+          }
+
+          // 4. Obtener las sedes insertadas para asociar centros de trabajo
+          const { data: sedesInsertadas, error: errorObtenerSedes } = await supabase
+            .from("afiliacion_empleador_sedes")
+            .select("id, nombre_sede")
+            .eq("tipo_doc_empleador", empleadorDatosDB.tipo_doc_empleador)
+            .eq("documento_empleador", empleadorDatosDB.documento_empleador)
+
+          if (errorObtenerSedes) {
+            console.error("Error al obtener sedes:", errorObtenerSedes)
+            throw new Error(`Error al obtener sedes: ${errorObtenerSedes.message}`)
+          }
+
+          // 5. Insertar centros de trabajo en afiliacion_empleador_centros_trabajo
+          if (registro.centrosTrabajo && registro.centrosTrabajo.length > 0) {
+            const centrosTrabajoDB = registro.centrosTrabajo.map(centro => {
+              const centroDB = convertCentroTrabajoToSupabaseFormat(centro)
+              
+              // Si no hay sede asociada, buscar la sede principal (primera sede)
+              if (!centroDB.id_sede && sedesInsertadas && sedesInsertadas.length > 0) {
+                centroDB.id_sede = sedesInsertadas[0].id
+              }
+              
+              return centroDB
+            })
+            
+            const { error: errorCentros } = await supabase
+              .from("afiliacion_empleador_centros_trabajo")
+              .insert(centrosTrabajoDB)
+
+            if (errorCentros) {
+              console.error("Error al insertar centros de trabajo:", errorCentros)
+              throw new Error(`Error al insertar centros de trabajo: ${errorCentros.message}`)
+            }
+          }
+
+          // 6. Procesar archivos adjuntos
+          if (registro.archivos && registro.archivos.length > 0) {
             for (const archivo of registro.archivos) {
               try {
-                const filePath = await uploadFileToStorage(archivo, registroInsertado.id)
+                const filePath = await uploadFileToStorage(archivo, empleadorInsertado.id)
                 
                 if (filePath) {
                   await saveAttachmentMetadata(
-                    registroInsertado.id,
+                    empleadorInsertado.id,
                     filePath,
                     archivo.name,
                     archivo.size
                   )
-                  archivosSubidos++
+                  totalArchivosSubidos++
                 } else {
-                  erroresArchivos++
+                  totalErroresArchivos++
                 }
               } catch (error) {
                 console.error('Error procesando archivo:', error)
-                erroresArchivos++
+                totalErroresArchivos++
               }
             }
           }
+
+          totalRegistrosEnviados++
+
+        } catch (error) {
+          console.error("Error procesando registro:", error)
+          toast.error({
+            title: "Error al procesar registro",
+            description: error instanceof Error ? error.message : "Error inesperado",
+          })
+          return
         }
       }
 
       limpiarTodosLosRegistros()
       
-      const mensajeArchivos = archivosSubidos > 0 
-        ? ` Se subieron ${archivosSubidos} archivo(s) correctamente.`
+      const mensajeArchivos = totalArchivosSubidos > 0 
+        ? ` Se subieron ${totalArchivosSubidos} archivo(s) correctamente.`
         : ""
       
-      const mensajeErrores = erroresArchivos > 0
-        ? ` ${erroresArchivos} archivo(s) no se pudieron subir.`
+      const mensajeErrores = totalErroresArchivos > 0
+        ? ` ${totalErroresArchivos} archivo(s) no se pudieron subir.`
         : ""
 
       toast.success({
         title: "¡Registros enviados exitosamente!",
-        description: `Se enviaron ${insertedData?.length || registros.length} registros correctamente.${mensajeArchivos}${mensajeErrores}`,
+        description: `Se enviaron ${totalRegistrosEnviados} registros correctamente a las 5 tablas de la base de datos.${mensajeArchivos}${mensajeErrores}`,
       })
 
       onClose()
@@ -203,7 +266,7 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
                 Envío de Registros:
               </p>
               <p className="text-orange-700 mt-1">
-                Los registros se enviarán directamente a la base de datos.
+                Los registros se enviarán a 5 tablas de la base de datos: empleador, representante legal, sedes, centros de trabajo y adjuntos.
               </p>
             </AlertDescription>
           </Alert>

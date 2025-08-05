@@ -10,7 +10,8 @@ import {
   DocumentTypesOptions,
   departamentosDaneOptions,
   getMunicipiosDaneOptionsByDepartamento,
-} from "../../options"
+} from "@/lib/components/independiente-con-contrato/options"
+
 import { Button } from "@/lib/components/ui/button"
 import { Trash2, Plus, Edit, Eye } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/lib/components/ui/card"
@@ -480,9 +481,7 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                     <FormSelect
                       label="Tipo Doc. Responsable"
                       placeholder="Seleccionar tipo"
-                      options={DocumentTypesOptions.filter((i: { value: string }) => 
-                        ["CC", "TI", "CE", "CD", "PT", "SC"].includes(i.value)
-                      )}
+                      options={DocumentTypesOptions}
                       value={field.value || ""}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
@@ -539,9 +538,7 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                     <FormSelect
                       label="Tipo Doc. Sede Misión"
                       placeholder="Seleccionar tipo"
-                      options={DocumentTypesOptions.filter((i: { value: string }) => 
-                        ["CC", "TI", "CE", "CD", "PT", "SC"].includes(i.value)
-                      )}
+                      options={DocumentTypesOptions}
                       value={field.value || ""}
                       onChange={field.onChange}
                       onBlur={field.onBlur}

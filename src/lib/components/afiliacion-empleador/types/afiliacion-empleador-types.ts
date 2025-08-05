@@ -266,7 +266,7 @@ export function convertEmpleadorDatosToSupabaseFormat(formData: Partial<Empleado
     tipo_doc_representante_legal: trimmedData.tipoDocRepresentanteLegal || "",
     nume_doc_representante_legal: trimmedData.numeDocRepresentanteLegal || "",
     nombre_representante_legal: trimmedData.nombreRepresentanteLegal || "",
-    fecha_cobertura: trimmedData.fechaCobertura || undefined,
+    fecha_cobertura: trimmedData.fechaCobertura || "",
     origen: trimmedData.origen || undefined,
     codigo_arl: trimmedData.codigoArl || undefined,
     tipo_doc_arl_anterior: trimmedData.tipoDocArlAnterior || undefined,

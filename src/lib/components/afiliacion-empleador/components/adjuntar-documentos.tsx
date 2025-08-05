@@ -15,10 +15,10 @@ import { Alert, AlertDescription } from "@/lib/components/ui/alert"
 import { toast } from "@/lib/utils/toast"
 import { useRegistroStore } from "../stores/registro-store"
 import { File, Upload, X, Download, Trash2, Info } from "lucide-react"
-import type { Registro } from "../types/afiliacion-empleador-types"
+import type { RegistroCompleto } from "../types/afiliacion-empleador-types"
 
 interface AdjuntarDocumentosProps {
-  registro: Registro
+  registro: RegistroCompleto
   open: boolean
   onClose: () => void
 }
@@ -29,7 +29,7 @@ const MAX_FILES = 10
 export function AdjuntarDocumentos({ registro, open, onClose }: AdjuntarDocumentosProps) {
   const { actualizarRegistro, getRegistroById } = useRegistroStore()
   
-  const [currentRegistro, setCurrentRegistro] = useState<Registro>(registro)
+  const [currentRegistro, setCurrentRegistro] = useState<RegistroCompleto>(registro)
 
   useEffect(() => {
     const updatedRegistro = getRegistroById(registro.id)
@@ -82,7 +82,7 @@ export function AdjuntarDocumentos({ registro, open, onClose }: AdjuntarDocument
     }
 
     if (validFiles.length > 0) {
-      const updatedRegistro: Registro = {
+      const updatedRegistro: RegistroCompleto = {
         ...currentRegistro,
         archivos: [...currentFiles, ...validFiles],
       }
@@ -109,7 +109,7 @@ export function AdjuntarDocumentos({ registro, open, onClose }: AdjuntarDocument
     const currentFiles = currentRegistro.archivos || []
     const updatedFiles = currentFiles.filter((file: File) => file.name !== fileName)
     
-    const updatedRegistro: Registro = {
+    const updatedRegistro: RegistroCompleto = {
       ...currentRegistro,
       archivos: updatedFiles,
     }
@@ -149,7 +149,7 @@ export function AdjuntarDocumentos({ registro, open, onClose }: AdjuntarDocument
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <File className="h-5 w-5" />
-            Adjuntar Documentos - {currentRegistro.razonSocialEmpleador}
+            Adjuntar Documentos - {currentRegistro.empleadorDatos?.razonSocialEmpleador || 'Sin razón social'}
           </DialogTitle>
         </DialogHeader>
 

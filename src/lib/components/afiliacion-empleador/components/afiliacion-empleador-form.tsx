@@ -74,6 +74,7 @@ export function AfiliacionEmpleadorFormIntegrado() {
     actualizarRegistro,
     registroEditando,
     setRegistroEditando,
+    limpiarDatosTemporales,
   } = useRegistroStore()
 
   const form = useForm<AfiliacionEmpleadorFormData>({
@@ -93,6 +94,7 @@ export function AfiliacionEmpleadorFormIntegrado() {
 
   const isEditMode = Boolean(registroEditando)
 
+  // Cargar datos al inicializar
   useEffect(() => {
     if (registroEditando) {
       reset(registroEditando)
@@ -103,12 +105,19 @@ export function AfiliacionEmpleadorFormIntegrado() {
 
   const onValidSubmit = async (data: AfiliacionEmpleadorFormData) => {
     try {
-      const sanitizedData = sanitizeFormData(data)
+      // Sanitizar los datos anidados
+      const sanitizedData = {
+        empleadorDatos: sanitizeFormData(data.empleadorDatos),
+        representanteLegal: sanitizeFormData(data.representanteLegal),
+        sedes: data.sedes || [],
+        centrosTrabajo: data.centrosTrabajo || [],
+        archivos: data.archivos || [],
+      }
 
       if (isEditMode && registroEditando) {
         const registroActualizado: RegistroCompleto = {
           ...registroEditando,
-          ...(sanitizedData as Omit<RegistroCompleto, "id">),
+          ...sanitizedData,
         }
         actualizarRegistro(registroActualizado)
         setRegistroEditando(null)
@@ -119,7 +128,7 @@ export function AfiliacionEmpleadorFormIntegrado() {
       } else {
         const nuevoRegistro: RegistroCompleto = {
           id: Date.now().toString(),
-          ...(sanitizedData as Omit<RegistroCompleto, "id">),
+          ...sanitizedData,
           metodoSubida: undefined,
         }
         agregarRegistro(nuevoRegistro)
@@ -129,6 +138,8 @@ export function AfiliacionEmpleadorFormIntegrado() {
         })
       }
 
+      // Limpiar datos temporales después de guardar
+      limpiarDatosTemporales()
       form.reset(initialDefaultValues)
       setRegistroEditando(null)
     } catch (error) {
@@ -150,6 +161,7 @@ export function AfiliacionEmpleadorFormIntegrado() {
   const handleClear = () => {
     form.reset(initialDefaultValues)
     setRegistroEditando(null)
+    limpiarDatosTemporales()
     toast.info({
       title: "Formulario limpiado",
       description: "Todos los campos han sido limpiados.",
@@ -172,7 +184,13 @@ export function AfiliacionEmpleadorFormIntegrado() {
             control={control as any}
             errors={errors.empleadorDatos || {}}
             watch={(name: keyof EmpleadorDatos) => watch(`empleadorDatos.${name}` as any)}
-            setValue={(name: keyof EmpleadorDatos, value: any) => setValue(`empleadorDatos.${name}` as any, value)}
+            setValue={(name: keyof EmpleadorDatos, value: any) => {
+              setValue(`empleadorDatos.${name}` as any, value)
+              // Trigger re-render para campos dependientes
+              if (name === 'departamentoEmpleador') {
+                setValue('empleadorDatos.municipioEmpleador' as any, '')
+              }
+            }}
           />
         </div>
 
@@ -181,7 +199,13 @@ export function AfiliacionEmpleadorFormIntegrado() {
             control={control as any}
             errors={errors.representanteLegal || {}}
             watch={(name: keyof RepresentanteLegal) => watch(`representanteLegal.${name}` as any)}
-            setValue={(name: keyof RepresentanteLegal, value: any) => setValue(`representanteLegal.${name}` as any, value)}
+            setValue={(name: keyof RepresentanteLegal, value: any) => {
+              setValue(`representanteLegal.${name}` as any, value)
+              // Trigger re-render para campos dependientes
+              if (name === 'departamento') {
+                setValue('representanteLegal.municipio' as any, '')
+              }
+            }}
           />
         </div>
 

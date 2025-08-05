@@ -1,6 +1,6 @@
 "use client"
 
-import { Controller, Control, FieldErrors } from "react-hook-form"
+import { Controller, Control, FieldErrors, useWatch } from "react-hook-form"
 import { useEffect, useState } from "react"
 import { FormInput } from "@/lib/components/core/form/form-input"
 import { FormSelect } from "@/lib/components/core/form/form-select"
@@ -10,11 +10,11 @@ import {
   DocumentTypesOptions,
   departamentosDaneOptions,
   getMunicipiosDaneOptionsByDepartamento,
-} from "../../options"
+  EPSOptions,
+  PensionFundOptions,
+} from "@/lib/components/independiente-con-contrato/options"
 import { genderCodeOptions } from "@/lib/options/gender-codes"
 import type { RepresentanteLegal } from "../../types/afiliacion-empleador-types"
-import { PensionFundOptions, EPSOptions } from "@/lib/components/independiente-con-contrato/options"
-
 interface DatosRepresentanteLegalProps {
   control: Control<RepresentanteLegal>
   errors: FieldErrors<RepresentanteLegal>
@@ -23,12 +23,17 @@ interface DatosRepresentanteLegalProps {
 }
 
 export function DatosRepresentanteLegal({ control, errors, watch, setValue }: DatosRepresentanteLegalProps) {
-  const currentDepartamento = watch("departamento")
+  // Usar useWatch para sincronizar datos en tiempo real
+  const currentDepartamento = useWatch({ control, name: "departamento" })
   const [selectedDepartamento, setSelectedDepartamento] = useState<string | undefined>(undefined)
 
   useEffect(() => {
-    setSelectedDepartamento(currentDepartamento)
-  }, [currentDepartamento])
+    // Resetear municipio cuando cambia el departamento
+    if (currentDepartamento && currentDepartamento !== selectedDepartamento) {
+      setValue("municipio", "")
+      setSelectedDepartamento(currentDepartamento)
+    }
+  }, [currentDepartamento, setValue, selectedDepartamento])
 
   const genderOptions = genderCodeOptions.map((item) => ({
     value: item.code,
@@ -379,7 +384,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
             <FormSelect
               label="Nit AFP"
               placeholder="Seleccionar tipo"
-              options={EPSOptions}
+              options={PensionFundOptions}
               value={field.value || ""}
               onChange={field.onChange}
               onBlur={field.onBlur}
@@ -398,7 +403,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
             <FormSelect
               label="Nit EPS"
               placeholder="Seleccionar tipo"
-              options={PensionFundOptions}
+              options={EPSOptions}
               value={field.value || ""}
               onChange={field.onChange}
               onBlur={field.onBlur}

@@ -1,6 +1,6 @@
 "use client"
 
-import { Controller, Control, FieldErrors } from "react-hook-form"
+import { Controller, Control, FieldErrors, useWatch } from "react-hook-form"
 import { useEffect, useState } from "react"
 import { FormInput } from "@/lib/components/core/form/form-input"
 import { FormSelect } from "@/lib/components/core/form/form-select"
@@ -34,9 +34,10 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
     loading,
   } = useCatalogStore()
 
-  const currentOrigen = watch("origen")
-  const currentTipoDocEmpleador = watch("tipoDocEmpleador")
-  const currentDepartamentoEmpleador = watch("departamentoEmpleador")
+  // Usar useWatch para sincronizar datos en tiempo real
+  const currentOrigen = useWatch({ control, name: "origen" })
+  const currentTipoDocEmpleador = useWatch({ control, name: "tipoDocEmpleador" })
+  const currentDepartamentoEmpleador = useWatch({ control, name: "departamentoEmpleador" })
   const [selectedDepartamentoEmpleador, setSelectedDepartamentoEmpleador] = useState<string | undefined>(undefined)
 
   const isTraslado = currentOrigen === "2"
@@ -55,10 +56,14 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
       setValue("digitoVerificacionEmpleador", "")
     }
   }, [isNit, setValue])
-  
+
   useEffect(() => {
-    setSelectedDepartamentoEmpleador(currentDepartamentoEmpleador)
-  }, [currentDepartamentoEmpleador])
+    // Resetear municipio cuando cambia el departamento
+    if (currentDepartamentoEmpleador && currentDepartamentoEmpleador !== selectedDepartamentoEmpleador) {
+      setValue("municipioEmpleador", "")
+      setSelectedDepartamentoEmpleador(currentDepartamentoEmpleador)
+    }
+  }, [currentDepartamentoEmpleador, setValue, selectedDepartamentoEmpleador])
 
   const genderOptions = genderCodeOptions.map((item) => ({
     value: item.code,
@@ -216,22 +221,18 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
             <FormSelect
               label="Municipio Empleador"
               placeholder={
-                !selectedDepartamentoEmpleador
+                !currentDepartamentoEmpleador
                   ? "Seleccione un departamento primero"
                   : "Seleccionar municipio"
               }
-              options={
-                selectedDepartamentoEmpleador
-                  ? getMunicipiosDaneOptionsByDepartamento(selectedDepartamentoEmpleador)
-                  : []
-              }
+              options={getMunicipiosDaneOptionsByDepartamento(currentDepartamentoEmpleador)}
               value={field.value || ""}
               onChange={field.onChange}
               onBlur={field.onBlur}
               error={!!fieldState.error}
               errorMessage={fieldState.error?.message}
               required
-              disabled={!selectedDepartamentoEmpleador}
+              disabled={!currentDepartamentoEmpleador}
             />
           )}
         />
@@ -457,12 +458,12 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
               control={control}
               rules={EmpleadorDatosValidationRules.codigoArl}
               render={({ field, fieldState }) => (
-                <FormInput
-                  label="Código ARL (solo cuando es traslado)"
-                  placeholder="Código ARL"
+                <FormSelect
+                  label="NIT ARL (solo cuando es traslado)"
+                  placeholder="NIT ARL anterior"
+                  options={PensionFundOptions}
                   value={field.value || ""}
                   onChange={field.onChange}
-                  maxLength={20}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
@@ -470,35 +471,17 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
               )}
             />
 
-            {/* <Controller
-              name="tipoDocArlAnterior"
-              control={control}
-              rules={EmpleadorDatosValidationRules.tipoDocArlAnterior}
-              render={({ field, fieldState }) => (
-                <FormSelect
-                  label="Tipo Documento ARL Anterior (solo cuando es traslado)"
-                  placeholder="Seleccionar tipo"
-                  options={DocumentTypesOptions.filter((i: { value: string }) => ["N", "NI"].includes(i.value))}
-                  value={field.value || ""}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                />
-              )}
-            /> */}
-
             <Controller
               name="nitArlAnterior"
               control={control}
               rules={EmpleadorDatosValidationRules.nitArlAnterior}
               render={({ field, fieldState }) => (
-                <FormInput
-                  label="NIT ARL Anterior (solo cuando es traslado)"
-                  placeholder="NIT ARL anterior"
+                <FormSelect
+                  label="NIT EPS Anterior (solo cuando es traslado)"
+                  placeholder="NIT EPS anterior"
+                  options={EPSOptions}
                   value={field.value || ""}
                   onChange={field.onChange}
-                  maxLength={20}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
