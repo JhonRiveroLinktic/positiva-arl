@@ -1,75 +1,74 @@
 "use client"
 
 import { useForm } from "react-hook-form"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { FormWrapper } from "@/lib/components/core/form/form-wrapper"
-import { useCatalogStore } from "@/lib/components/core/stores/catalog-store"
 import { useRegistroStore } from "../stores/registro-store"
 import { ListaRegistros } from "./lista-registros"
 import { sanitizeFormData } from "../validations/validation-rules"
 import { toast } from "@/lib/utils/toast"
-import type { RegistroCompleto, AfiliacionEmpleadorFormData } from "../types/afiliacion-empleador-types"
+import type { RegistroCompleto, AfiliacionEmpleadorFormData, EmpleadorDatos, RepresentanteLegal } from "../types/afiliacion-empleador-types"
 
-// Importar los componentes existentes
 import { DatosEmpleador } from "./forms/datos-empleador-form"
 import { DatosRepresentanteLegal } from "./forms/datos-representante-legal-form"
 import { DatosSedes } from "./forms/datos-sedes"
 import { DatosCentrosTrabajo } from "./forms/datos-centros-trabajo"
 
 const initialDefaultValues: AfiliacionEmpleadorFormData = {
-  // Datos del Empleador
-  tipoDocEmpleador: "",
-  documentoEmpleador: "",
-  digitoVerificacionEmpleador: "",
-  razonSocialEmpleador: "",
-  departamentoEmpleador: "",
-  municipioEmpleador: "",
-  direccionEmpleador: "",
-  zonaEmpleador: "",
-  actEconomicaPrincipalEmpleador: "",
-  telefonoEmpleador: "",
-  faxEmpleador: "",
-  correoElectronicoEmpleador: "",
-  suministroDeTransporte: "",
-  naturaleza: "",
-  fechaRadicacion: "",
-  origen: "",
-  fechaCobertura: "",
-  codigoArl: "",
-  tipoDocArlAnterior: "",
-  nitArlAnterior: "",
-  fechaNotificacionTraslado: "",
-  
-  // Datos del Representante Legal
-  tipoDocRepresentanteLegal: "",
-  numeDocRepresentanteLegal: "",
-  primerNombreRepresentanteLegal: "",
-  segundoNombreRepresentanteLegal: "",
-  primerApellidoRepresentanteLegal: "",
-  segundoApellidoRepresentanteLegal: "",
-  fechaNacimientoRepresentanteLegal: "",
-  sexoRepresentanteLegal: "",
-  paisRepresentanteLegal: "",
-  departamentoRepresentanteLegal: "",
-  municipioRepresentanteLegal: "",
-  direccionRepresentanteLegal: "",
-  telefonoRepresentanteLegal: "",
-  correoElectronicoRepresentanteLegal: "",
-  nitAfpRepresentanteLegal: "",
-  nitEpsRepresentanteLegal: "",
-  
-  // Arrays para sedes y centros de trabajo
+  empleadorDatos: {
+    tipoDocEmpleador: "",
+    documentoEmpleador: "",
+    digitoVerificacionEmpleador: "",
+    razonSocialEmpleador: "",
+    departamentoEmpleador: "",
+    municipioEmpleador: "",
+    direccionEmpleador: "",
+    telefonoEmpleador: "",
+    fax: "",
+    correoElectronico: "",
+    zona: "",
+    actEconomicaPrincipalEmpleador: "",
+    suministroDeTransporte: "",
+    fechaRadicacion: "",
+    naturaleza: "",
+    estado: 1,
+    tipoDocRepresentanteLegal: "",
+    numeDocRepresentanteLegal: "",
+    nombreRepresentanteLegal: "",
+    fechaCobertura: "",
+    origen: "",
+    codigoArl: "",
+    tipoDocArlAnterior: "",
+    nitArlAnterior: "",
+    fechaNotificacionTraslado: "",
+    metodoSubida: "",
+  },
+  representanteLegal: {
+    tipoDoc: "",
+    documento: "",
+    primerApellido: "",
+    segundoApellido: "",
+    primerNombre: "",
+    segundoNombre: "",
+    fechaNacimiento: "",
+    sexo: "",
+    pais: "",
+    departamento: "",
+    municipio: "",
+    zona: "",
+    fax: "",
+    telefono: "",
+    direccion: "",
+    correoElectronico: "",
+    nitAfp: "",
+    nitEps: "",
+  },
   sedes: [],
   centrosTrabajo: [],
+  archivos: [],
 }
 
 export function AfiliacionEmpleadorFormIntegrado() {
-  const {
-    occupations,
-    economicActivities,
-    loading,
-  } = useCatalogStore()
-
   const {
     agregarRegistro,
     actualizarRegistro,
@@ -131,6 +130,7 @@ export function AfiliacionEmpleadorFormIntegrado() {
       }
 
       form.reset(initialDefaultValues)
+      setRegistroEditando(null)
     } catch (error) {
       console.error("Error al guardar registro:", error)
       toast.error({
@@ -167,27 +167,24 @@ export function AfiliacionEmpleadorFormIntegrado() {
         form={form}
         showMassiveUpload={true}
       >
-        {/* SECCIÓN 1: INFORMACIÓN DEL EMPLEADOR */}
         <div className="mb-12">
           <DatosEmpleador
-            control={control}
-            errors={errors}
-            watch={watch}
-            setValue={setValue}
+            control={control as any}
+            errors={errors.empleadorDatos || {}}
+            watch={(name: keyof EmpleadorDatos) => watch(`empleadorDatos.${name}` as any)}
+            setValue={(name: keyof EmpleadorDatos, value: any) => setValue(`empleadorDatos.${name}` as any, value)}
           />
         </div>
 
-        {/* SECCIÓN 2: INFORMACIÓN DEL REPRESENTANTE LEGAL */}
         <div className="mb-12">
           <DatosRepresentanteLegal
-            control={control}
-            errors={errors}
-            watch={watch}
-            setValue={setValue}
+            control={control as any}
+            errors={errors.representanteLegal || {}}
+            watch={(name: keyof RepresentanteLegal) => watch(`representanteLegal.${name}` as any)}
+            setValue={(name: keyof RepresentanteLegal, value: any) => setValue(`representanteLegal.${name}` as any, value)}
           />
         </div>
 
-        {/* SECCIÓN 3: SEDES DEL EMPLEADOR */}
         <div className="mb-12">
           <DatosSedes
             control={control}
@@ -197,7 +194,6 @@ export function AfiliacionEmpleadorFormIntegrado() {
           />
         </div>
 
-        {/* SECCIÓN 4: CENTROS DE TRABAJO */}
         <div className="mb-12">
           <DatosCentrosTrabajo
             control={control}
@@ -208,8 +204,7 @@ export function AfiliacionEmpleadorFormIntegrado() {
         </div>
       </FormWrapper>
 
-      {/* LISTA DE REGISTROS */}
-      {/* <ListaRegistros /> */}
+      <ListaRegistros />
     </div>
   )
 }

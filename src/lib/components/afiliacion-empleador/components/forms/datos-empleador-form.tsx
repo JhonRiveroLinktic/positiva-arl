@@ -58,10 +58,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
   
   useEffect(() => {
     setSelectedDepartamentoEmpleador(currentDepartamentoEmpleador)
-    if (currentDepartamentoEmpleador !== selectedDepartamentoEmpleador) {
-      setValue("municipioEmpleador", "")
-    }
-  }, [currentDepartamentoEmpleador, setValue, selectedDepartamentoEmpleador])
+  }, [currentDepartamentoEmpleador])
 
   const genderOptions = genderCodeOptions.map((item) => ({
     value: item.code,
@@ -121,7 +118,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
               label="Tipo Documento Empleador"
               placeholder="Seleccionar tipo"
               options={DocumentTypesOptions}
-              value={field.value}
+              value={field.value || ""}
               onChange={field.onChange}
               onBlur={field.onBlur}
               error={!!fieldState.error}
@@ -139,7 +136,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
             <FormInput
               label="Documento Empleador"
               placeholder="Número documento empleador"
-              value={field.value}
+              value={field.value || ""}
               onChange={field.onChange}
               maxLength={20}
               onBlur={field.onBlur}
@@ -178,7 +175,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
             <FormInput
               label="Razón Social Empleador"
               placeholder="Razón social del empleador"
-              value={field.value}
+              value={field.value || ""}
               onChange={field.onChange}
               maxLength={200}
               onBlur={field.onBlur}
@@ -198,8 +195,11 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
               label="Departamento Empleador"
               placeholder="Seleccionar departamento"
               options={departamentosDaneOptions}
-              value={field.value}
-              onChange={field.onChange}
+              value={field.value || ""}
+              onChange={(value) => {
+                field.onChange(value)
+                setValue("municipioEmpleador", "")
+              }}
               onBlur={field.onBlur}
               error={!!fieldState.error}
               errorMessage={fieldState.error?.message}
@@ -215,15 +215,23 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
           render={({ field, fieldState }) => (
             <FormSelect
               label="Municipio Empleador"
-              placeholder="Seleccionar municipio"
-              options={getMunicipiosDaneOptionsByDepartamento(currentDepartamentoEmpleador)}
-              value={field.value}
+              placeholder={
+                !selectedDepartamentoEmpleador
+                  ? "Seleccione un departamento primero"
+                  : "Seleccionar municipio"
+              }
+              options={
+                selectedDepartamentoEmpleador
+                  ? getMunicipiosDaneOptionsByDepartamento(selectedDepartamentoEmpleador)
+                  : []
+              }
+              value={field.value || ""}
               onChange={field.onChange}
               onBlur={field.onBlur}
               error={!!fieldState.error}
               errorMessage={fieldState.error?.message}
               required
-              disabled={!currentDepartamentoEmpleador}
+              disabled={!selectedDepartamentoEmpleador}
             />
           )}
         />
@@ -236,7 +244,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
             <FormInput
               label="Dirección Empleador"
               placeholder="Dirección completa"
-              value={field.value}
+              value={field.value || ""}
               onChange={field.onChange}
               maxLength={200}
               onBlur={field.onBlur}
@@ -292,7 +300,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
               label="Correo Electrónico"
               type="email"
               placeholder="correo@ejemplo.com"
-              value={field.value}
+              value={field.value || ""}
               onChange={field.onChange}
               onBlur={field.onBlur}
               error={!!fieldState.error}
@@ -305,7 +313,6 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         <Controller
           name="zona"
           control={control}
-          // @ts-expect-error - TODO: fix this
           rules={EmpleadorDatosValidationRules.zona}
           render={({ field, fieldState }) => (
             <FormSelect
@@ -330,7 +337,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
               label="Actividad Económica Principal"
               placeholder="Código actividad económica"
               options={economicActivityOptions}
-              value={field.value}
+              value={field.value || ""}
               onChange={field.onChange}
               onBlur={field.onBlur}
               error={!!fieldState.error}
@@ -534,7 +541,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
               label="Tipo de Documento Representante Legal"
               placeholder="Seleccionar tipo"
               options={DocumentTypesOptions.filter((i) => i.value !== 'N')}
-              value={field.value}
+              value={field.value || ""}
               onChange={field.onChange}
               onBlur={field.onBlur}
               error={!!fieldState.error}
@@ -552,7 +559,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
             <FormInput
               label="Documento Representante Legal"
               placeholder="Número documento"
-              value={field.value}
+              value={field.value || ""}
               onChange={field.onChange}
               maxLength={20}
               onBlur={field.onBlur}
@@ -571,7 +578,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
             <FormInput
               label="Nombre Representante Legal"
               placeholder="Nombre completo"
-              value={field.value}
+              value={field.value || ""}
               onChange={field.onChange}
               maxLength={200}
               onBlur={field.onBlur}

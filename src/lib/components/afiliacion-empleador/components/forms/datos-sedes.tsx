@@ -127,33 +127,35 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
   const handleSubmitSede = sedeForm.handleSubmit((data) => {
     try {
       if (editingIndex !== null) {
-        // Actualizar sede existente
         update(editingIndex, data)
+        handleCloseModal()
         toast.success({
           title: "Sede actualizada",
           description: "La sede se actualizó correctamente.",
         })
       } else {
-        // Agregar nueva sede
         append(data)
+        handleCloseModal()
         toast.success({
           title: "Sede agregada",
           description: "La sede se agregó correctamente.",
         })
       }
-      handleCloseModal()
-    } catch (error) {
+    } catch {
       toast.error({
         title: "Error",
         description: "Ocurrió un error al guardar la sede.",
       })
     }
   }, (errors) => {
-    toast.error({
-      title: "Error de validación",
-      description: "Por favor corrija los errores en el formulario.",
-    })
+    console.error("Errores de validación:", errors)
   })
+
+  const handleModalSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    handleSubmitSede()
+  }
 
   const eliminarSede = (index: number) => {
     remove(index)
@@ -166,7 +168,6 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
     })
   }
 
-  // Manejar cambios de departamento para cada sede
   useEffect(() => {
     if (watchedSedes) {
       watchedSedes.forEach((sede: Sede, index: number) => {
@@ -178,13 +179,10 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
             ...prev,
             [index]: currentDepartamento || ""
           }))
-          if (currentDepartamento !== savedDepartamento) {
-            setValue(`sedes.${index}.municipio` as any, "")
-          }
         }
       })
     }
-  }, [watchedSedes, setValue, departamentoStates])
+  }, [watchedSedes, departamentoStates])
 
   const getZonaLabel = (zona: string) => {
     return zona === "U" ? "Urbano" : zona === "R" ? "Rural" : zona
@@ -218,7 +216,7 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
               </DialogTitle>
             </DialogHeader>
             
-            <form onSubmit={handleSubmitSede} className="space-y-6">
+            <form onSubmit={handleModalSubmit} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-start">
                 <Controller
                   name="tipoDocEmpleador"
@@ -229,7 +227,7 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       label="Tipo Documento Empleador"
                       placeholder="Seleccionar tipo"
                       options={DocumentTypesOptions.filter((i: { value: string }) => ["N", "NI"].includes(i.value))}
-                      value={field.value}
+                      value={field.value || ""}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
@@ -248,7 +246,7 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                     <FormInput
                       label="Documento Empleador"
                       placeholder="Número documento empleador"
-                      value={field.value}
+                      value={field.value || ""}
                       onChange={field.onChange}
                       maxLength={20}
                       onBlur={field.onBlur}
@@ -287,7 +285,7 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                     <FormInput
                       label="Nombre de la Sede"
                       placeholder="Nombre de la sede"
-                      value={field.value}
+                      value={field.value || ""}
                       onChange={field.onChange}
                       maxLength={200}
                       onBlur={field.onBlur}
@@ -308,8 +306,11 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       label="Departamento"
                       placeholder="Seleccionar departamento"
                       options={departamentosDaneOptions}
-                      value={field.value}
-                      onChange={field.onChange}
+                      value={field.value || ""}
+                      onChange={(value) => {
+                        field.onChange(value)
+                        sedeForm.setValue("municipio", "")
+                      }}
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
@@ -326,9 +327,17 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                   render={({ field, fieldState }) => (
                     <FormSelect
                       label="Municipio"
-                      placeholder="Seleccionar municipio"
-                      options={getMunicipiosDaneOptionsByDepartamento(sedeForm.watch("departamento"))}
-                      value={field.value}
+                      placeholder={
+                        !sedeForm.watch("departamento")
+                          ? "Seleccione un departamento primero"
+                          : "Seleccionar municipio"
+                      }
+                      options={
+                        sedeForm.watch("departamento")
+                          ? getMunicipiosDaneOptionsByDepartamento(sedeForm.watch("departamento"))
+                          : []
+                      }
+                      value={field.value || ""}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
@@ -347,7 +356,7 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                     <FormInput
                       label="Dirección"
                       placeholder="Dirección completa"
-                      value={field.value}
+                      value={field.value || ""}
                       onChange={field.onChange}
                       maxLength={200}
                       onBlur={field.onBlur}
@@ -368,7 +377,7 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                       label="Zona"
                       placeholder="Seleccionar zona"
                       options={zonaOptions}
-                      value={field.value}
+                      value={field.value || ""}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
@@ -387,7 +396,7 @@ export function DatosSedes({ control, errors, watch, setValue }: DatosSedesProps
                     <FormInput
                       label="Actividad Económica"
                       placeholder="Código actividad económica"
-                      value={field.value}
+                      value={field.value || ""}
                       onChange={field.onChange}
                       maxLength={10}
                       onBlur={field.onBlur}

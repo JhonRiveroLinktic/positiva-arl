@@ -2,6 +2,7 @@ import {
   sanitizeInput,
   hasDangerousContent,
   validatePhoneNumber,
+  validateFaxNumber,
   validateNitVerificationDigit,
   cleanWhitespace,
   validateAndCleanSpecialCharacters,
@@ -150,7 +151,8 @@ export const EmpleadorDatosValidationRules = {
   },
 
   zona: {
-    validate: (value: string) => {
+    required: "La zona del empleador es requerida",
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (!validateZone(value)) {
         return "La zona debe ser U (urbano) o R (rural)"
@@ -187,9 +189,9 @@ export const EmpleadorDatosValidationRules = {
   fax: {
     validate: (value: string | undefined) => {
       if (!value) return true
-      const phoneValidation = validatePhoneNumber(value)
-      if (!phoneValidation.isValid) {
-        return phoneValidation.message || "Ingrese un número de fax válido"
+      const faxValidation = validateFaxNumber(value)
+      if (!faxValidation.isValid) {
+        return faxValidation.message || "Ingrese un número de fax válido"
       }
       if (hasDangerousContent(value)) {
         return "El fax contiene caracteres no permitidos"
@@ -563,9 +565,9 @@ export const RepresentanteLegalValidationRules = {
   fax: {
     validate: (value: string | undefined) => {
       if (!value) return true
-      const phoneValidation = validatePhoneNumber(value)
-      if (!phoneValidation.isValid) {
-        return phoneValidation.message || "Ingrese un número de fax válido"
+      const faxValidation = validateFaxNumber(value)
+      if (!faxValidation.isValid) {
+        return faxValidation.message || "Ingrese un número de fax válido"
       }
       if (hasDangerousContent(value)) {
         return "El fax contiene caracteres no permitidos"
@@ -652,7 +654,6 @@ export const RepresentanteLegalValidationRules = {
   },
 }
 
-// Validaciones para Sede
 export const SedeValidationRules = {
   tipoDocEmpleador: {
     required: "El tipo de documento del empleador es requerido",
@@ -782,7 +783,7 @@ export const SedeValidationRules = {
 
   zona: {
     required: "La zona de la sede es requerida",
-    validate: (value: string) => {
+    validate: (value: string | undefined) => {
       if (!value) return true
       if (!validateZone(value)) {
         return "La zona debe ser U (urbano) o R (rural)"
@@ -882,7 +883,6 @@ export const SedeValidationRules = {
   },
 }
 
-// Validaciones para CentroTrabajo
 export const CentroTrabajoValidationRules = {
   tipoDocEmpleador: {
     required: "El tipo de documento del empleador es requerido",
@@ -955,7 +955,6 @@ export const CentroTrabajoValidationRules = {
   },
 }
 
-// Función de sanitización para todas las entidades
 export const sanitizeFormData = (data: any) => {
   const sanitized: any = {}
 

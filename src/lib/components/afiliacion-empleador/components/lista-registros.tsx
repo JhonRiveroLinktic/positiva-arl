@@ -7,12 +7,12 @@ import { ListWrapper, TableColumn } from "@/lib/components/core/form/list"
 import { useRegistroStore } from "../stores/registro-store"
 import { EnvioRegistro } from "./envio-registros"
 import { AdjuntarDocumentos } from "./adjuntar-documentos"
-import type { Registro } from "../types/afiliacion-empleador-types"
+import type { RegistroCompleto } from "../types/afiliacion-empleador-types"
 
 export function ListaRegistros() {
   const [openDialog, setOpenDialog] = useState(false)
   const [openAdjuntarDialog, setOpenAdjuntarDialog] = useState(false)
-  const [registroSeleccionado, setRegistroSeleccionado] = useState<Registro | null>(null)
+  const [registroSeleccionado, setRegistroSeleccionado] = useState<RegistroCompleto | null>(null)
   const {
     registros,
     eliminarRegistro,
@@ -20,7 +20,7 @@ export function ListaRegistros() {
     limpiarTodosLosRegistros,
   } = useRegistroStore()
 
-  const handleAdjuntarDocumentos = (registro: Registro) => {
+  const handleAdjuntarDocumentos = (registro: RegistroCompleto) => {
     setRegistroSeleccionado(registro)
     setOpenAdjuntarDialog(true)
   }
@@ -29,70 +29,104 @@ export function ListaRegistros() {
     {
       key: "documentoEmpleador",
       label: "Documento Empleador",
-      render: (_, record: Registro) => (
-        <div>
-          <div className="font-medium">{record.tipoDocEmpleador}</div>
-          <div className="text-sm text-gray-500">{record.documentoEmpleador}</div>
-        </div>
-      ),
+      render: (_, record: RegistroCompleto) => {
+        const tipoDoc = record.empleadorDatos?.tipoDocEmpleador || (record as any).tipoDocEmpleador
+        const documento = record.empleadorDatos?.documentoEmpleador || (record as any).documentoEmpleador
+        
+        return (
+          <div>
+            <div className="font-medium">{tipoDoc}</div>
+            <div className="text-sm text-gray-500">{documento}</div>
+          </div>
+        )
+      },
     },
     {
       key: "razonSocialEmpleador",
       label: "Razón Social",
-      render: (_, record: Registro) => (
+      render: (_, record: RegistroCompleto) => (
         <div>
-          <div className="font-medium">{record.razonSocialEmpleador}</div>
-          <div className="text-sm text-gray-500">{record.digitoVerificacionEmpleador}</div>
+          <div className="font-medium">{record.empleadorDatos?.razonSocialEmpleador || (record as any).razonSocialEmpleador}</div>
+          <div className="text-sm text-gray-500">{record.empleadorDatos?.digitoVerificacionEmpleador || (record as any).digitoVerificacionEmpleador}</div>
         </div>
       ),
     },
     {
       key: "ubicacionEmpleador",
       label: "Ubicación Empleador",
-      render: (_, record: Registro) => (
+      render: (_, record: RegistroCompleto) => (
         <div>
-          <div className="font-medium">{record.departamentoEmpleador}</div>
-          <div className="text-sm text-gray-500">{record.municipioEmpleador}</div>
+          <div className="font-medium">{record.empleadorDatos?.departamentoEmpleador || (record as any).departamentoEmpleador}</div>
+          <div className="text-sm text-gray-500">{record.empleadorDatos?.municipioEmpleador || (record as any).municipioEmpleador}</div>
         </div>
       ),
     },
     {
       key: "actEconomicaPrincipalEmpleador",
       label: "Actividad Económica",
-      render: (_, record: Registro) => (
-        <span>{record.actEconomicaPrincipalEmpleador}</span>
+      render: (_, record: RegistroCompleto) => (
+        <span>{record.empleadorDatos?.actEconomicaPrincipalEmpleador || (record as any).actEconomicaPrincipalEmpleador}</span>
       ),
     },
     {
       key: "fechaRadicacion",
       label: "Fecha Radicación",
-      render: (_, record: Registro) => (
-        <span>{record.fechaRadicacion ? new Date(record.fechaRadicacion).toLocaleDateString('es-ES') : ''}</span>
-      ),
+      render: (_, record: RegistroCompleto) => {
+        const fecha = record.empleadorDatos?.fechaRadicacion || (record as any).fechaRadicacion
+        return (
+          <span>{fecha ? new Date(fecha).toLocaleDateString('es-ES') : ''}</span>
+        )
+      },
     },
     {
       key: "origen",
       label: "Origen",
-      render: (_, record: Registro) => (
-        <span>{record.origen}</span>
+      render: (_, record: RegistroCompleto) => (
+        <span>{record.empleadorDatos?.origen || (record as any).origen}</span>
       ),
     },
     {
       key: "representanteLegal",
       label: "Representante Legal",
-      render: (_, record: Registro) => (
+      render: (_, record: RegistroCompleto) => (
         <div>
           <div className="font-medium">
-            {record.primerNombreRepresentanteLegal} {record.primerApellidoRepresentanteLegal}
+            {(record.representanteLegal?.primerNombre || (record as any).primerNombre)} {(record.representanteLegal?.primerApellido || (record as any).primerApellido)}
           </div>
-          <div className="text-sm text-gray-500">{record.tipoDocRepresentanteLegal} {record.numeDocRepresentanteLegal}</div>
+          <div className="text-sm text-gray-500">{(record.representanteLegal?.tipoDoc || (record as any).tipoDoc)} {(record.representanteLegal?.documento || (record as any).documento)}</div>
         </div>
       ),
     },
     {
+      key: "sedes",
+      label: "Sedes",
+      render: (_, record: RegistroCompleto) => {
+        const sedes = record.sedes || []
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">{sedes.length}</span>
+            <span className="text-xs text-gray-500">sede(s)</span>
+          </div>
+        )
+      },
+    },
+    {
+      key: "centrosTrabajo",
+      label: "Centros de Trabajo",
+      render: (_, record: RegistroCompleto) => {
+        const centros = record.centrosTrabajo || []
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">{centros.length}</span>
+            <span className="text-xs text-gray-500">centro(s)</span>
+          </div>
+        )
+      },
+    },
+    {
       key: "archivos",
       label: "Documentos",
-      render: (_, record: Registro) => {
+      render: (_, record: RegistroCompleto) => {
         const archivos = record.archivos || []
         return (
           <div className="flex items-center gap-2">
@@ -116,7 +150,7 @@ export function ListaRegistros() {
     </Button>
   )
 
-  const getCustomActions = (record: Registro) => [
+  const getCustomActions = (record: RegistroCompleto) => [
     {
       label: "Adjuntar Documentos",
       icon: <Paperclip className="h-4 w-4" />,

@@ -10,11 +10,10 @@ import {
   DocumentTypesOptions,
   departamentosDaneOptions,
   getMunicipiosDaneOptionsByDepartamento,
-  EPSOptions,
-  PensionFundOptions,
 } from "../../options"
 import { genderCodeOptions } from "@/lib/options/gender-codes"
 import type { RepresentanteLegal } from "../../types/afiliacion-empleador-types"
+import { PensionFundOptions, EPSOptions } from "@/lib/components/independiente-con-contrato/options"
 
 interface DatosRepresentanteLegalProps {
   control: Control<RepresentanteLegal>
@@ -29,10 +28,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
 
   useEffect(() => {
     setSelectedDepartamento(currentDepartamento)
-    if (currentDepartamento !== selectedDepartamento) {
-      setValue("municipio", "")
-    }
-  }, [currentDepartamento, setValue, selectedDepartamento])
+  }, [currentDepartamento])
 
   const genderOptions = genderCodeOptions.map((item) => ({
     value: item.code,
@@ -68,7 +64,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
               options={DocumentTypesOptions.filter((i: { value: string }) => 
                 ["CC", "TI", "CE", "CD", "PT", "SC"].includes(i.value)
               )}
-              value={field.value}
+              value={field.value || ""}
               onChange={field.onChange}
               onBlur={field.onBlur}
               error={!!fieldState.error}
@@ -86,7 +82,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
             <FormInput
               label="Número de Documento"
               placeholder="Número de documento"
-              value={field.value}
+              value={field.value || ""}
               onChange={field.onChange}
               maxLength={20}
               onBlur={field.onBlur}
@@ -105,7 +101,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
             <FormInput
               label="Primer Apellido"
               placeholder="Primer apellido"
-              value={field.value}
+              value={field.value || ""}
               onChange={field.onChange}
               maxLength={100}
               onBlur={field.onBlur}
@@ -142,7 +138,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
             <FormInput
               label="Primer Nombre"
               placeholder="Primer nombre"
-              value={field.value}
+              value={field.value || ""}
               onChange={field.onChange}
               maxLength={100}
               onBlur={field.onBlur}
@@ -205,7 +201,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
               label="Sexo"
               placeholder="Seleccionar sexo"
               options={genderOptions}
-              value={field.value}
+              value={field.value || ""}
               onChange={field.onChange}
               onBlur={field.onBlur}
               error={!!fieldState.error}
@@ -242,8 +238,11 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
               label="Departamento"
               placeholder="Seleccionar departamento"
               options={departamentosDaneOptions}
-              value={field.value}
-              onChange={field.onChange}
+              value={field.value || ""}
+              onChange={(value) => {
+                field.onChange(value)
+                setValue("municipio", "")
+              }}
               onBlur={field.onBlur}
               error={!!fieldState.error}
               errorMessage={fieldState.error?.message}
@@ -259,15 +258,23 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
           render={({ field, fieldState }) => (
             <FormSelect
               label="Municipio"
-              placeholder="Seleccionar municipio"
-              options={getMunicipiosDaneOptionsByDepartamento(currentDepartamento)}
-              value={field.value}
+              placeholder={
+                !selectedDepartamento
+                  ? "Seleccione un departamento primero"
+                  : "Seleccionar municipio"
+              }
+              options={
+                selectedDepartamento
+                  ? getMunicipiosDaneOptionsByDepartamento(selectedDepartamento)
+                  : []
+              }
+              value={field.value || ""}
               onChange={field.onChange}
               onBlur={field.onBlur}
               error={!!fieldState.error}
               errorMessage={fieldState.error?.message}
               required
-              disabled={!currentDepartamento}
+              disabled={!selectedDepartamento}
             />
           )}
         />
@@ -298,7 +305,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
             <FormInput
               label="Dirección"
               placeholder="Dirección completa"
-              value={field.value}
+              value={field.value || ""}
               onChange={field.onChange}
               maxLength={200}
               onBlur={field.onBlur}
@@ -354,7 +361,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
               label="Correo Electrónico"
               type="email"
               placeholder="correo@ejemplo.com"
-              value={field.value}
+              value={field.value || ""}
               onChange={field.onChange}
               maxLength={20}
               onBlur={field.onBlur}
@@ -370,12 +377,10 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
           rules={RepresentanteLegalValidationRules.nitAfp}
           render={({ field, fieldState }) => (
             <FormSelect
-              label="Tipo de Documento"
+              label="Nit AFP"
               placeholder="Seleccionar tipo"
-              options={DocumentTypesOptions.filter((i: { value: string }) => 
-                ["CC", "TI", "CE", "CD", "PT", "SC"].includes(i.value)
-              )}
-              value={field.value}
+              options={EPSOptions}
+              value={field.value || ""}
               onChange={field.onChange}
               onBlur={field.onBlur}
               error={!!fieldState.error}
@@ -391,12 +396,10 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
           rules={RepresentanteLegalValidationRules.nitEps}
           render={({ field, fieldState }) => (
             <FormSelect
-              label="Tipo de Documento"
+              label="Nit EPS"
               placeholder="Seleccionar tipo"
-              options={DocumentTypesOptions.filter((i: { value: string }) => 
-                ["CC", "TI", "CE", "CD", "PT", "SC"].includes(i.value)
-              )}
-              value={field.value}
+              options={PensionFundOptions}
+              value={field.value || ""}
               onChange={field.onChange}
               onBlur={field.onBlur}
               error={!!fieldState.error}

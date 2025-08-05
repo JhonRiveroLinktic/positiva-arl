@@ -27,7 +27,7 @@ import {
 } from "@/lib/components/ui/table"
 import { Badge } from "@/lib/components/ui/badge"
 import { toast } from "@/lib/utils/toast"
-import type { CentroTrabajo, AfiliacionEmpleadorFormData } from "../../types/afiliacion-empleador-types"
+import type { AfiliacionEmpleadorFormData } from "../../types/afiliacion-empleador-types"
 
 interface DatosCentrosTrabajoProps {
   control: Control<AfiliacionEmpleadorFormData>
@@ -54,7 +54,7 @@ const initialCentroTrabajoFormData: CentroTrabajoFormData = {
   idSede: "",
 }
 
-export function DatosCentrosTrabajo({ control, errors, watch, setValue }: DatosCentrosTrabajoProps) {
+export function DatosCentrosTrabajo({ control, watch }: DatosCentrosTrabajoProps) {
   const { fields, append, remove, update } = useFieldArray({
     control,
     name: "centrosTrabajo",
@@ -71,9 +71,8 @@ export function DatosCentrosTrabajo({ control, errors, watch, setValue }: DatosC
     defaultValues: initialCentroTrabajoFormData,
   })
 
-  // Crear opciones de sedes basadas en las sedes agregadas
   const sedeOptions = watchedSedes.map((sede: any, index: number) => ({
-    value: sede.id || `sede-${index}`, // Si tiene ID usa ese, sino usa el índice
+    value: sede.id || `sede-${index}`,
     label: sede.nombreSede || `Sede #${index + 1}`
   }))
 
@@ -101,21 +100,20 @@ export function DatosCentrosTrabajo({ control, errors, watch, setValue }: DatosC
   const handleSubmitCentroTrabajo = centroTrabajoForm.handleSubmit((data) => {
     try {
       if (editingIndex !== null) {
-        // Actualizar centro de trabajo existente
         update(editingIndex, data)
+        handleCloseModal()
         toast.success({
           title: "Centro de trabajo actualizado",
           description: "El centro de trabajo se actualizó correctamente.",
         })
       } else {
-        // Agregar nuevo centro de trabajo
         append(data)
+        handleCloseModal()
         toast.success({
           title: "Centro de trabajo agregado",
           description: "El centro de trabajo se agregó correctamente.",
         })
       }
-      handleCloseModal()
     } catch (error) {
       toast.error({
         title: "Error",
@@ -123,11 +121,14 @@ export function DatosCentrosTrabajo({ control, errors, watch, setValue }: DatosC
       })
     }
   }, (errors) => {
-    toast.error({
-      title: "Error de validación",
-      description: "Por favor corrija los errores en el formulario.",
-    })
+    console.error("Errores de validación:", errors)
   })
+
+  const handleModalSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    handleSubmitCentroTrabajo()
+  }
 
   const eliminarCentroTrabajo = (index: number) => {
     remove(index)
@@ -172,7 +173,7 @@ export function DatosCentrosTrabajo({ control, errors, watch, setValue }: DatosC
               </DialogTitle>
             </DialogHeader>
             
-            <form onSubmit={handleSubmitCentroTrabajo} className="space-y-6">
+            <form onSubmit={handleModalSubmit} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-start">
                 <Controller
                   name="tipoDocEmpleador"
@@ -183,7 +184,7 @@ export function DatosCentrosTrabajo({ control, errors, watch, setValue }: DatosC
                       label="Tipo Documento Empleador"
                       placeholder="Seleccionar tipo"
                       options={DocumentTypesOptions.filter((i: { value: string }) => ["N", "NI"].includes(i.value))}
-                      value={field.value}
+                      value={field.value || ""}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
@@ -202,7 +203,7 @@ export function DatosCentrosTrabajo({ control, errors, watch, setValue }: DatosC
                     <FormInput
                       label="Documento Empleador"
                       placeholder="Número documento empleador"
-                      value={field.value}
+                      value={field.value || ""}
                       onChange={field.onChange}
                       maxLength={20}
                       onBlur={field.onBlur}
@@ -260,7 +261,7 @@ export function DatosCentrosTrabajo({ control, errors, watch, setValue }: DatosC
                     <FormInput
                       label="Actividad Económica"
                       placeholder="Código actividad económica"
-                      value={field.value}
+                      value={field.value || ""}
                       onChange={field.onChange}
                       maxLength={10}
                       onBlur={field.onBlur}

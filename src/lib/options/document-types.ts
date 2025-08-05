@@ -14,8 +14,12 @@ export const documentTypesData: DocumentType[] = [
     "Nombre": "Cédula Extranjería"
   },
   {
+    "Tipo": "N",
+    "Nombre": "NIT"
+  },
+  {
     "Tipo": "NI",
-    "Nombre": "Nit"
+    "Nombre": "NIT"
   },
   {
     "Tipo": "PT",

@@ -219,6 +219,29 @@ export function validatePhoneNumber(phone: string): { isValid: boolean; message?
   return { isValid: true }
 }
 
+export function validateFaxNumber(fax: string): { isValid: boolean; message?: string } {
+  if (!fax) return { isValid: false, message: "El número de fax es requerido" }
+
+  const faxRegex = /^\d{7,15}$/
+
+  if (!faxRegex.test(fax)) {
+    if (fax.length < 7) {
+      return { isValid: false, message: "Fax muy corto (mínimo 7 dígitos)" }
+    } else if (fax.length > 15) {
+      return { isValid: false, message: "Fax muy largo (máximo 15 dígitos)" }
+    } else if (!/^\d+$/.test(fax)) {
+      return { isValid: false, message: "El fax debe contener solo números" }
+    } else {
+      return {
+        isValid: false,
+        message: "Formato inválido. Use solo números entre 7 y 15 dígitos",
+      }
+    }
+  }
+
+  return { isValid: true }
+}
+
 // Reglas de validación reutilizables para react-hook-form
 export const createValidationRules = {
   required: (message = "Este campo es requerido") => ({
