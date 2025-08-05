@@ -9,7 +9,7 @@ import {
   getMaxDateCoverage,
   EmpleadorDatosValidationRules
 } from "../../validations/validation-rules"
-import type { EmpleadorDatos } from "../../types/afiliacion-empleador-types"
+import type { AfiliacionEmpleadorFormData } from "../../types/afiliacion-empleador-types"
 import { useCatalogStore } from "@/lib/components/core/stores/catalog-store"
 import { genderCodeOptions } from "@/lib/options/gender-codes"
 import { 
@@ -21,10 +21,10 @@ import {
 } from "@/lib/components/independiente-con-contrato/options"
 
 interface DatosEmpleadorProps {
-  control: Control<EmpleadorDatos>
-  errors: FieldErrors<EmpleadorDatos>
-  watch: (name: keyof EmpleadorDatos) => any
-  setValue: (name: keyof EmpleadorDatos, value: any) => void
+  control: Control<AfiliacionEmpleadorFormData>
+  errors: FieldErrors<AfiliacionEmpleadorFormData["empleadorDatos"]>
+  watch: (name?: string | string[]) => any
+  setValue: (name: any, value: any) => void
 }
 
 export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmpleadorProps) {
@@ -34,10 +34,10 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
     loading,
   } = useCatalogStore()
 
-  // Usar useWatch para sincronizar datos en tiempo real
-  const currentOrigen = useWatch({ control, name: "origen" })
-  const currentTipoDocEmpleador = useWatch({ control, name: "tipoDocEmpleador" })
-  const currentDepartamentoEmpleador = useWatch({ control, name: "departamentoEmpleador" })
+  const currentOrigen = useWatch({ control, name: "empleadorDatos.origen" })
+  const currentTipoDocEmpleador = useWatch({ control, name: "empleadorDatos.tipoDocEmpleador" })
+  const currentDepartamentoEmpleador = useWatch({ control, name: "empleadorDatos.departamentoEmpleador" })
+  
   const [selectedDepartamentoEmpleador, setSelectedDepartamentoEmpleador] = useState<string | undefined>(undefined)
 
   const isTraslado = currentOrigen === "2"
@@ -45,22 +45,24 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
 
   useEffect(() => {
     if (!isTraslado) {
-      setValue("codigoArl", "")
-      setValue("nitArlAnterior", "")
-      setValue("fechaNotificacionTraslado", "")
+      setValue("empleadorDatos.codigoArl", "")
+      setValue("empleadorDatos.nitArlAnterior", "")
+      setValue("empleadorDatos.fechaNotificacionTraslado", "")
     }
   }, [isTraslado, setValue])
 
   useEffect(() => {
     if (!isNit) {
-      setValue("digitoVerificacionEmpleador", "")
+      setValue("empleadorDatos.digitoVerificacionEmpleador", "")
     }
   }, [isNit, setValue])
 
   useEffect(() => {
-    // Resetear municipio cuando cambia el departamento
-    if (currentDepartamentoEmpleador && currentDepartamentoEmpleador !== selectedDepartamentoEmpleador) {
-      setValue("municipioEmpleador", "")
+    if (currentDepartamentoEmpleador && !selectedDepartamentoEmpleador) {
+      setSelectedDepartamentoEmpleador(currentDepartamentoEmpleador)
+    }
+    else if (currentDepartamentoEmpleador && currentDepartamentoEmpleador !== selectedDepartamentoEmpleador && selectedDepartamentoEmpleador) {
+      setValue("empleadorDatos.municipioEmpleador", "")
       setSelectedDepartamentoEmpleador(currentDepartamentoEmpleador)
     }
   }, [currentDepartamentoEmpleador, setValue, selectedDepartamentoEmpleador])
@@ -115,7 +117,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
       
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-start">
         <Controller
-          name="tipoDocEmpleador"
+          name="empleadorDatos.tipoDocEmpleador"
           control={control}
           rules={EmpleadorDatosValidationRules.tipoDocEmpleador}
           render={({ field, fieldState }) => (
@@ -133,8 +135,8 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
           )}
         />
 
-        <Controller
-          name="documentoEmpleador"
+<Controller
+          name="empleadorDatos.documentoEmpleador"
           control={control}
           rules={EmpleadorDatosValidationRules.documentoEmpleador}
           render={({ field, fieldState }) => (
@@ -154,7 +156,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
 
         {isNit && (
           <Controller
-            name="digitoVerificacionEmpleador"
+            name="empleadorDatos.digitoVerificacionEmpleador"
             control={control}
             rules={EmpleadorDatosValidationRules.digitoVerificacionEmpleador}
             render={({ field, fieldState }) => (
@@ -173,7 +175,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         )}
         
         <Controller
-          name="razonSocialEmpleador"
+          name="empleadorDatos.razonSocialEmpleador"
           control={control}
           rules={EmpleadorDatosValidationRules.razonSocialEmpleador}
           render={({ field, fieldState }) => (
@@ -191,8 +193,8 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
           )}
         />
 
-        <Controller
-          name="departamentoEmpleador"
+<Controller
+          name="empleadorDatos.departamentoEmpleador"
           control={control}
           rules={EmpleadorDatosValidationRules.departamentoEmpleador}
           render={({ field, fieldState }) => (
@@ -203,7 +205,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
               value={field.value || ""}
               onChange={(value) => {
                 field.onChange(value)
-                setValue("municipioEmpleador", "")
+                setValue("empleadorDatos.municipioEmpleador", "")
               }}
               onBlur={field.onBlur}
               error={!!fieldState.error}
@@ -214,7 +216,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         />
 
         <Controller
-          name="municipioEmpleador"
+          name="empleadorDatos.municipioEmpleador"
           control={control}
           rules={EmpleadorDatosValidationRules.municipioEmpleador}
           render={({ field, fieldState }) => (
@@ -238,7 +240,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         />
 
         <Controller
-          name="direccionEmpleador"
+          name="empleadorDatos.direccionEmpleador"
           control={control}
           rules={EmpleadorDatosValidationRules.direccionEmpleador}
           render={({ field, fieldState }) => (
@@ -257,7 +259,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         />
 
         <Controller
-          name="telefonoEmpleador"
+          name="empleadorDatos.telefonoEmpleador"
           control={control}
           rules={EmpleadorDatosValidationRules.telefonoEmpleador}
           render={({ field, fieldState }) => (
@@ -275,7 +277,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         />
 
         <Controller
-          name="fax"
+          name="empleadorDatos.fax"
           control={control}
           rules={EmpleadorDatosValidationRules.fax}
           render={({ field, fieldState }) => (
@@ -293,7 +295,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         />
 
         <Controller
-          name="correoElectronico"
+          name="empleadorDatos.correoElectronico"
           control={control}
           rules={EmpleadorDatosValidationRules.correoElectronico}
           render={({ field, fieldState }) => (
@@ -312,7 +314,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         />
 
         <Controller
-          name="zona"
+          name="empleadorDatos.zona"
           control={control}
           rules={EmpleadorDatosValidationRules.zona}
           render={({ field, fieldState }) => (
@@ -330,7 +332,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         />
 
         <Controller
-          name="actEconomicaPrincipalEmpleador"
+          name="empleadorDatos.actEconomicaPrincipalEmpleador"
           control={control}
           rules={EmpleadorDatosValidationRules.actEconomicaPrincipalEmpleador}
           render={({ field, fieldState }) => (
@@ -349,7 +351,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         />
 
         <Controller
-          name="suministroDeTransporte"
+          name="empleadorDatos.suministroDeTransporte"
           control={control}
           rules={EmpleadorDatosValidationRules.suministroDeTransporte}
           render={({ field, fieldState }) => (
@@ -367,7 +369,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         />
 
         <Controller
-          name="fechaRadicacion"
+          name="empleadorDatos.fechaRadicacion"
           control={control}
           rules={EmpleadorDatosValidationRules.fechaRadicacion}
           render={({ field, fieldState }) => (
@@ -392,7 +394,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         />
 
         <Controller
-          name="naturaleza"
+          name="empleadorDatos.naturaleza"
           control={control}
           rules={EmpleadorDatosValidationRules.naturaleza}
           render={({ field, fieldState }) => (
@@ -410,7 +412,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         />
 
         <Controller
-          name="origen"
+          name="empleadorDatos.origen"
           control={control}
           rules={EmpleadorDatosValidationRules.origen}
           render={({ field, fieldState }) => (
@@ -428,7 +430,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         />
 
         <Controller
-          name="fechaCobertura"
+          name="empleadorDatos.fechaCobertura"
           control={control}
           rules={EmpleadorDatosValidationRules.fechaCobertura}
           render={({ field, fieldState }) => (
@@ -454,7 +456,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         {isTraslado && (
           <>
             <Controller
-              name="codigoArl"
+              name="empleadorDatos.codigoArl"
               control={control}
               rules={EmpleadorDatosValidationRules.codigoArl}
               render={({ field, fieldState }) => (
@@ -472,7 +474,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
             />
 
             <Controller
-              name="nitArlAnterior"
+              name="empleadorDatos.nitArlAnterior"
               control={control}
               rules={EmpleadorDatosValidationRules.nitArlAnterior}
               render={({ field, fieldState }) => (
@@ -490,7 +492,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
             />
 
             <Controller
-              name="fechaNotificacionTraslado"
+              name="empleadorDatos.fechaNotificacionTraslado"
               control={control}
               rules={EmpleadorDatosValidationRules.fechaNotificacionTraslado}
               render={({ field, fieldState }) => (
@@ -516,7 +518,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         )}
 
         <Controller
-          name="tipoDocRepresentanteLegal"
+          name="empleadorDatos.tipoDocRepresentanteLegal"
           control={control}
           rules={EmpleadorDatosValidationRules.tipoDocRepresentanteLegal}
           render={({ field, fieldState }) => (
@@ -535,7 +537,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         />
 
         <Controller
-          name="numeDocRepresentanteLegal"
+          name="empleadorDatos.numeDocRepresentanteLegal"
           control={control}
           rules={EmpleadorDatosValidationRules.numeDocRepresentanteLegal}
           render={({ field, fieldState }) => (
@@ -554,7 +556,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
         />
 
         <Controller
-          name="nombreRepresentanteLegal"
+          name="empleadorDatos.nombreRepresentanteLegal"
           control={control}
           rules={EmpleadorDatosValidationRules.nombreRepresentanteLegal}
           render={({ field, fieldState }) => (

@@ -14,23 +14,25 @@ import {
   PensionFundOptions,
 } from "@/lib/components/independiente-con-contrato/options"
 import { genderCodeOptions } from "@/lib/options/gender-codes"
-import type { RepresentanteLegal } from "../../types/afiliacion-empleador-types"
+import type { AfiliacionEmpleadorFormData } from "../../types/afiliacion-empleador-types"
+
 interface DatosRepresentanteLegalProps {
-  control: Control<RepresentanteLegal>
-  errors: FieldErrors<RepresentanteLegal>
-  watch: (name: keyof RepresentanteLegal) => any
-  setValue: (name: keyof RepresentanteLegal, value: any) => void
+  control: Control<AfiliacionEmpleadorFormData>
+  errors: FieldErrors<AfiliacionEmpleadorFormData["representanteLegal"]>
+  watch: (name?: string | string[]) => any
+  setValue: (name: any, value: any) => void
 }
 
 export function DatosRepresentanteLegal({ control, errors, watch, setValue }: DatosRepresentanteLegalProps) {
-  // Usar useWatch para sincronizar datos en tiempo real
-  const currentDepartamento = useWatch({ control, name: "departamento" })
+  const currentDepartamento = useWatch({ control, name: "representanteLegal.departamento" })
   const [selectedDepartamento, setSelectedDepartamento] = useState<string | undefined>(undefined)
 
   useEffect(() => {
-    // Resetear municipio cuando cambia el departamento
-    if (currentDepartamento && currentDepartamento !== selectedDepartamento) {
-      setValue("municipio", "")
+    if (currentDepartamento && !selectedDepartamento) {
+      setSelectedDepartamento(currentDepartamento)
+    }
+    else if (currentDepartamento && currentDepartamento !== selectedDepartamento && selectedDepartamento) {
+      setValue("representanteLegal.municipio", "")
       setSelectedDepartamento(currentDepartamento)
     }
   }, [currentDepartamento, setValue, selectedDepartamento])
@@ -59,7 +61,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
       
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-start">
         <Controller
-          name="tipoDoc"
+          name="representanteLegal.tipoDoc"
           control={control}
           rules={RepresentanteLegalValidationRules.tipoDoc}
           render={({ field, fieldState }) => (
@@ -78,7 +80,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
         />
 
         <Controller
-          name="documento"
+          name="representanteLegal.documento"
           control={control}
           rules={RepresentanteLegalValidationRules.documento}
           render={({ field, fieldState }) => (
@@ -97,7 +99,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
         />
 
         <Controller
-          name="primerApellido"
+          name="representanteLegal.primerApellido"
           control={control}
           rules={RepresentanteLegalValidationRules.primerApellido}
           render={({ field, fieldState }) => (
@@ -116,7 +118,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
         />
 
         <Controller
-          name="segundoApellido"
+          name="representanteLegal.segundoApellido"
           control={control}
           rules={RepresentanteLegalValidationRules.segundoApellido}
           render={({ field, fieldState }) => (
@@ -134,7 +136,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
         />
 
         <Controller
-          name="primerNombre"
+          name="representanteLegal.primerNombre"
           control={control}
           rules={RepresentanteLegalValidationRules.primerNombre}
           render={({ field, fieldState }) => (
@@ -153,7 +155,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
         />
 
         <Controller
-          name="segundoNombre"
+          name="representanteLegal.segundoNombre"
           control={control}
           rules={RepresentanteLegalValidationRules.segundoNombre}
           render={({ field, fieldState }) => (
@@ -171,7 +173,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
         />
 
         <Controller
-          name="fechaNacimiento"
+          name="representanteLegal.fechaNacimiento"
           control={control}
           rules={RepresentanteLegalValidationRules.fechaNacimiento}
           render={({ field, fieldState }) => (
@@ -196,7 +198,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
         />
 
         <Controller
-          name="sexo"
+          name="representanteLegal.sexo"
           control={control}
           rules={RepresentanteLegalValidationRules.sexo}
           render={({ field, fieldState }) => (
@@ -215,7 +217,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
         />
 
         <Controller
-          name="pais"
+          name="representanteLegal.pais"
           control={control}
           rules={RepresentanteLegalValidationRules.pais}
           render={({ field, fieldState }) => (
@@ -232,8 +234,8 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
           )}
         />
 
-        <Controller
-          name="departamento"
+<Controller
+          name="representanteLegal.departamento"
           control={control}
           rules={RepresentanteLegalValidationRules.departamento}
           render={({ field, fieldState }) => (
@@ -244,7 +246,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
               value={field.value || ""}
               onChange={(value) => {
                 field.onChange(value)
-                setValue("municipio", "")
+                setValue("representanteLegal.municipio", "")
               }}
               onBlur={field.onBlur}
               error={!!fieldState.error}
@@ -255,20 +257,20 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
         />
 
         <Controller
-          name="municipio"
+          name="representanteLegal.municipio"
           control={control}
           rules={RepresentanteLegalValidationRules.municipio}
           render={({ field, fieldState }) => (
             <FormSelect
               label="Municipio"
               placeholder={
-                !selectedDepartamento
+                !currentDepartamento
                   ? "Seleccione un departamento primero"
                   : "Seleccionar municipio"
               }
               options={
-                selectedDepartamento
-                  ? getMunicipiosDaneOptionsByDepartamento(selectedDepartamento)
+                currentDepartamento
+                  ? getMunicipiosDaneOptionsByDepartamento(currentDepartamento)
                   : []
               }
               value={field.value || ""}
@@ -277,13 +279,13 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
               error={!!fieldState.error}
               errorMessage={fieldState.error?.message}
               required
-              disabled={!selectedDepartamento}
+              disabled={!currentDepartamento}
             />
           )}
         />
 
         <Controller
-          name="zona"
+          name="representanteLegal.zona"
           control={control}
           rules={RepresentanteLegalValidationRules.zona}
           render={({ field, fieldState }) => (
@@ -301,7 +303,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
         />
 
         <Controller
-          name="direccion"
+          name="representanteLegal.direccion"
           control={control}
           rules={RepresentanteLegalValidationRules.direccion}
           render={({ field, fieldState }) => (
@@ -320,7 +322,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
         />
 
         <Controller
-          name="telefono"
+          name="representanteLegal.telefono"
           control={control}
           rules={RepresentanteLegalValidationRules.telefono}
           render={({ field, fieldState }) => (
@@ -338,7 +340,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
         />
 
         <Controller
-          name="fax"
+          name="representanteLegal.fax"
           control={control}
           rules={RepresentanteLegalValidationRules.fax}
           render={({ field, fieldState }) => (
@@ -356,7 +358,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
         />
 
         <Controller
-          name="correoElectronico"
+          name="representanteLegal.correoElectronico"
           control={control}
           rules={RepresentanteLegalValidationRules.correoElectronico}
           render={({ field, fieldState }) => (
@@ -366,7 +368,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
               placeholder="correo@ejemplo.com"
               value={field.value || ""}
               onChange={field.onChange}
-              maxLength={20}
+              maxLength={100}
               onBlur={field.onBlur}
               error={!!fieldState.error}
               errorMessage={fieldState.error?.message}
@@ -375,13 +377,13 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
         />
 
         <Controller
-          name="nitAfp"
+          name="representanteLegal.nitAfp"
           control={control}
           rules={RepresentanteLegalValidationRules.nitAfp}
           render={({ field, fieldState }) => (
             <FormSelect
               label="Nit AFP"
-              placeholder="Seleccionar tipo"
+              placeholder="Seleccionar AFP"
               options={PensionFundOptions}
               value={field.value || ""}
               onChange={field.onChange}
@@ -394,13 +396,13 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
         />
 
         <Controller
-          name="nitEps"
+          name="representanteLegal.nitEps"
           control={control}
           rules={RepresentanteLegalValidationRules.nitEps}
           render={({ field, fieldState }) => (
             <FormSelect
               label="Nit EPS"
-              placeholder="Seleccionar tipo"
+              placeholder="Seleccionar EPS"
               options={EPSOptions}
               value={field.value || ""}
               onChange={field.onChange}

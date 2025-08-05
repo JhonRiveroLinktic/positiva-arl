@@ -7,7 +7,7 @@ import { useRegistroStore } from "../stores/registro-store"
 import { ListaRegistros } from "./lista-registros"
 import { sanitizeFormData } from "../validations/validation-rules"
 import { toast } from "@/lib/utils/toast"
-import type { RegistroCompleto, AfiliacionEmpleadorFormData, EmpleadorDatos, RepresentanteLegal } from "../types/afiliacion-empleador-types"
+import type { RegistroCompleto, AfiliacionEmpleadorFormData } from "../types/afiliacion-empleador-types"
 
 import { DatosEmpleador } from "./forms/datos-empleador-form"
 import { DatosRepresentanteLegal } from "./forms/datos-representante-legal-form"
@@ -218,31 +218,19 @@ export function AfiliacionEmpleadorFormIntegrado() {
       >
         <div className="mb-12">
           <DatosEmpleador
-            control={control as any}
+            control={control}
             errors={errors.empleadorDatos || {}}
-            watch={(name: keyof EmpleadorDatos) => watch(`empleadorDatos.${name}` as any)}
-            setValue={(name: keyof EmpleadorDatos, value: any) => {
-              setValue(`empleadorDatos.${name}` as any, value)
-              // Trigger re-render para campos dependientes
-              if (name === 'departamentoEmpleador') {
-                setValue('empleadorDatos.municipioEmpleador' as any, '')
-              }
-            }}
+            watch={watch}
+            setValue={setValue}
           />
         </div>
 
         <div className="mb-12">
           <DatosRepresentanteLegal
-            control={control as any}
+            control={control}
             errors={errors.representanteLegal || {}}
-            watch={(name: keyof RepresentanteLegal) => watch(`representanteLegal.${name}` as any)}
-            setValue={(name: keyof RepresentanteLegal, value: any) => {
-              setValue(`representanteLegal.${name}` as any, value)
-              // Trigger re-render para campos dependientes
-              if (name === 'departamento') {
-                setValue('representanteLegal.municipio' as any, '')
-              }
-            }}
+            watch={watch}
+            setValue={setValue}
           />
         </div>
 
