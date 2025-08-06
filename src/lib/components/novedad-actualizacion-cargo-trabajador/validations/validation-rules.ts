@@ -70,9 +70,7 @@ export const novedadActualizacionCargoTrabajadorValidationRules = {
         }
     },
     
-    codigo_subempresa: {
-        required: "El código de subempresa es requerido",
-    },
+    codigo_subempresa: {},
     
     tipo_doc_trabajador: {
         required: "El tipo de documento del trabajador es requerido",

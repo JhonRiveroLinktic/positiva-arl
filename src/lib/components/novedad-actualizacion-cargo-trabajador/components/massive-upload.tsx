@@ -16,13 +16,13 @@ import { Button } from "@/lib/components/ui/button";
 
 const EXCEL_COLUMN_MAPPING = {
   'TIPO_DOCUMENTO_EMPLEADOR': 'tipo_doc_empleador',
-  'DOCUMENTO_EMPLEADOR': 'nume_doc_empleador',
-  'RAZON_SOCIAL': 'nombre_razon_social_empleador',
-  'CODIGO_SUBEMPRESA (SOLO PARA EL NIT 899999061)': 'codigo_subempresa',
+  'DOCUMENTO_EMPLEADOR': 'documento_empleador',
+  'RAZON_SOCIAL': 'razon_social',
+  'CODIGO_SUBEMPRESA_(SOLO_PARA_EL_NIT_899999061)': 'codigo_subempresa',
   'TIPO_DOCUMENTO_TRABAJADOR': 'tipo_doc_trabajador',
-  'DOCUMENTO_TRABAJADOR': 'nume_doc_trabajador',
+  'DOCUMENTO_TRABAJADOR': 'documento_trabajador',
   'TIPO_VINCULACION': 'tipo_vinculacion',
-  'ID_CARGO': 'id_cargo',
+  'ID_CARGO': 'cargo_nuevo',
 } as const;
 
 type FormFieldKeys = (typeof EXCEL_COLUMN_MAPPING)[keyof typeof EXCEL_COLUMN_MAPPING];
@@ -78,8 +78,7 @@ export function NovedadActualizacionCargoTrabajadorMassiveUpload({ trigger, onSu
             if (formField) {
               let value = row[originalKey];
               value = value !== undefined && value !== null ? String(value).trim() : "";
-              //@ts-expect-error TODO: Fix this
-              formData[formField] = value;
+              (formData as any)[formField] = value;
             }
           });
 
@@ -201,7 +200,7 @@ export function NovedadActualizacionCargoTrabajadorMassiveUpload({ trigger, onSu
       normalizeHeader('TIPO_DOCUMENTO_EMPLEADOR'),
       normalizeHeader('DOCUMENTO_EMPLEADOR'),
       normalizeHeader('RAZON_SOCIAL'),
-      normalizeHeader('CODIGO_SUBEMPRESA (SOLO PARA EL NIT 899999061)'),
+      normalizeHeader('CODIGO_SUBEMPRESA_(SOLO_PARA_EL_NIT_899999061)'),
       normalizeHeader('TIPO_DOCUMENTO_TRABAJADOR'),
       normalizeHeader('DOCUMENTO_TRABAJADOR'),
       normalizeHeader('TIPO_VINCULACION'),
@@ -241,10 +240,10 @@ export function NovedadActualizacionCargoTrabajadorMassiveUpload({ trigger, onSu
   const config: MassiveUploadConfig = {
     acceptedFileTypes: [".xlsx", ".xls"],
     requiredSheetName: "DATOS",
-    title: "Carga Masiva de Cambio Actividad Económica a Ejecutar",
+    title: "Carga Masiva de Actualización de Cargo de Trabajador",
     instructions: [
-      'Seleccione un archivo Excel (.xlsx) con la hoja "DATOS" con el formato correcto para independiente con contrato.',
-      'Asegúrese de que los encabezados de las columnas coincidan exactamente con la plantilla. Las fechas deben estar en formato DD/MM/AAAA.',
+      'Seleccione un archivo Excel (.xlsx) con la hoja "DATOS" con el formato correcto para actualización de cargo.',
+      'Asegúrese de que los encabezados de las columnas coincidan exactamente con la plantilla.',
     ],
     processData: processIndependienteData,
     getContactInfo,
