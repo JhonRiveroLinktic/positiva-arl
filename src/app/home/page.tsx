@@ -20,6 +20,11 @@ const forms = [
     path: "/forms/independiente-con-contrato"
   },
   {
+    title: "Formulario Afiliación Empleador (Empresas, Sedes - Sucursales - Centro de trabajo Y RL)",
+    description: "Formulario para registrar empleadores",
+    path: "/forms/afiliacion-empleador"
+  },
+  {
     title: "Plantilla masiva Trabajador Independiente Voluntario",
     description: "Formulario para cargar trabajadores independientes voluntarios",
     path: "/forms/independiente-voluntario"

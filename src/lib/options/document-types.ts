@@ -15,7 +15,7 @@ export const documentTypesData: DocumentType[] = [
   },
   {
     "Tipo": "NI",
-    "Nombre": "Nit"
+    "Nombre": "NIT"
   },
   {
     "Tipo": "PT",
