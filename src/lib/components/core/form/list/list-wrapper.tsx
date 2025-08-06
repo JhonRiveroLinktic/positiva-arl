@@ -64,9 +64,24 @@ export function ListWrapper({
     if (!onDelete) return
     try {
       onDelete(id, record)
+      
+      let recordDescription = "este registro"
+      
+      if (record.nombre1 && record.apellido1) {
+        recordDescription = `${record.nombre1} ${record.apellido1}`
+      } else if (record.documento_trabajador && record.tipo_doc_trabajador) {
+        recordDescription = `${record.tipo_doc_trabajador} ${record.documento_trabajador}`
+      } else if (record.documento_empleador && record.tipo_doc_empleador) {
+        recordDescription = `${record.tipo_doc_empleador} ${record.documento_empleador}`
+      } else if (record.name) {
+        recordDescription = record.name
+      } else if (record.title) {
+        recordDescription = record.title
+      }
+      
       toast.success({
         title: "Registro eliminado",
-        description: `Se eliminó el registro de ${record.nombre1} ${record.apellido1} correctamente`,
+        description: `Se eliminó el registro de ${recordDescription} correctamente`,
       })
     } catch {
       toast.error({
@@ -76,26 +91,28 @@ export function ListWrapper({
     }
   }
 
-  const handleClearAll = () => {
-    if (!onClearAll) return
-    onClearAll()
-    toast.success({
-      title: "Registros eliminados",
-      description: "Todos los registros han sido eliminados correctamente."
-    })
-  }
-
   const handleEdit = (record: any) => {
     if (!onEdit) return
 
     onEdit(record)
-    const recordName = record.nombre1 && record.apellido1 
-      ? `${record.nombre1} ${record.apellido1}`
-      : record.name || record.title || "este registro"
+    
+    let recordDescription = "este registro"
+    
+    if (record.nombre1 && record.apellido1) {
+      recordDescription = `${record.nombre1} ${record.apellido1}`
+    } else if (record.documento_trabajador && record.tipo_doc_trabajador) {
+      recordDescription = `${record.tipo_doc_trabajador} ${record.documento_trabajador}`
+    } else if (record.documento_empleador && record.tipo_doc_empleador) {
+      recordDescription = `${record.tipo_doc_empleador} ${record.documento_empleador}`
+    } else if (record.name) {
+      recordDescription = record.name
+    } else if (record.title) {
+      recordDescription = record.title
+    }
 
     toast.info({
       title: "Editando registro",
-      description: `Editando el registro de ${recordName}`,
+      description: `Editando el registro de ${recordDescription}`,
     })
   }
 
