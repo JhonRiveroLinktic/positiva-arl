@@ -86,8 +86,13 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
       for (let i = 0; i < registros.length; i++) {
         const registro = registros[i]
         
-        const tipoDocTrabajadorOriginal = mapTipoDocumentoToOriginal(registro.tipo_doc_trabajador)
-        const tipoDocEmpleadorOriginal = mapTipoDocumentoToOriginal(registro.tipo_doc_empleador)
+        // Solo hacer mapeo para independientes (I), para dependientes (D) usar los valores originales
+        const tipoDocTrabajadorOriginal = registro.tipo_vinculacion === 'I' 
+          ? mapTipoDocumentoToOriginal(registro.tipo_doc_trabajador)
+          : registro.tipo_doc_trabajador
+        const tipoDocEmpleadorOriginal = registro.tipo_vinculacion === 'I'
+          ? mapTipoDocumentoToOriginal(registro.tipo_doc_empleador)
+          : registro.tipo_doc_empleador
         
         const { data, error } = await supabase.rpc('validate_trabajador_empleador', {
           p_tipo_doc_trabajador: tipoDocTrabajadorOriginal,
@@ -180,11 +185,15 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
 
     try {
       const novedadesJson = registros.map(registro => ({
-        TIPO_DOCUMENTO_EMPLEADOR: mapTipoDocumentoToOriginal(registro.tipo_doc_empleador),
+        TIPO_DOCUMENTO_EMPLEADOR: registro.tipo_vinculacion === 'I' 
+          ? mapTipoDocumentoToOriginal(registro.tipo_doc_empleador)
+          : registro.tipo_doc_empleador,
         DOCUMENTO_EMPLEADOR: registro.documento_empleador,
         RAZON_SOCIAL: registro.razon_social,
         CODIGO_SUBEMPRESA: registro.codigo_subempresa,
-        TIPO_DOCUMENTO_TRABAJADOR: mapTipoDocumentoToOriginal(registro.tipo_doc_trabajador),
+        TIPO_DOCUMENTO_TRABAJADOR: registro.tipo_vinculacion === 'I'
+          ? mapTipoDocumentoToOriginal(registro.tipo_doc_trabajador)
+          : registro.tipo_doc_trabajador,
         DOCUMENTO_TRABAJADOR: registro.documento_trabajador,
         TIPO_VINCULACION: registro.tipo_vinculacion,
         ID_CARGO: registro.cargo_nuevo
