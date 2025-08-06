@@ -132,9 +132,12 @@ export function AfiliacionEmpleadorFormIntegrado() {
       return
     }
 
-    for (const sede of data.sedes) {
+    for (let i = 0; i < data.sedes.length; i++) {
+      const sede = data.sedes[i]
+      const sedeId = sede.id || `sede-${i}`
+      
       const centrosDeEstaSede = data.centrosTrabajo.filter(
-        centro => centro.idSede === sede.id
+        centro => centro.idSede === sedeId
       )
       
       if (centrosDeEstaSede.length === 0) {

@@ -105,9 +105,12 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
         return
       }
 
-      for (const sede of registro.sedes) {
+      for (let i = 0; i < registro.sedes.length; i++) {
+        const sede = registro.sedes[i]
+        const sedeId = sede.id || `sede-${i}`
+        
         const centrosDeEstaSede = registro.centrosTrabajo.filter(
-          centro => centro.idSede === sede.id
+          centro => centro.idSede === sedeId
         )
         
         if (centrosDeEstaSede.length === 0) {
