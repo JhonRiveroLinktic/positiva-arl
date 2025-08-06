@@ -34,7 +34,7 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
   const [isValidating, setIsValidating] = useState(false)
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([])
   const [hasValidated, setHasValidated] = useState(false)
-  const { limpiarTodosLosRegistros } = useRegistroStore()
+  const { limpiarTodosLosRegistros, agregarRegistro } = useRegistroStore()
 
   useEffect(() => {
     resetValidation()
@@ -212,39 +212,61 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
         return
       }
 
-      if (data && Array.isArray(data)) {
-        let successCount = 0
-        let errorCount = 0
-        const errores = []
+             if (data && Array.isArray(data)) {
+         let successCount = 0
+         let errorCount = 0
+         const errores = []
+         const registrosFallidos: Registro[] = []
 
-        for (const resultado of data) {
-          if (resultado.status === 'Éxito') {
-            successCount++
-          } else {
-            errorCount++
-            errores.push(`Documento ${resultado.documento_trabajador}: ${resultado.status}`)
-            console.error(`Error en documento ${resultado.documento_trabajador}:`, resultado.status)
-          }
-        }
+         // Mapear los resultados con los registros originales
+         for (let i = 0; i < data.length; i++) {
+           const resultado = data[i]
+           const registroOriginal = registros[i]
+           
+           if (resultado.status === 'Éxito') {
+             successCount++
+           } else {
+             errorCount++
+             errores.push(`Documento ${resultado.documento_trabajador}: ${resultado.status}`)
+             registrosFallidos.push(registroOriginal)
+             console.error(`Error en documento ${resultado.documento_trabajador}:`, resultado.status)
+           }
+         }
 
-        if (errorCount === 0) {
-          limpiarTodosLosRegistros()
-          resetValidation()
-          toast.success({
-            title: "¡Registros procesados exitosamente!",
-            description: `Se procesaron ${successCount} cambios de cargo.`,
-          })
-          onClose()
-        } else {
-          const errorMessage = errores.slice(0, 3).join('\n')
-          const remainingErrors = errores.length > 3 ? ` y ${errores.length - 3} errores más` : ''
-          
-          toast.warning({
-            title: "Procesamiento parcial",
-            description: `${successCount} registros procesados, ${errorCount} errores.\n${errorMessage}${remainingErrors}`,
-          })
-        }
-      }
+         if (errorCount === 0) {
+           // Éxito total - limpiar todo
+           limpiarTodosLosRegistros()
+           resetValidation()
+           toast.success({
+             title: "¡Registros procesados exitosamente!",
+             description: `Se procesaron ${successCount} cambios de cargo.`,
+           })
+           onClose()
+         } else {
+           // Mantener solo los registros que fallaron
+           limpiarTodosLosRegistros()
+           
+                       // Agregar de vuelta solo los registros que fallaron
+            registrosFallidos.forEach(registro => {
+              // Crear una copia con nuevo ID para evitar conflictos
+              const registroFallido: Registro = {
+                ...registro,
+                id: `error-${Date.now()}-${Math.random()}`
+              }
+              agregarRegistro(registroFallido)
+            })
+           
+           resetValidation()
+           
+           const errorMessage = errores.slice(0, 3).join('\n')
+           const remainingErrors = errores.length > 3 ? ` y ${errores.length - 3} errores más` : ''
+           
+           toast.error({
+             title: "Error en el procesamiento",
+             description: `${successCount} registros procesados exitosamente, ${errorCount} fallaron.\n\n${errorMessage}${remainingErrors}\n\nLos registros fallidos se mantienen en la lista para su corrección.`,
+           })
+         }
+       }
     } catch (error) {
       console.error("Error inesperado:", error)
       toast.error({
