@@ -35,6 +35,7 @@ import { Badge } from "@/lib/components/ui/badge"
 import { toast } from "@/lib/utils/toast"
 import type { Sede, AfiliacionEmpleadorFormData } from "../../types/afiliacion-empleador-types"
 import { useCatalogStore } from "@/lib/components/core/stores/catalog-store"
+import { SubEmpresaOptions } from "@/lib/options/codigo-subempresa"
 
 interface DatosSedesProps {
   control: Control<AfiliacionEmpleadorFormData>
@@ -291,12 +292,12 @@ export function DatosSedes({ control, watch }: DatosSedesProps) {
                   control={sedeForm.control}
                   rules={SedeValidationRules.subempresa}
                   render={({ field, fieldState }) => (
-                    <FormInput
+                    <FormSelect
                       label="Subempresa (SOLO PARA EL NIT 899999061)"
-                      placeholder="Nombre de la subempresa"
+                      placeholder="Seleccionar subempresa"
+                      options={SubEmpresaOptions}
                       value={field.value || ""}
                       onChange={field.onChange}
-                      maxLength={200}
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}

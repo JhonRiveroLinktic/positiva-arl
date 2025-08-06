@@ -98,6 +98,17 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
       return options.length > maxInitialOptions
     }, [options.length, maxInitialOptions, inputValue])
 
+    const updatePosition = useCallback(() => {
+      if (buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect()
+        const spaceBelow = window.innerHeight - rect.bottom
+        const spaceAbove = rect.top
+        const estimatedHeight = 300
+
+        setDropUp(spaceBelow < estimatedHeight && spaceAbove > estimatedHeight)
+      }
+    }, [])
+
     useEffect(() => {
       if (!open) return
 
@@ -115,35 +126,40 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
           }
         }
 
-        document.addEventListener("mousedown", handleClickOutside)
-
-        if (buttonRef.current) {
-          const rect = buttonRef.current.getBoundingClientRect()
-          const spaceBelow = window.innerHeight - rect.bottom
-          const spaceAbove = rect.top
-          const estimatedHeight = 300
-
-          setDropUp(spaceBelow < estimatedHeight && spaceAbove > estimatedHeight)
+        const handleScroll = () => {
+          updatePosition()
         }
+
+        const handleResize = () => {
+          updatePosition()
+        }
+
+        document.addEventListener("mousedown", handleClickOutside)
+        window.addEventListener("scroll", handleScroll, true)
+        window.addEventListener("resize", handleResize)
+
+        updatePosition()
 
         return () => {
           document.removeEventListener("mousedown", handleClickOutside)
+          window.removeEventListener("scroll", handleScroll, true)
+          window.removeEventListener("resize", handleResize)
         }
       }, 0)
 
       return () => clearTimeout(timeout)
-    }, [open, closeDropdown])
+    }, [open, closeDropdown, updatePosition])
 
     const selectedOption = options.find((opt) => opt.value === value)
 
     return (
-      <FormItem className={cn("w-full", className)}>
+      <FormItem className={cn("w-full max-w-full", className)}>
         <FormLabel htmlFor={selectId} className="text-[#0A0A0A] font-medium">
           {label}
           {required && <span className="text-red-500">*</span>}
         </FormLabel>
         <FormControl>
-          <div className="relative">
+          <div className="relative w-full min-w-0 max-w-full">
             <Button
               type="button"
               ref={(el) => {
@@ -153,10 +169,12 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
               }}
               variant="outline"
               className={cn(
-                "w-full justify-between text-left pr-10", // Agregado pr-10 para espacio del chevron
+                "w-full max-w-full h-10 justify-start text-left font-normal relative overflow-hidden",
+                "pr-10 pl-3",
                 error && "border-red-500 focus:ring-red-500",
                 disabled && "opacity-50 cursor-not-allowed"
               )}
+              style={{ minWidth: 0 }}
               aria-haspopup="listbox"
               aria-expanded={open}
               aria-controls={`${selectId}-combobox-list`}
@@ -173,26 +191,38 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
               disabled={disabled}
               {...props}
             >
-              {selectedOption ? (
-                selectedOption.label
-              ) : (
-                <span className="text-muted-foreground">{placeholder}</span>
-              )}
+              <div className="flex-1 min-w-0 overflow-hidden max-w-full" style={{ width: 'calc(100% - 2.5rem)' }}>
+                {selectedOption ? (
+                  <span 
+                    className="block truncate text-left w-full max-w-full overflow-hidden text-ellipsis whitespace-nowrap" 
+                    style={{ maxWidth: '100%' }}
+                    title={selectedOption.label}
+                  >
+                    {selectedOption.label}
+                  </span>
+                ) : (
+                  <span 
+                    className="block truncate text-left text-muted-foreground w-full max-w-full overflow-hidden text-ellipsis whitespace-nowrap"
+                    style={{ maxWidth: '100%' }}
+                  >
+                    {placeholder}
+                  </span>
+                )}
+              </div>
+              
+              <ChevronDown 
+                className={cn(
+                  "absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-transform duration-200 pointer-events-none shrink-0",
+                  open && "rotate-180"
+                )} 
+              />
             </Button>
-
-            {/* Chevron absoluto posicionado */}
-            <ChevronDown 
-              className={cn(
-                "absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground transition-transform duration-200 pointer-events-none",
-                open && "rotate-180"
-              )} 
-            />
 
             {open && (
               <div
                 ref={popoverRef}
                 className={cn(
-                  "absolute z-50 w-full bg-white border rounded-md shadow-lg transition-all duration-150 ease-out",
+                  "absolute z-50 w-full bg-white border rounded-md shadow-lg transition-all duration-150 ease-out max-w-full",
                   dropUp ? "bottom-full mb-1" : "mt-1",
                   visible
                     ? "opacity-100 translate-y-0"
@@ -225,12 +255,15 @@ export const FormSelect = forwardRef<HTMLButtonElement, FormSelectProps>(
                           }
                         }}
                         className={cn(
+                          "cursor-pointer",
                           option.value === value &&
                             "bg-accent text-accent-foreground",
                           option.disabled && "opacity-50 cursor-not-allowed"
                         )}
                       >
-                        {option.label}
+                        <span className="block truncate w-full text-left" title={option.label}>
+                          {option.label}
+                        </span>
                       </CommandItem>
                     ))}
                     {hasMoreOptions && (

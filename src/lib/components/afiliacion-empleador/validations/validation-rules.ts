@@ -603,37 +603,9 @@ export const RepresentanteLegalValidationRules = {
     },
   },
 
-  nitAfp: {
-    validate: (value: string | undefined) => {
-      if (!value) return true
-      
-      if (hasDangerousContent(value)) {
-        return "El NIT AFP contiene caracteres no permitidos"
-      }
+  nitAfp: {},
 
-      const nitValidation = validateNitVerificationDigit(value)
-      if (!nitValidation.isValid) {
-        return nitValidation.errorMessage || "Formato de NIT AFP inválido"
-      }
-      return true
-    },
-  },
-
-  nitEps: {
-    validate: (value: string | undefined) => {
-      if (!value) return true
-      
-      if (hasDangerousContent(value)) {
-        return "El NIT EPS contiene caracteres no permitidos"
-      }
-
-      const nitValidation = validateNitVerificationDigit(value)
-      if (!nitValidation.isValid) {
-        return nitValidation.errorMessage || "Formato de NIT EPS inválido"
-      }
-      return true
-    },
-  },
+  nitEps: {},
 }
 
 export const SedeValidationRules = {
@@ -665,15 +637,7 @@ export const SedeValidationRules = {
     },
   },
 
-  subempresa: {
-    validate: (value: string | undefined) => {
-      if (!value) return true
-      if (hasDangerousContent(value)) {
-        return "Este campo contiene caracteres no permitidos"
-      }
-      return true
-    },
-  },
+  subempresa: {},
 
   departamento: {
     required: "El departamento de la sede es requerido",
@@ -886,16 +850,7 @@ export const CentroTrabajoValidationRules = {
     },
   },
 
-  idSubempresa: {
-    maxLength: { value: 20, message: "Máximo 20 caracteres" },
-    validate: (value: string | undefined) => {
-      if (!value) return true
-      if (hasDangerousContent(value)) {
-        return "Este campo contiene caracteres no permitidos"
-      }
-      return true
-    },
-  },
+  idSubempresa: {},
 
   actividadEconomica: {
     required: "La actividad económica del centro de trabajo es requerida",

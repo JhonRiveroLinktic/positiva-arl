@@ -31,6 +31,7 @@ import { useCatalogStore } from "@/lib/components/core/stores/catalog-store"
 import { 
   DocumentTypesOptions
 } from "@/lib/components/independiente-con-contrato/options"
+import { SubEmpresaOptions } from "@/lib/options/codigo-subempresa"
 
 interface DatosCentrosTrabajoProps {
   control: Control<AfiliacionEmpleadorFormData>
@@ -233,12 +234,12 @@ export function DatosCentrosTrabajo({ control, watch }: DatosCentrosTrabajoProps
                   control={centroTrabajoForm.control}
                   rules={CentroTrabajoValidationRules.subempresa}
                   render={({ field, fieldState }) => (
-                    <FormInput
+                    <FormSelect
                       label="Subempresa (SOLO PARA EL NIT 899999061)"
-                      placeholder="Nombre de la subempresa"
+                      placeholder="Seleccionar subempresa"
+                      options={SubEmpresaOptions}
                       value={field.value || ""}
                       onChange={field.onChange}
-                      maxLength={200}
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
