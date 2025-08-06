@@ -1,18 +1,27 @@
 "use client"
 
 import { useForm, Controller } from "react-hook-form"
-import { FormWrapper } from "@/lib/components/core/form/form-wrapper"
+import { useEffect } from "react"
 import { FormInput } from "@/lib/components/core/form/form-input"
 import { FormSelect } from "@/lib/components/core/form/form-select"
 import { FormDatePicker } from "@/lib/components/core/form/form-datepicker"
-import { Card, CardContent, CardHeader, CardTitle } from "@/lib/components/ui/card"
-import { Badge } from "@/lib/components/ui/badge"
+import { FormWrapper } from "@/lib/components/core/form/form-wrapper"
 import { useCatalogStore } from "@/lib/components/core/stores/catalog-store"
 import { useRegistroStore } from "../stores/registro-store"
-import { prorrogaFechaContratoTrabajadorIndependienteValidationRules } from "../validations/validation-rules"
-import { convertToSupabaseFormat } from "../types/prorroga-fecha-contrato-types"
-import type { ProrrogaFechaContratoTrabajadorIndependienteFormData } from "../types/prorroga-fecha-contrato-types"
+import { ListaRegistros } from "./lista-registros"
+import { SubEmpresaOptions } from "@/lib/options/codigo-subempresa"
+import { 
+  prorrogaFechaContratoTrabajadorIndependienteValidationRules, 
+  sanitizeFormData
+} from "../validations/validation-rules"
 import { toast } from "@/lib/utils/toast"
+import type { 
+  ProrrogaFechaContratoTrabajadorIndependienteFormData,
+} from "../types/prorroga-fecha-contrato-types"
+import { 
+    DocumentTypesOptions,
+} from "@/lib/components/independiente-con-contrato/options/index"
+import { ProrrogaFechaContratoTrabajadorIndependienteMassiveUpload } from "./massive-upload"
 
 const initialDefaultValues: ProrrogaFechaContratoTrabajadorIndependienteFormData = {
   tipo_doc_contratante: "",
@@ -22,114 +31,129 @@ const initialDefaultValues: ProrrogaFechaContratoTrabajadorIndependienteFormData
   tipo_doc_trabajador: "",
   documento_trabajador: "",
   fecha_inicio_contrato_original: "",
-  fecha_fin_contrato_anterior: "",
   fecha_fin_contrato_nueva: "",
   valor_contrato_prorroga: "",
   correo_electronico: ""
 }
 
 export function ProrrogaFechaContratoTrabajadorIndependienteForm() {
-  const { agregarRegistro } = useRegistroStore()
-  const { documentTypes } = useCatalogStore()
+  const {
+    documentTypes,
+  } = useCatalogStore()
+
+  const {
+    agregarRegistro,
+    actualizarRegistro,
+    registroEditando,
+    setRegistroEditando,
+  } = useRegistroStore()
 
   const form = useForm<ProrrogaFechaContratoTrabajadorIndependienteFormData>({
+    mode: "all",
+    reValidateMode: "onChange",
     defaultValues: initialDefaultValues,
   })
 
-  const { control, handleSubmit, reset, formState: { errors } } = form
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = form
+  
+  const isEditMode = Boolean(registroEditando)
 
-  const onSubmit = (data: ProrrogaFechaContratoTrabajadorIndependienteFormData) => {
-    try {
-      const registro = convertToSupabaseFormat({
-        ...data,
-        id: `prorroga-${Date.now()}`,
-        metodo_subida: "manual"
-      })
-
-      agregarRegistro(registro)
-      reset()
-      toast.success({
-        title: "Registro agregado",
-        description: "El registro se ha guardado correctamente.",
-      })
-    } catch (error) {
-      console.error("Error al guardar:", error)
-      toast.error({
-        title: "Error",
-        description: "Hubo un error al guardar el registro.",
-      })
+  useEffect(() => {
+    if (registroEditando) {
+      reset(registroEditando); 
+    } else {
+      reset(initialDefaultValues); 
     }
-  }
+  }, [registroEditando, reset]);
 
-  const onClear = () => {
-    reset()
+  const documentTypesOptions = (documentTypes || []).map((item) => ({
+    value: item.code,
+    label: `${item.code} - ${item.name}`,
+  }))
+
+  const onValidSubmit = async (data: ProrrogaFechaContratoTrabajadorIndependienteFormData) => {
+    try {
+      const sanitizedData = sanitizeFormData(data);
+
+      if (isEditMode && registroEditando) {
+        const registroActualizado = {
+          ...registroEditando,
+          ...sanitizedData,
+        };
+        actualizarRegistro(registroActualizado);
+        setRegistroEditando(null);
+        toast.success({
+          title: "Registro actualizado",
+          description: "El registro se actualizó correctamente.",
+        });
+      } else {
+        const nuevoRegistro = {
+          id: Date.now().toString(),
+          ...sanitizedData,
+        };
+        agregarRegistro(nuevoRegistro);
+        toast.success({
+          title: "Registro guardado",
+          description: "El registro se guardó localmente.",
+        });
+      }
+
+      form.reset(initialDefaultValues);
+    } catch (error) {
+      console.error("Error al guardar registro:", error);
+      toast.error({
+        title: "Error al guardar",
+        description: "Ocurrió un error al guardar el registro.",
+      });
+    }
+  };
+
+  const onInvalidSubmit = () => {
+    toast.error({
+      title: "Error de validación",
+      description: "Por favor corrija los errores en el formulario antes de continuar.",
+    });
+  };
+
+  const handleClear = () => {
+    form.reset(initialDefaultValues)
+    setRegistroEditando(null)
+    toast.info({
+      title: "Formulario limpiado",
+      description: "Todos los campos han sido limpiados.",
+    })
   }
 
   return (
-    <FormWrapper
-      form={form}
-      onSubmit={onSubmit}
-      onClear={onClear}
-      title="Prórroga de Fecha de Contrato - Trabajador Independiente"
-      description="Complete los datos para registrar la prórroga de fecha de contrato"
-    >
-      <div className="space-y-6">
-        {/* Información del Contratante */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Badge variant="secondary">1</Badge>
-              Información del Contratante
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Controller
-                name="tipo_doc_contratante"
-                control={control}
-                rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.tipo_doc_contratante}
-                render={({ field, fieldState }) => (
-                  <FormSelect
-                    label="Tipo de Documento del Contratante"
-                    placeholder="Seleccione tipo de documento"
-                    options={documentTypes}
-                    value={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={!!fieldState.error}
-                    errorMessage={fieldState.error?.message}
-                    required
-                  />
-                )}
-              />
-
-              <Controller
-                name="documento_contratante"
-                control={control}
-                rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.documento_contratante}
-                render={({ field, fieldState }) => (
-                  <FormInput
-                    label="Número de Documento del Contratante"
-                    placeholder="Número de documento"
-                    value={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={!!fieldState.error}
-                    errorMessage={fieldState.error?.message}
-                    required
-                  />
-                )}
-              />
-            </div>
+    <div className="space-y-8 w-full">
+      <FormWrapper
+        title="Prórroga de Fecha de Contrato - Trabajador Independiente"
+        onSubmit={handleSubmit(onValidSubmit, onInvalidSubmit)}
+        onClear={handleClear}
+        isSubmitting={isSubmitting}
+        isEditing={isEditMode}
+        form={form}
+        showMassiveUpload={true}
+        massiveUploadComponent={<ProrrogaFechaContratoTrabajadorIndependienteMassiveUpload />}
+      >
+        <div className="w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-5 col-span-full">Información del Contratante</h3>
 
             <Controller
-              name="razon_social"
+              name="tipo_doc_contratante"
               control={control}
-              rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.razon_social}
+              rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.tipo_doc_contratante}
               render={({ field, fieldState }) => (
-                <FormInput
-                  label="Razón Social"
-                  placeholder="Nombre o razón social del contratante"
+                <FormSelect
+                  label="Tipo Documento Contratante"
+                  placeholder="Seleccionar tipo"
+                  options={documentTypesOptions}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -141,13 +165,148 @@ export function ProrrogaFechaContratoTrabajadorIndependienteForm() {
             />
 
             <Controller
-              name="codigo_subempresa"
+              name="documento_contratante"
               control={control}
-              rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.codigo_subempresa}
+              rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.documento_contratante}
               render={({ field, fieldState }) => (
                 <FormInput
-                  label="Código de Subempresa"
-                  placeholder="Código de subempresa (solo para NIT 899999061)"
+                  label="Número Documento Contratante"
+                  placeholder="Número documento contratante"
+                  value={field.value}
+                  onChange={field.onChange}
+                  maxLength={20}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  required
+                />
+              )}
+            />
+
+            <Controller
+              name="razon_social"
+              control={control}
+              rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.razon_social}
+              render={({ field, fieldState }) => (
+                <FormInput
+                  label="Razón Social"
+                  placeholder="Ingrese razón social"
+                  value={field.value}
+                  onChange={field.onChange}
+                  maxLength={200}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  required
+                />
+              )}
+            />
+
+            <Controller
+              name="codigo_subempresa"
+              control={control}
+              render={({ field, fieldState }) => (
+                <FormSelect
+                  label="Código Subempresa (SOLO PARA EL NIT 899999061)"
+                  placeholder="Código subempresa (opcional)"
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={SubEmpresaOptions}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                />
+              )}
+            />
+            
+            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 my-5 col-span-full">Información del Trabajador</h3>
+
+            <Controller
+              name="tipo_doc_trabajador"
+              control={control}
+              rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.tipo_doc_trabajador}
+              render={({ field, fieldState }) => (
+                <FormSelect
+                  label="Tipo Documento Trabajador"
+                  placeholder="Seleccionar tipo"
+                  options={documentTypesOptions.filter((i) => i.value !== "NI")}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  required
+                />
+              )}
+            />
+
+            <Controller
+              name="documento_trabajador"
+              control={control}
+              rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.documento_trabajador}
+              render={({ field, fieldState }) => (
+                <FormInput
+                  label="Número Documento Trabajador"
+                  placeholder="Número documento trabajador"
+                  value={field.value}
+                  onChange={field.onChange}
+                  maxLength={20}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  required
+                />
+              )}
+            />
+
+            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 my-5 col-span-full">Información del Contrato</h3>
+
+            <Controller
+              name="fecha_inicio_contrato_original"
+              control={control}
+              rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.fecha_inicio_contrato_original}
+              render={({ field, fieldState }) => (
+                <FormDatePicker
+                  label="Fecha de Inicio del Contrato Original"
+                  placeholder="Seleccione fecha"
+                  value={field.value ? new Date(field.value + 'T00:00:00') : undefined}
+                  onChange={(date) => field.onChange(date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : "")}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  required
+                />
+              )}
+            />
+
+
+
+            <Controller
+              name="fecha_fin_contrato_nueva"
+              control={control}
+              rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.fecha_fin_contrato_nueva}
+              render={({ field, fieldState }) => (
+                <FormDatePicker
+                  label="Nueva Fecha de Fin del Contrato"
+                  placeholder="Seleccione fecha"
+                  value={field.value ? new Date(field.value + 'T00:00:00') : undefined}
+                  onChange={(date) => field.onChange(date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : "")}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  required
+                />
+              )}
+            />
+
+            <Controller
+              name="valor_contrato_prorroga"
+              control={control}
+              rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.valor_contrato_prorroga}
+              render={({ field, fieldState }) => (
+                <FormInput
+                  label="Valor del Contrato (Solo aplica para Prórroga)"
+                  placeholder="Valor del contrato"
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -156,163 +315,30 @@ export function ProrrogaFechaContratoTrabajadorIndependienteForm() {
                 />
               )}
             />
-          </CardContent>
-        </Card>
 
-        {/* Información del Trabajador */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Badge variant="secondary">2</Badge>
-              Información del Trabajador
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Controller
-                name="tipo_doc_trabajador"
-                control={control}
-                rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.tipo_doc_trabajador}
-                render={({ field, fieldState }) => (
-                  <FormSelect
-                    label="Tipo de Documento del Trabajador"
-                    placeholder="Seleccione tipo de documento"
-                    options={documentTypes}
-                    value={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={!!fieldState.error}
-                    errorMessage={fieldState.error?.message}
-                    required
-                  />
-                )}
-              />
+            <Controller
+              name="correo_electronico"
+              control={control}
+              rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.correo_electronico}
+              render={({ field, fieldState }) => (
+                <FormInput
+                  label="Correo Electrónico de Notificación"
+                  type="email"
+                  placeholder="correo@ejemplo.com"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  required
+                />
+              )}
+            />
+          </div>
+        </div>
+      </FormWrapper>
 
-              <Controller
-                name="documento_trabajador"
-                control={control}
-                rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.documento_trabajador}
-                render={({ field, fieldState }) => (
-                  <FormInput
-                    label="Número de Documento del Trabajador"
-                    placeholder="Número de documento"
-                    value={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={!!fieldState.error}
-                    errorMessage={fieldState.error?.message}
-                    required
-                  />
-                )}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Información del Contrato */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Badge variant="secondary">3</Badge>
-              Información del Contrato
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Controller
-                name="fecha_inicio_contrato_original"
-                control={control}
-                rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.fecha_inicio_contrato_original}
-                render={({ field, fieldState }) => (
-                  <FormDatePicker
-                    label="Fecha de Inicio del Contrato Original"
-                    placeholder="Seleccione fecha"
-                    value={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={!!fieldState.error}
-                    errorMessage={fieldState.error?.message}
-                    required
-                  />
-                )}
-              />
-
-              <Controller
-                name="fecha_fin_contrato_anterior"
-                control={control}
-                rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.fecha_fin_contrato_anterior}
-                render={({ field, fieldState }) => (
-                  <FormDatePicker
-                    label="Fecha de Fin del Contrato Anterior"
-                    placeholder="Seleccione fecha"
-                    value={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={!!fieldState.error}
-                    errorMessage={fieldState.error?.message}
-                    required
-                  />
-                )}
-              />
-
-              <Controller
-                name="fecha_fin_contrato_nueva"
-                control={control}
-                rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.fecha_fin_contrato_nueva}
-                render={({ field, fieldState }) => (
-                  <FormDatePicker
-                    label="Nueva Fecha de Fin del Contrato"
-                    placeholder="Seleccione fecha"
-                    value={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={!!fieldState.error}
-                    errorMessage={fieldState.error?.message}
-                    required
-                  />
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Controller
-                name="valor_contrato_prorroga"
-                control={control}
-                rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.valor_contrato_prorroga}
-                render={({ field, fieldState }) => (
-                  <FormInput
-                    label="Valor del Contrato (Prórroga)"
-                    placeholder="Valor del contrato"
-                    value={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={!!fieldState.error}
-                    errorMessage={fieldState.error?.message}
-                  />
-                )}
-              />
-
-              <Controller
-                name="correo_electronico"
-                control={control}
-                rules={prorrogaFechaContratoTrabajadorIndependienteValidationRules.correo_electronico}
-                render={({ field, fieldState }) => (
-                  <FormInput
-                    label="Correo Electrónico de Notificación"
-                    placeholder="correo@ejemplo.com"
-                    value={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={!!fieldState.error}
-                    errorMessage={fieldState.error?.message}
-                    required
-                  />
-                )}
-              />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </FormWrapper>
+      <ListaRegistros />
+    </div>
   )
 } 

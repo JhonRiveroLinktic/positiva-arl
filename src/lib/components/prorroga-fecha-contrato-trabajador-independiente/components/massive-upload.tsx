@@ -22,8 +22,18 @@ const EXCEL_COLUMN_MAPPING = {
   'TIPO_DOCUMENTO_TRABAJADOR': 'tipo_doc_trabajador',
   'DOCUMENTO_TRABAJADOR': 'documento_trabajador',
   'FECHA_INICIO_DE_CONTRATO_(AAAA/MM/DD)': 'fecha_inicio_contrato_original',
-  'FECHA_FIN_DE_CONTRATO_(AAAA/MM/DD)': 'fecha_fin_contrato_anterior',
+  'FECHA_FIN_DE_CONTRATO_(AAAA/MM/DD)': 'fecha_fin_contrato_nueva',
   'VALOR_DEL_CONTRATO_(SOLO_APLICA_PARA_PRORROGA)': 'valor_contrato_prorroga',
+  'VALOR_DEL_CONTRATO_(_SOLO_APLICA_PARA_PRORROGA)': 'valor_contrato_prorroga',
+  'VALOR DEL CONTRATO (SOLO APLICA PARA PRORROGA)': 'valor_contrato_prorroga',
+  'VALOR DEL CONTRATO ( SOLO APLICA PARA PRORROGA )': 'valor_contrato_prorroga',
+  'VALOR_CONTRATO': 'valor_contrato_prorroga',
+  'VALOR': 'valor_contrato_prorroga',
+  'VALOR_CONTRATO_PRORROGA': 'valor_contrato_prorroga',
+  'VALOR_PRORROGA': 'valor_contrato_prorroga',
+  'VALOR_CONTRATO_(SOLO_APLICA_PARA_PRORROGA)': 'valor_contrato_prorroga',
+  'VALOR_CONTRATO_(_SOLO_APLICA_PARA_PRORROGA)': 'valor_contrato_prorroga',
+  'VALOR_CONTRATO_(_SOLO_APLICA_PARA_PRORROGA_)': 'valor_contrato_prorroga',
   'CORREO_ELECTRONICO_DE_NOTIFICACION': 'correo_electronico',
 } as const;
 
@@ -63,45 +73,66 @@ export function ProrrogaFechaContratoTrabajadorIndependienteMassiveUpload({ trig
         errorData?: any;
       }> = [];
 
-      const normalizedMapping = createNormalizedMapping();
+             const normalizedMapping = createNormalizedMapping();
+       
+       for (let i = 0; i < data.length; i++) {
+         const row = data[i];
+         setProgress(((i + 1) / data.length) * 50);
 
-      for (let i = 0; i < data.length; i++) {
-        const row = data[i];
-        setProgress(((i + 1) / data.length) * 50);
+         try {
+           const formData: Partial<ProrrogaFechaContratoTrabajadorIndependienteFormData> = {};
+           const rowErrors: string[] = [];
 
-        try {
-          const formData: Partial<ProrrogaFechaContratoTrabajadorIndependienteFormData> = {};
-          const rowErrors: string[] = [];
+                                  Object.keys(row).forEach(originalKey => {
+               const normalizedKey = normalizeHeader(originalKey);
+               const formField = normalizedMapping[normalizedKey];
 
-          Object.keys(row).forEach(originalKey => {
-            const normalizedKey = normalizeHeader(originalKey);
-            const formField = normalizedMapping[normalizedKey];
+               if (formField) {
+                 let value = row[originalKey];
+                 value = value !== undefined && value !== null ? String(value).trim() : "";
+                 
+                 // Convertir fechas de Excel a formato YYYY-MM-DD
+                 if (formField === 'fecha_inicio_contrato_original' || formField === 'fecha_fin_contrato_nueva') {
+                   if (value && !isNaN(Number(value))) {
+                     // Convertir número de Excel a fecha
+                     const excelDate = Number(value);
+                     const date = new Date((excelDate - 25569) * 86400 * 1000);
+                     value = date.toISOString().split('T')[0]; // YYYY-MM-DD
+                   }
+                 }
+                 
+                 // Para codigo_subempresa, intentar extraer solo el ID si es posible
+                 if (formField === 'codigo_subempresa' && value) {
+                   // Intentar extraer solo el número al inicio
+                   const match = value.match(/^(\d+)/);
+                   if (match) {
+                     value = match[1];
+                   }
+                 }
+                 
+                 (formData as any)[formField] = value;
+               }
+             });
 
-            if (formField) {
-              let value = row[originalKey];
-              value = value !== undefined && value !== null ? String(value).trim() : "";
-              (formData as any)[formField] = value;
-            }
-          });
+                                  if (rowErrors.length > 0) {
+             validationResults.push({
+                 isValid: false,
+                 errorData: {
+                     row: i + 2,
+                     errors: rowErrors,
+                     rawData: row,
+                 },
+             });
+             continue;
+           }
 
-          if (rowErrors.length > 0) {
-            validationResults.push({
-                isValid: false,
-                errorData: {
-                    row: i + 2,
-                    errors: rowErrors,
-                    rawData: row,
-                },
-            });
-            continue;
-          }
-
-          const sanitizedData = sanitizeFormData(formData as ProrrogaFechaContratoTrabajadorIndependienteFormData);
-          const tempRegistro: Registro = {
-            id: `temp-${i}`,
-            ...(sanitizedData as Omit<Registro, "id" | "metodoSubida">),
-            metodo_subida: "cargue masivo",
-          };
+            const sanitizedData = sanitizeFormData(formData as ProrrogaFechaContratoTrabajadorIndependienteFormData);
+             
+            const tempRegistro: Registro = {
+               id: `temp-${i}`,
+               ...(sanitizedData as Omit<Registro, "id" | "metodoSubida">),
+               metodo_subida: "cargue masivo",
+             };
 
           const fieldErrors: string[] = [];
           Object.entries(prorrogaFechaContratoTrabajadorIndependienteValidationRules).forEach(([fieldName, rules]) => {
@@ -112,7 +143,7 @@ export function ProrrogaFechaContratoTrabajadorIndependienteMassiveUpload({ trig
 
             if (fieldValue !== undefined && fieldValue !== null && 'validate' in rules && typeof rules.validate === 'function') {
               try {
-                const validationResult = rules.validate(fieldValue as string, tempRegistro);
+                const validationResult = rules.validate(fieldValue as string);
                 if (validationResult !== true && typeof validationResult === "string") {
                   fieldErrors.push(`${fieldName}: ${validationResult}`);
                 }
@@ -193,12 +224,9 @@ export function ProrrogaFechaContratoTrabajadorIndependienteMassiveUpload({ trig
     const expectedNormalizedMapping = createNormalizedMapping();
     const expectedNormalizedHeaders = Object.keys(expectedNormalizedMapping);
 
-    const normalizedHeadersInFile = headers.map(header => normalizeHeader(header));
+         const normalizedHeadersInFile = headers.map(header => normalizeHeader(header));
 
-    console.log('Headers originales del archivo:', headers);
-    console.log('Headers normalizados del archivo:', normalizedHeadersInFile);
-
-    const requiredColumnsNormalized = [
+     const requiredColumnsNormalized = [
       normalizeHeader('TIPO_DOCUMENTO_CONTRATANTE'),
       normalizeHeader('DOCUMENTO_CONTRATANTE'),
       normalizeHeader('NOMBRES_Y_APELLIDOS_Y/O_RAZON_SOCIAL'),
@@ -207,31 +235,18 @@ export function ProrrogaFechaContratoTrabajadorIndependienteMassiveUpload({ trig
       normalizeHeader('DOCUMENTO_TRABAJADOR'),
       normalizeHeader('FECHA_INICIO_DE_CONTRATO_(AAAA/MM/DD)'),
       normalizeHeader('FECHA_FIN_DE_CONTRATO_(AAAA/MM/DD)'),
-      normalizeHeader('VALOR_DEL_CONTRATO_(SOLO_APLICA_PARA_PRORROGA)'),
       normalizeHeader('CORREO_ELECTRONICO_DE_NOTIFICACION'),
     ];
 
-    const missingColumns = requiredColumnsNormalized.filter((col) => {
-      const found = normalizedHeadersInFile.includes(col);
-      if (!found) {
-        console.log(`Columna requerida faltante: "${col}"`);
-      }
-      return !found;
-    });
+         const missingColumns = requiredColumnsNormalized.filter((col) => {
+       const found = normalizedHeadersInFile.includes(col);
+       return !found;
+     });
 
-    const extraColumns = normalizedHeadersInFile.filter((col) => {
-      const isValid = expectedNormalizedHeaders.includes(col);
-      if (!isValid) {
-        console.log(`Columna extra encontrada: "${col}"`);
-      }
-      return !isValid;
-    });
-
-    console.log('Columnas faltantes:', missingColumns.map(col => Object.keys(EXCEL_COLUMN_MAPPING).find(key => normalizeHeader(key) === col) || col));
-    console.log('Columnas extra:', extraColumns.map(col => {
-        const originalName = headers[normalizedHeadersInFile.indexOf(col)];
-        return originalName || col;
-    }));
+     const extraColumns = normalizedHeadersInFile.filter((col) => {
+       const isValid = expectedNormalizedHeaders.includes(col);
+       return !isValid;
+     });
 
     return {
       isValid: missingColumns.length === 0,

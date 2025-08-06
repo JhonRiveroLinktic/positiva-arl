@@ -72,25 +72,24 @@ export const prorrogaFechaContratoTrabajadorIndependienteValidationRules = {
       return true
     }
   },
-  fecha_fin_contrato_anterior: {
-    required: "La fecha de fin del contrato anterior es requerida",
-    validate: (value: string) => {
-      if (!value) return true
-      const fecha = new Date(value)
-      if (isNaN(fecha.getTime())) {
-        return "Formato de fecha inválido"
-      }
-      return true
-    }
-  },
+
   fecha_fin_contrato_nueva: {
     required: "La nueva fecha de fin del contrato es requerida",
-    validate: (value: string) => {
+    validate: (value: string, formData?: any) => {
       if (!value) return true
       const fecha = new Date(value)
       if (isNaN(fecha.getTime())) {
         return "Formato de fecha inválido"
       }
+      
+      // Validar que la fecha de fin no sea anterior a la fecha de inicio
+      if (formData?.fecha_inicio_contrato_original) {
+        const fechaInicio = new Date(formData.fecha_inicio_contrato_original)
+        if (fechaInicio && !isNaN(fechaInicio.getTime()) && fecha < fechaInicio) {
+          return "La fecha de fin del contrato no puede ser anterior a la fecha de inicio"
+        }
+      }
+      
       return true
     }
   },
