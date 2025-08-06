@@ -35,6 +35,11 @@ const forms = [
     path: "/forms/cambio-actividad-economica-independiente-con-contrato"
   },
   {
+    title: "Novedad Actualización Cargo Trabajador - Dependiente e Independiente con Contrato",
+    description: "Formulario para cambio de cargo de trabajador",
+    path: "/forms/novedad-actualizacion-cargo-trabajador"
+  },
+  {
     title: "Retiro de Trabajadores",
     description: "Formulario para retiro de trabajadores",
     path: "/forms/retiro-trabajadores"
@@ -66,7 +71,7 @@ export default function HomePage() {
   if (user?.user_type === 'tipo1') {
     visibleForms = [forms[0]];
   } else if (user?.user_type === 'tipo2') {
-    visibleForms = [forms[1], forms[2], forms[3], forms[4], forms[5], forms[6], forms[7]];
+    visibleForms = [forms[1], forms[2], forms[3], forms[4], forms[5], forms[6], forms[7], forms[8]];
   }
 
   return (
