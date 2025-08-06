@@ -34,6 +34,7 @@ import {
 import { Badge } from "@/lib/components/ui/badge"
 import { toast } from "@/lib/utils/toast"
 import type { Sede, AfiliacionEmpleadorFormData } from "../../types/afiliacion-empleador-types"
+import { useCatalogStore } from "@/lib/components/core/stores/catalog-store"
 
 interface DatosSedesProps {
   control: Control<AfiliacionEmpleadorFormData>
@@ -88,6 +89,11 @@ export function DatosSedes({ control, watch }: DatosSedesProps) {
     name: "sedes",
   })
 
+  const {
+    economicActivities,
+    loading,
+  } = useCatalogStore()
+  
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const watchedSedes = watch("sedes") || []
   const [departamentoStates, setDepartamentoStates] = useState<Record<number, string>>({})
@@ -99,6 +105,16 @@ export function DatosSedes({ control, watch }: DatosSedesProps) {
     mode: "all",
     defaultValues: initialSedeFormData,
   })
+
+  const economicActivityOptions = (economicActivities || []).map((item) => ({
+    value: item.code,
+    label: `${item.code} - ${item.name.substring(0, 60)}...`,
+  }))
+
+  const booleanOptions = [
+    { value: "S", label: "SÍ" },
+    { value: "N", label: "NO" },
+  ]
 
   const zonaOptions = [
     { value: "U", label: "U - URBANO" },
@@ -186,6 +202,16 @@ export function DatosSedes({ control, watch }: DatosSedesProps) {
     }
   }, [watchedSedes, departamentoStates])
 
+  useEffect(() => {
+    const subscription = sedeForm.watch((value, { name }) => {
+      if (name === "sedeMision" && value?.sedeMision === "N") {
+        sedeForm.setValue("tipoDocSedeMision", "")
+        sedeForm.setValue("documentoSedeMision", "")
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [sedeForm])
+
   const getZonaLabel = (zona: string) => {
     return zona === "U" ? "Urbano" : zona === "R" ? "Rural" : zona
   }
@@ -228,7 +254,7 @@ export function DatosSedes({ control, watch }: DatosSedesProps) {
                     <FormSelect
                       label="Tipo Documento Empleador"
                       placeholder="Seleccionar tipo"
-                      options={DocumentTypesOptions.filter((i: { value: string }) => ["N", "NI"].includes(i.value))}
+                      options={DocumentTypesOptions}
                       value={field.value || ""}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
@@ -266,7 +292,7 @@ export function DatosSedes({ control, watch }: DatosSedesProps) {
                   rules={SedeValidationRules.subempresa}
                   render={({ field, fieldState }) => (
                     <FormInput
-                      label="Subempresa"
+                      label="Subempresa (SOLO PARA EL NIT 899999061)"
                       placeholder="Nombre de la subempresa"
                       value={field.value || ""}
                       onChange={field.onChange}
@@ -395,16 +421,15 @@ export function DatosSedes({ control, watch }: DatosSedesProps) {
                   control={sedeForm.control}
                   rules={SedeValidationRules.actividadEconomica}
                   render={({ field, fieldState }) => (
-                    <FormInput
+                    <FormSelect
                       label="Actividad Económica"
                       placeholder="Código actividad económica"
+                      options={economicActivityOptions}
                       value={field.value || ""}
                       onChange={field.onChange}
-                      maxLength={10}
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
-                      required
                       disabled={isViewing}
                     />
                   )}
@@ -517,29 +542,10 @@ export function DatosSedes({ control, watch }: DatosSedesProps) {
                   control={sedeForm.control}
                   rules={SedeValidationRules.sedeMision}
                   render={({ field, fieldState }) => (
-                    <FormInput
+                    <FormSelect
                       label="Sede Misión"
                       placeholder="Sede misión"
-                      value={field.value || ""}
-                      onChange={field.onChange}
-                      maxLength={200}
-                      onBlur={field.onBlur}
-                      error={!!fieldState.error}
-                      errorMessage={fieldState.error?.message}
-                      disabled={isViewing}
-                    />
-                  )}
-                />
-
-                <Controller
-                  name="tipoDocSedeMision"
-                  control={sedeForm.control}
-                  rules={SedeValidationRules.tipoDocSedeMision}
-                  render={({ field, fieldState }) => (
-                    <FormSelect
-                      label="Tipo Doc. Sede Misión"
-                      placeholder="Seleccionar tipo"
-                      options={DocumentTypesOptions}
+                      options={booleanOptions}
                       value={field.value || ""}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
@@ -550,24 +556,47 @@ export function DatosSedes({ control, watch }: DatosSedesProps) {
                   )}
                 />
 
-                <Controller
-                  name="documentoSedeMision"
-                  control={sedeForm.control}
-                  rules={SedeValidationRules.documentoSedeMision}
-                  render={({ field, fieldState }) => (
-                    <FormInput
-                      label="Documento Sede Misión"
-                      placeholder="Número documento sede misión"
-                      value={field.value || ""}
-                      onChange={field.onChange}
-                      maxLength={20}
-                      onBlur={field.onBlur}
-                      error={!!fieldState.error}
-                      errorMessage={fieldState.error?.message}
-                      disabled={isViewing}
+                {(sedeForm.watch("sedeMision") === "S") && (
+                  <>                  
+                    <Controller
+                      name="tipoDocSedeMision"
+                      control={sedeForm.control}
+                      rules={SedeValidationRules.tipoDocSedeMision}
+                      render={({ field, fieldState }) => (
+                        <FormSelect
+                          label="Tipo Doc. Sede Misión"
+                          placeholder="Seleccionar tipo"
+                          options={DocumentTypesOptions}
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          error={!!fieldState.error}
+                          errorMessage={fieldState.error?.message}
+                          disabled={isViewing}
+                        />
+                      )}
                     />
-                  )}
-                />
+
+                    <Controller
+                      name="documentoSedeMision"
+                      control={sedeForm.control}
+                      rules={SedeValidationRules.documentoSedeMision}
+                      render={({ field, fieldState }) => (
+                        <FormInput
+                          label="Documento Sede Misión"
+                          placeholder="Número documento sede misión"
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          maxLength={20}
+                          onBlur={field.onBlur}
+                          error={!!fieldState.error}
+                          errorMessage={fieldState.error?.message}
+                          disabled={isViewing}
+                        />
+                      )}
+                    />
+                  </>
+                )}
               </div>
 
               <DialogFooter>

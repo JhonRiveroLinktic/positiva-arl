@@ -5,7 +5,6 @@ import { useState } from "react"
 import { FormInput } from "@/lib/components/core/form/form-input"
 import { FormSelect } from "@/lib/components/core/form/form-select"
 import { CentroTrabajoValidationRules } from "../../validations/validation-rules"
-import { DocumentTypesOptions } from "../../options"
 import { Button } from "@/lib/components/ui/button"
 import { Trash2, Plus, Edit, Eye } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/lib/components/ui/card"
@@ -28,6 +27,10 @@ import {
 import { Badge } from "@/lib/components/ui/badge"
 import { toast } from "@/lib/utils/toast"
 import type { AfiliacionEmpleadorFormData } from "../../types/afiliacion-empleador-types"
+import { useCatalogStore } from "@/lib/components/core/stores/catalog-store"
+import { 
+  DocumentTypesOptions
+} from "@/lib/components/independiente-con-contrato/options"
 
 interface DatosCentrosTrabajoProps {
   control: Control<AfiliacionEmpleadorFormData>
@@ -60,6 +63,11 @@ export function DatosCentrosTrabajo({ control, watch }: DatosCentrosTrabajoProps
     name: "centrosTrabajo",
   })
 
+  const {
+    economicActivities,
+    loading,
+  } = useCatalogStore()
+
   const watchedSedes = watch("sedes") || []
   const watchedCentrosTrabajo = watch("centrosTrabajo") || []
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -70,6 +78,11 @@ export function DatosCentrosTrabajo({ control, watch }: DatosCentrosTrabajoProps
     mode: "all",
     defaultValues: initialCentroTrabajoFormData,
   })
+
+  const economicActivityOptions = (economicActivities || []).map((item) => ({
+    value: item.code,
+    label: `${item.code} - ${item.name.substring(0, 60)}...`,
+  }))
 
   const sedeOptions = watchedSedes.map((sede: any, index: number) => ({
     value: sede.id || `sede-${index}`,
@@ -183,7 +196,7 @@ export function DatosCentrosTrabajo({ control, watch }: DatosCentrosTrabajoProps
                     <FormSelect
                       label="Tipo Documento Empleador"
                       placeholder="Seleccionar tipo"
-                      options={DocumentTypesOptions.filter((i: { value: string }) => ["N", "NI"].includes(i.value))}
+                      options={DocumentTypesOptions}
                       value={field.value || ""}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
@@ -221,7 +234,7 @@ export function DatosCentrosTrabajo({ control, watch }: DatosCentrosTrabajoProps
                   rules={CentroTrabajoValidationRules.subempresa}
                   render={({ field, fieldState }) => (
                     <FormInput
-                      label="Subempresa"
+                      label="Subempresa (SOLO PARA EL NIT 899999061)"
                       placeholder="Nombre de la subempresa"
                       value={field.value || ""}
                       onChange={field.onChange}
@@ -258,16 +271,15 @@ export function DatosCentrosTrabajo({ control, watch }: DatosCentrosTrabajoProps
                   control={centroTrabajoForm.control}
                   rules={CentroTrabajoValidationRules.actividadEconomica}
                   render={({ field, fieldState }) => (
-                    <FormInput
+                    <FormSelect
                       label="Actividad Económica"
                       placeholder="Código actividad económica"
+                      options={economicActivityOptions}
                       value={field.value || ""}
                       onChange={field.onChange}
-                      maxLength={10}
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}
-                      required
                       disabled={isViewing}
                     />
                   )}

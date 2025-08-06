@@ -15,6 +15,7 @@ import {
 } from "@/lib/components/independiente-con-contrato/options"
 import { genderCodeOptions } from "@/lib/options/gender-codes"
 import type { AfiliacionEmpleadorFormData } from "../../types/afiliacion-empleador-types"
+import { countriesOptions } from "@/lib/options/countries"
 
 interface DatosRepresentanteLegalProps {
   control: Control<AfiliacionEmpleadorFormData>
@@ -24,6 +25,7 @@ interface DatosRepresentanteLegalProps {
 }
 
 export function DatosRepresentanteLegal({ control, errors, watch, setValue }: DatosRepresentanteLegalProps) {
+  const paisSeleccionado = watch("representanteLegal.pais")
   const currentDepartamento = useWatch({ control, name: "representanteLegal.departamento" })
   const [selectedDepartamento, setSelectedDepartamento] = useState<string | undefined>(undefined)
 
@@ -47,12 +49,6 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
     { value: "R", label: "R - RURAL" }
   ]
 
-  const paisOptions = [
-    { value: "CO", label: "CO - COLOMBIA" },
-    { value: "US", label: "US - ESTADOS UNIDOS" },
-    { value: "VE", label: "VE - VENEZUELA" },
-  ]
-
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
@@ -68,7 +64,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
             <FormSelect
               label="Tipo de Documento"
               placeholder="Seleccionar tipo"
-              options={DocumentTypesOptions}
+              options={DocumentTypesOptions.filter((i) => i.value !== 'N')}
               value={field.value || ""}
               onChange={field.onChange}
               onBlur={field.onBlur}
@@ -224,7 +220,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
             <FormSelect
               label="País"
               placeholder="Seleccionar país"
-              options={paisOptions}
+              options={countriesOptions}
               value={field.value || ""}
               onChange={field.onChange}
               onBlur={field.onBlur}
@@ -233,56 +229,59 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
             />
           )}
         />
-
-<Controller
-          name="representanteLegal.departamento"
-          control={control}
-          rules={RepresentanteLegalValidationRules.departamento}
-          render={({ field, fieldState }) => (
-            <FormSelect
-              label="Departamento"
-              placeholder="Seleccionar departamento"
-              options={departamentosDaneOptions}
-              value={field.value || ""}
-              onChange={(value) => {
-                field.onChange(value)
-                setValue("representanteLegal.municipio", "")
-              }}
-              onBlur={field.onBlur}
-              error={!!fieldState.error}
-              errorMessage={fieldState.error?.message}
-              required
+        {paisSeleccionado === "CO" && (
+          <>
+            <Controller
+              name="representanteLegal.departamento"
+              control={control}
+              rules={RepresentanteLegalValidationRules.departamento}
+              render={({ field, fieldState }) => (
+                <FormSelect
+                  label="Departamento"
+                  placeholder="Seleccionar departamento"
+                  options={departamentosDaneOptions}
+                  value={field.value || ""}
+                  onChange={(value) => {
+                    field.onChange(value)
+                    setValue("representanteLegal.municipio", "")
+                  }}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  required
+                />
+              )}
             />
-          )}
-        />
 
-        <Controller
-          name="representanteLegal.municipio"
-          control={control}
-          rules={RepresentanteLegalValidationRules.municipio}
-          render={({ field, fieldState }) => (
-            <FormSelect
-              label="Municipio"
-              placeholder={
-                !currentDepartamento
-                  ? "Seleccione un departamento primero"
-                  : "Seleccionar municipio"
-              }
-              options={
-                currentDepartamento
-                  ? getMunicipiosDaneOptionsByDepartamento(currentDepartamento)
-                  : []
-              }
-              value={field.value || ""}
-              onChange={field.onChange}
-              onBlur={field.onBlur}
-              error={!!fieldState.error}
-              errorMessage={fieldState.error?.message}
-              required
-              disabled={!currentDepartamento}
+            <Controller
+              name="representanteLegal.municipio"
+              control={control}
+              rules={RepresentanteLegalValidationRules.municipio}
+              render={({ field, fieldState }) => (
+                <FormSelect
+                  label="Municipio"
+                  placeholder={
+                    !currentDepartamento
+                      ? "Seleccione un departamento primero"
+                      : "Seleccionar municipio"
+                  }
+                  options={
+                    currentDepartamento
+                      ? getMunicipiosDaneOptionsByDepartamento(currentDepartamento)
+                      : []
+                  }
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  required
+                  disabled={!currentDepartamento}
+                />
+              )}
             />
-          )}
-        />
+          </>
+        )}
 
         <Controller
           name="representanteLegal.zona"

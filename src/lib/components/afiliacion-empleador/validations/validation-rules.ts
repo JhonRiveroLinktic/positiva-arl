@@ -59,12 +59,6 @@ export function validateSuministroTransporte(value: string): boolean {
 export const EmpleadorDatosValidationRules = {
   tipoDocEmpleador: {
     required: "El tipo de documento del empleador es requerido",
-    validate: (value: string) => {
-      if (!validateLegalDocumentType(value)) {
-        return "El tipo de documento debe ser válido para personas jurídicas"
-      }
-      return true
-    },
   },
 
   documentoEmpleador: {
@@ -352,12 +346,6 @@ export const EmpleadorDatosValidationRules = {
 
   tipoDocRepresentanteLegal: {
     required: "El tipo de documento del representante legal es requerido",
-    validate: (value: string) => {
-      if (!validateNaturalPersonDocumentType(value)) {
-        return "El tipo de documento debe ser válido para personas naturales"
-      }
-      return true
-    },
   },
 
   numeDocRepresentanteLegal: {
@@ -394,12 +382,6 @@ export const EmpleadorDatosValidationRules = {
 export const RepresentanteLegalValidationRules = {
   tipoDoc: {
     required: "El tipo de documento del representante legal es requerido",
-    validate: (value: string) => {
-      if (!validateNaturalPersonDocumentType(value)) {
-        return "El tipo de documento debe ser válido para personas naturales"
-      }
-      return true
-    },
   },
 
   documento: {
@@ -657,12 +639,6 @@ export const RepresentanteLegalValidationRules = {
 export const SedeValidationRules = {
   tipoDocEmpleador: {
     required: "El tipo de documento del empleador es requerido",
-    validate: (value: string) => {
-      if (!validateLegalDocumentType(value)) {
-        return "El tipo de documento debe ser válido para personas jurídicas"
-      }
-      return true
-    },
   },
 
   documentoEmpleador: {
@@ -820,6 +796,7 @@ export const SedeValidationRules = {
   },
 
   tipoDocResponsable: {
+    required: "El tipo de documento del responsable es requerido",
     validate: (value: string | undefined) => {
       if (!value) return true
       if (!validateNaturalPersonDocumentType(value)) {
@@ -830,6 +807,7 @@ export const SedeValidationRules = {
   },
 
   documentoResponsable: {
+    required: "El documento del responsable es requerido",
     validate: (value: string | undefined) => {
       if (!value) return true
       if (hasDangerousContent(value)) {
@@ -846,25 +824,10 @@ export const SedeValidationRules = {
   },
 
   sedeMision: {
-    maxLength: { value: 200, message: "Máximo 200 caracteres" },
-    validate: (value: string | undefined) => {
-      if (!value) return true
-      if (hasDangerousContent(value)) {
-        return "Este campo contiene caracteres no permitidos"
-      }
-      return true
-    },
+    required: "La sede mision es requerida",
   },
 
-  tipoDocSedeMision: {
-    validate: (value: string | undefined) => {
-      if (!value) return true
-      if (!validateNaturalPersonDocumentType(value)) {
-        return "El tipo de documento debe ser válido para personas naturales"
-      }
-      return true
-    },
-  },
+  tipoDocSedeMision: {},
 
   documentoSedeMision: {
     validate: (value: string | undefined) => {
@@ -886,12 +849,6 @@ export const SedeValidationRules = {
 export const CentroTrabajoValidationRules = {
   tipoDocEmpleador: {
     required: "El tipo de documento del empleador es requerido",
-    validate: (value: string) => {
-      if (!validateLegalDocumentType(value)) {
-        return "El tipo de documento debe ser válido para personas jurídicas"
-      }
-      return true
-    },
   },
 
   documentoEmpleador: {
