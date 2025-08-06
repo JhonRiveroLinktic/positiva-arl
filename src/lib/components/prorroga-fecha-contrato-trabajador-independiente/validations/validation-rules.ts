@@ -82,7 +82,6 @@ export const prorrogaFechaContratoTrabajadorIndependienteValidationRules = {
         return "Formato de fecha inválido"
       }
       
-      // Validar que la fecha de fin no sea anterior a la fecha de inicio
       if (formData?.fecha_inicio_contrato_original) {
         const fechaInicio = new Date(formData.fecha_inicio_contrato_original)
         if (fechaInicio && !isNaN(fechaInicio.getTime()) && fecha < fechaInicio) {

@@ -25,7 +25,7 @@ interface EnvioRegistroProps {
 
 export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const { limpiarTodosLosRegistros, agregarRegistro } = useRegistroStore()
+  const { limpiarTodosLosRegistros } = useRegistroStore()
 
   const handleEnviarRegistros = async () => {
     if (registros.length === 0) {
@@ -111,7 +111,6 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
               <ul className="text-orange-700 mt-1 text-sm space-y-1">
                 <li>• Se registrarán las prórrogas de fecha de contrato</li>
                 <li>• Los datos se guardarán para trazabilidad</li>
-                <li>• No se realizarán validaciones de existencia</li>
               </ul>
             </AlertDescription>
           </Alert>

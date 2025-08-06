@@ -18,9 +18,6 @@ import { toast } from "@/lib/utils/toast"
 import type { 
   ProrrogaFechaContratoTrabajadorIndependienteFormData,
 } from "../types/prorroga-fecha-contrato-types"
-import { 
-    DocumentTypesOptions,
-} from "@/lib/components/independiente-con-contrato/options/index"
 import { ProrrogaFechaContratoTrabajadorIndependienteMassiveUpload } from "./massive-upload"
 
 const initialDefaultValues: ProrrogaFechaContratoTrabajadorIndependienteFormData = {

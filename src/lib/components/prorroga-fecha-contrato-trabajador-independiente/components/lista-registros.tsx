@@ -6,7 +6,6 @@ import { Button } from "@/lib/components/ui/button"
 import { useRegistroStore } from "../stores/registro-store"
 import { EnvioRegistro } from "./envio-registros"
 import { Send } from "lucide-react"
-import type { Registro } from "../types/prorroga-fecha-contrato-types"
 
 export function ListaRegistros() {
   const { registros, eliminarRegistro, limpiarTodosLosRegistros, setRegistroEditando } = useRegistroStore()

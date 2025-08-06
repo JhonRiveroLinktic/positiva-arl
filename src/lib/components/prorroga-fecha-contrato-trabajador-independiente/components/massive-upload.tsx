@@ -73,66 +73,66 @@ export function ProrrogaFechaContratoTrabajadorIndependienteMassiveUpload({ trig
         errorData?: any;
       }> = [];
 
-             const normalizedMapping = createNormalizedMapping();
+      const normalizedMapping = createNormalizedMapping();
        
-       for (let i = 0; i < data.length; i++) {
-         const row = data[i];
-         setProgress(((i + 1) / data.length) * 50);
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+        setProgress(((i + 1) / data.length) * 50);
 
-         try {
-           const formData: Partial<ProrrogaFechaContratoTrabajadorIndependienteFormData> = {};
-           const rowErrors: string[] = [];
+        try {
+          const formData: Partial<ProrrogaFechaContratoTrabajadorIndependienteFormData> = {};
+          const rowErrors: string[] = [];
 
-                                  Object.keys(row).forEach(originalKey => {
-               const normalizedKey = normalizeHeader(originalKey);
-               const formField = normalizedMapping[normalizedKey];
+              Object.keys(row).forEach(originalKey => {
+              const normalizedKey = normalizeHeader(originalKey);
+              const formField = normalizedMapping[normalizedKey];
 
-               if (formField) {
-                 let value = row[originalKey];
-                 value = value !== undefined && value !== null ? String(value).trim() : "";
-                 
-                 // Convertir fechas de Excel a formato YYYY-MM-DD
-                 if (formField === 'fecha_inicio_contrato_original' || formField === 'fecha_fin_contrato_nueva') {
-                   if (value && !isNaN(Number(value))) {
-                     // Convertir número de Excel a fecha
-                     const excelDate = Number(value);
-                     const date = new Date((excelDate - 25569) * 86400 * 1000);
-                     value = date.toISOString().split('T')[0]; // YYYY-MM-DD
-                   }
-                 }
-                 
-                 // Para codigo_subempresa, intentar extraer solo el ID si es posible
-                 if (formField === 'codigo_subempresa' && value) {
-                   // Intentar extraer solo el número al inicio
-                   const match = value.match(/^(\d+)/);
-                   if (match) {
-                     value = match[1];
-                   }
-                 }
-                 
-                 (formData as any)[formField] = value;
-               }
-             });
+              if (formField) {
+                let value = row[originalKey];
+                value = value !== undefined && value !== null ? String(value).trim() : "";
+                
+                // Convertir fechas de Excel a formato YYYY-MM-DD
+                if (formField === 'fecha_inicio_contrato_original' || formField === 'fecha_fin_contrato_nueva') {
+                  if (value && !isNaN(Number(value))) {
+                    // Convertir número de Excel a fecha
+                    const excelDate = Number(value);
+                    const date = new Date((excelDate - 25569) * 86400 * 1000);
+                    value = date.toISOString().split('T')[0]; // YYYY-MM-DD
+                  }
+                }
+                
+                // Para codigo_subempresa, intentar extraer solo el ID si es posible
+                if (formField === 'codigo_subempresa' && value) {
+                  // Intentar extraer solo el número al inicio
+                  const match = value.match(/^(\d+)/);
+                  if (match) {
+                    value = match[1];
+                  }
+                }
+                
+                (formData as any)[formField] = value;
+              }
+            });
 
-                                  if (rowErrors.length > 0) {
-             validationResults.push({
-                 isValid: false,
-                 errorData: {
-                     row: i + 2,
-                     errors: rowErrors,
-                     rawData: row,
-                 },
-             });
-             continue;
-           }
+                                if (rowErrors.length > 0) {
+            validationResults.push({
+                isValid: false,
+                errorData: {
+                    row: i + 2,
+                    errors: rowErrors,
+                    rawData: row,
+                },
+            });
+            continue;
+          }
 
-            const sanitizedData = sanitizeFormData(formData as ProrrogaFechaContratoTrabajadorIndependienteFormData);
-             
-            const tempRegistro: Registro = {
-               id: `temp-${i}`,
-               ...(sanitizedData as Omit<Registro, "id" | "metodoSubida">),
-               metodo_subida: "cargue masivo",
-             };
+          const sanitizedData = sanitizeFormData(formData as ProrrogaFechaContratoTrabajadorIndependienteFormData);
+            
+          const tempRegistro: Registro = {
+              id: `temp-${i}`,
+              ...(sanitizedData as Omit<Registro, "id" | "metodoSubida">),
+              metodo_subida: "cargue masivo",
+            };
 
           const fieldErrors: string[] = [];
           Object.entries(prorrogaFechaContratoTrabajadorIndependienteValidationRules).forEach(([fieldName, rules]) => {
@@ -224,9 +224,9 @@ export function ProrrogaFechaContratoTrabajadorIndependienteMassiveUpload({ trig
     const expectedNormalizedMapping = createNormalizedMapping();
     const expectedNormalizedHeaders = Object.keys(expectedNormalizedMapping);
 
-         const normalizedHeadersInFile = headers.map(header => normalizeHeader(header));
+    const normalizedHeadersInFile = headers.map(header => normalizeHeader(header));
 
-     const requiredColumnsNormalized = [
+    const requiredColumnsNormalized = [
       normalizeHeader('TIPO_DOCUMENTO_CONTRATANTE'),
       normalizeHeader('DOCUMENTO_CONTRATANTE'),
       normalizeHeader('NOMBRES_Y_APELLIDOS_Y/O_RAZON_SOCIAL'),
@@ -238,15 +238,15 @@ export function ProrrogaFechaContratoTrabajadorIndependienteMassiveUpload({ trig
       normalizeHeader('CORREO_ELECTRONICO_DE_NOTIFICACION'),
     ];
 
-         const missingColumns = requiredColumnsNormalized.filter((col) => {
+    const missingColumns = requiredColumnsNormalized.filter((col) => {
        const found = normalizedHeadersInFile.includes(col);
        return !found;
-     });
+    });
 
-     const extraColumns = normalizedHeadersInFile.filter((col) => {
+    const extraColumns = normalizedHeadersInFile.filter((col) => {
        const isValid = expectedNormalizedHeaders.includes(col);
        return !isValid;
-     });
+    });
 
     return {
       isValid: missingColumns.length === 0,
