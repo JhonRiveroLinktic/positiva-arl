@@ -10,44 +10,54 @@ import { useAuth } from "@/lib/components/core/auth/auth-context"
 
 const forms = [
   {
-    title: "Seguimiento",
+    title: "01. Seguimiento",
     description: "Formulario de seguimiento de casos",
     path: "/forms/seguimiento-afiliaciones-arl"
   },
   {
-    title: "Plantilla masiva Trabajador Independiente con Contrato",
+    title: "02. Plantilla masiva Trabajador Independiente con Contrato",
     description: "Formulario para cargar trabajadores independientes con contrato",
     path: "/forms/independiente-con-contrato"
   },
   {
-    title: "Formulario Afiliación Empleador (Empresas, Sedes - Sucursales - Centro de trabajo Y RL)",
+    title: "03. Formulario Afiliación Empleador (Empresas, Sedes - Sucursales - Centro de trabajo Y RL)",
     description: "Formulario para registrar empleadores",
     path: "/forms/afiliacion-empleador"
   },
   {
-    title: "Plantilla masiva Trabajador Independiente Voluntario",
+    title: "04. Plantilla masiva Trabajador Independiente Voluntario",
     description: "Formulario para cargar trabajadores independientes voluntarios",
     path: "/forms/independiente-voluntario"
   },
   {
-    title: "Cambio Actividad Económica Independiente con Contrato",
+    title: "05. Cambio Actividad Económica Independiente con Contrato",
     description: "Formulario para cambio de actividad económica a ejecutar del trabajador",
     path: "/forms/cambio-actividad-economica-independiente-con-contrato"
   },
   {
-    title: "Novedad Actualización Cargo Trabajador - Dependiente e Independiente con Contrato",
+    title: "06. Novedad Actualización Cargo Trabajador - Dependiente e Independiente con Contrato",
     description: "Formulario para cambio de cargo de trabajador",
     path: "/forms/novedad-actualizacion-cargo-trabajador"
   },
   {
-    title: "Novedad Actualización Datos Trabajador",
+    title: "07. Ajuste Fecha de Cotrato Prorroga de Trabajador Independiente",
+    description: "Formulario para prorrogar la fecha de contrato del trabajador independiente",
+    path: "/forms/prorroga-fecha-contrato-trabajador-independiente"
+  },
+  {
+    title: "08. Novedad Actualización Datos Trabajador",
     description: "Formulario para actualización de datos de trabajador",
     path: "/forms/novedad-actualizacion-datos-trabajador"
   },
   {
-    title: "Retiro de Trabajadores",
+    title: "10. Retiro de Trabajador",
     description: "Formulario para retiro de trabajadores",
     path: "/forms/retiro-trabajadores"
+  },
+  {
+    title: "13. Cambio de Ocupación - Trabajador Independiente Voluntario",
+    description: "Formulario para realizar el cambio de ocupación del trabajador independiente voluntario",
+    path: "/forms/cambio-ocupacion-independiente-voluntario"
   },
   {
     title: "Cambio de Riesgo",
@@ -58,16 +68,6 @@ const forms = [
     title: "Fecha de Cambios",
     description: "Formulario para reportar fecha de cambios",
     path: "/forms/fecha-cambios"
-  },
-  {
-    title: "Prorroga de Fecha de Contrato Trabajador Independiente",
-    description: "Formulario para prorrogar la fecha de contrato del trabajador independiente",
-    path: "/forms/prorroga-fecha-contrato-trabajador-independiente"
-  },
-  {
-    title: "Cambio de Ocupación - Trabajador Independiente Voluntario",
-    description: "Formulario para realizar el cambio de ocupación del trabajador independiente voluntario",
-    path: "/forms/cambio-ocupacion-independiente-voluntario"
   },
 ] as const;
 
