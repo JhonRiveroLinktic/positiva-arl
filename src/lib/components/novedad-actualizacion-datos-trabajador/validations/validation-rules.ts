@@ -75,7 +75,6 @@ export const novedadActualizacionDatosTrabajadorValidationRules = {
     }
   },
   telefono_de_residencia: {
-    required: "El número de teléfono es requerido",
     validate: (value: string) => {
       const phoneValidation = validatePhoneNumber(value)
       if (!phoneValidation.isValid) {

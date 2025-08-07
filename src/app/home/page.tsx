@@ -60,6 +60,11 @@ const forms = [
     path: "/forms/retiro-trabajadores"
   },
   {
+    title: "11. Novedad Actualización Datos Empleador",
+    description: "Formulario para actualización de datos de empleadores",
+    path: "/forms/novedad-actualizacion-datos-empleador"
+  },
+  {
     title: "13. Cambio de Ocupación - Trabajador Independiente Voluntario",
     description: "Formulario para realizar el cambio de ocupación del trabajador independiente voluntario",
     path: "/forms/cambio-ocupacion-independiente-voluntario"
@@ -86,7 +91,7 @@ export default function HomePage() {
   if (user?.user_type === 'tipo1') {
     visibleForms = [forms[0]];
   } else if (user?.user_type === 'tipo2') {
-    visibleForms = [forms[1], forms[2], forms[3], forms[4], forms[5], forms[6], forms[7], forms[8], forms[9], forms[10], forms[11], forms[12]];
+    visibleForms = [forms[1], forms[2], forms[3], forms[4], forms[5], forms[6], forms[7], forms[8], forms[9], forms[10], forms[11], forms[12], forms[13]];
   }
 
   return (

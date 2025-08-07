@@ -2,20 +2,13 @@
 
 import { useState } from "react"
 import { Button } from "@/lib/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose,
-} from "@/lib/components/ui/dialog"
-import { Alert, AlertDescription } from "@/lib/components/ui/alert"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/lib/components/ui/dialog"
+import { useRegistroStore } from "../stores/registro-store"
 import { supabase } from "@/lib/utils/supabase"
 import { toast } from "@/lib/utils/toast"
-import { useRegistroStore } from "../stores/registro-store"
-import { Send, Loader2, Info } from "lucide-react"
-import type { Registro } from "../types/novedad-actualizacion-datos-types"
+import { Info, Loader2, Send } from "lucide-react"
+import type { Registro } from "../types/novedad-actualizacion-datos-empleador-types"
+import { Alert, AlertDescription } from "../../ui/alert"
 
 interface EnvioRegistroProps {
   registros: Registro[]
@@ -24,14 +17,14 @@ interface EnvioRegistroProps {
 }
 
 export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const { limpiarTodosLosRegistros } = useRegistroStore()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleEnviarRegistros = async () => {
     if (registros.length === 0) {
-      toast.warning({
-        title: "Sin registros",
-        description: "No hay registros para enviar a la base de datos.",
+      toast.error({
+        title: "No hay registros",
+        description: "No hay registros para enviar.",
       })
       return
     }
@@ -39,52 +32,42 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
     setIsSubmitting(true)
 
     try {
-      const { data, error } = await supabase
-        .from('novedad_actualizacion_datos_trabajador')
+      const { error } = await supabase
+        .from("novedad_actualizacion_datos_empleador")
         .insert(registros.map(registro => ({
-          tipo_documento_trabajador: registro.tipo_documento_trabajador,
-          documento_trabajador: registro.documento_trabajador,
-          codigo_eps: registro.codigo_eps,
-          codigo_afp: registro.codigo_afp,
-          correo_electronico_trabajador: registro.correo_electronico_trabajador,
-          fecha_de_nacimiento: registro.fecha_de_nacimiento,
-          direccion_de_residencia: registro.direccion_de_residencia,
-          telefono_de_residencia: registro.telefono_de_residencia,
-          departamento_de_residencia: registro.departamento_de_residencia,
-          municipio_de_residencia: registro.municipio_de_residencia,
+          tipo_documento_empleador: registro.tipo_documento_empleador,
+          documento_empleador: registro.documento_empleador,
+          codigo_subempresa: registro.codigo_subempresa,
+          correo_electronico: registro.correo_electronico,
+          direccion: registro.direccion,
+          telefono: registro.telefono,
+          departamento: registro.departamento,
+          municipio: registro.municipio,
+          representante_legal: registro.representante_legal,
           metodo_subida: registro.metodo_subida,
         })))
-        .select()
-
+        
       if (error) {
-        console.error("Error en el procesamiento:", error)
-
-        const msg = error.code === "23505"
-          ? "Algunos registros ya existen en la base de datos."
-          : error.code === "23502"
-          ? "Faltan campos requeridos en algunos registros."
-          : error.message
-
+        console.error("Error al enviar registros:", error)
         toast.error({
-          title: "Error al procesar registros",
-          description: msg,
+          title: "Error al enviar",
+          description: "Ocurrió un error al enviar los registros.",
         })
         return
       }
 
-      if (data && Array.isArray(data)) {
-        limpiarTodosLosRegistros()
-        toast.success({
-          title: "¡Registros procesados exitosamente!",
-          description: `Se procesaron ${data.length} prórrogas de contrato.`,
-        })
-        onClose()
-      }
+      toast.success({
+        title: "Registros enviados",
+        description: `${registros.length} registros se enviaron correctamente.`,
+      })
+
+      limpiarTodosLosRegistros()
+      onClose()
     } catch (error) {
-      console.error("Error inesperado:", error)
+      console.error("Error al enviar registros:", error)
       toast.error({
-        title: "Error inesperado",
-        description: "Ocurrió un error inesperado. Intente nuevamente.",
+        title: "Error al enviar",
+        description: "Ocurrió un error al enviar los registros.",
       })
     } finally {
       setIsSubmitting(false)
@@ -109,7 +92,7 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
                 Proceso de envío:
               </p>
               <ul className="text-orange-700 mt-1 text-sm space-y-1">
-                <li>• Los datos se guardarán en base de datos</li>
+                <li>• Los datos se guardarán en la base de datos</li>
               </ul>
             </AlertDescription>
           </Alert>
