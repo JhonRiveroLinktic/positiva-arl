@@ -28,7 +28,7 @@ export default function NovedadActualizacionDatosTrabajador() {
           title="¿Necesitas cargar varios registros a la vez?"
           description="Descarga nuestra plantilla base en Excel, diligénciala con la información de cada trabajador y súbela fácilmente mediante la opción de carga masiva."
           fileTitle="Descargar Plantilla Actualización de Datos de Trabajador"
-          file=""
+          file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets/08-PLANTILLA%20DE%20NOVEDAD%20ACTUALIZACION%20DATOS%20TRABAJADOR.xlsx"
         />
         <Suspense fallback={<FormularioNovedadActualizacionDatosTrabajadorFallback />}>
           <NovedadActualizacionDatosTrabajadorForm />
