@@ -55,7 +55,9 @@ export function hasDangerousContent(value: string): boolean {
     DANGEROUS_PATTERNS.xssScript.test(value) ||
     DANGEROUS_PATTERNS.xssEvents.test(value) ||
     value.includes("javascript:") ||
-    value.includes("data:text/html")
+    value.includes("data:text/html") || 
+    value.includes("<script>") ||
+    value.includes("</script>")
   )
 }
 

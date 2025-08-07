@@ -40,6 +40,11 @@ const forms = [
     path: "/forms/novedad-actualizacion-cargo-trabajador"
   },
   {
+    title: "Novedad Actualización Datos Trabajador",
+    description: "Formulario para actualización de datos de trabajador",
+    path: "/forms/novedad-actualizacion-datos-trabajador"
+  },
+  {
     title: "Retiro de Trabajadores",
     description: "Formulario para retiro de trabajadores",
     path: "/forms/retiro-trabajadores"
@@ -76,7 +81,7 @@ export default function HomePage() {
   if (user?.user_type === 'tipo1') {
     visibleForms = [forms[0]];
   } else if (user?.user_type === 'tipo2') {
-    visibleForms = [forms[1], forms[2], forms[3], forms[4], forms[5], forms[6], forms[7], forms[8], forms[9], forms[10]];
+    visibleForms = [forms[1], forms[2], forms[3], forms[4], forms[5], forms[6], forms[7], forms[8], forms[9], forms[10], forms[11]];
   }
 
   return (
