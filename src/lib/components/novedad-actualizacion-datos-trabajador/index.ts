@@ -1,0 +1,6 @@
+export { NovedadActualizacionDatosTrabajadorForm } from "./components/novedad-actualizacion-datos-trabajador-form"
+export { EnvioRegistro } from "./components/envio-registros"
+export { ListaRegistros } from "./components/lista-registros"
+export { NovedadActualizacionDatosTrabajadorMassiveUpload } from "./components/massive-upload"
+export { useRegistroStore } from "./stores/registro-store"
+export type { Registro, NovedadActualizacionDatosTrabajadorFormData } from "./types/novedad-actualizacion-datos-types" 
