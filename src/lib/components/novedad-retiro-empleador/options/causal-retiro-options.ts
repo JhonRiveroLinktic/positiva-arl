@@ -1,0 +1,16 @@
+export const causalRetiroOptions = [
+  { value: "Cancelación por liquidación de empresa", label: "Cancelación por liquidación de empresa" },
+  { value: "Cancelación por sustitución patronal", label: "Cancelación por sustitución patronal" },
+  { value: "Cancelación por fusión", label: "Cancelación por fusión" },
+  { value: "Cancelación por absorción", label: "Cancelación por absorción" },
+  { value: "Cancelación por cambio de NIT", label: "Cancelación por cambio de NIT" },
+  { value: "Cancelación por retiro masivo de trabajadores", label: "Cancelación por retiro masivo de trabajadores" },
+  { value: "Cancelación por cese de actividades definitivas", label: "Cancelación por cese de actividades definitivas" },
+  { value: "Decisión unilateral de terminar el contrato", label: "Decisión unilateral de terminar el contrato" },
+  { value: "Traslado de empleadores a otra ARL", label: "Traslado de empleadores a otra ARL" },
+  { value: "Fallecimiento del empleador", label: "Fallecimiento del empleador" },
+  { value: "Retiro Por Multiafiliacion", label: "Retiro Por Multiafiliacion" },
+  { value: "Retiro Por Empleador Inconsiste", label: "Retiro Por Empleador Inconsiste" },
+  { value: "Inconsistente", label: "Inconsistente" },
+  { value: "Retiro Por Depuracion", label: "Retiro Por Depuracion" },
+] 

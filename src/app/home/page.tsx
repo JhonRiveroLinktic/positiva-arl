@@ -50,6 +50,11 @@ const forms = [
     path: "/forms/novedad-actualizacion-datos-trabajador"
   },
   {
+    title: "09. Novedad Retiro Empleador",
+    description: "Formulario para retiro de empleadores",
+    path: "/forms/novedad-retiro-empleador"
+  },
+  {
     title: "10. Retiro de Trabajador",
     description: "Formulario para retiro de trabajadores",
     path: "/forms/retiro-trabajadores"
@@ -81,7 +86,7 @@ export default function HomePage() {
   if (user?.user_type === 'tipo1') {
     visibleForms = [forms[0]];
   } else if (user?.user_type === 'tipo2') {
-    visibleForms = [forms[1], forms[2], forms[3], forms[4], forms[5], forms[6], forms[7], forms[8], forms[9], forms[10], forms[11]];
+    visibleForms = [forms[1], forms[2], forms[3], forms[4], forms[5], forms[6], forms[7], forms[8], forms[9], forms[10], forms[11], forms[12]];
   }
 
   return (
