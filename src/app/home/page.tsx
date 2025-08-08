@@ -2,13 +2,12 @@
 
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/lib/components/ui/card"
-import { Button } from "@/lib/components/ui/button"
 import { ProtectedRoute } from "@/lib/components/core/auth/protected-route"
 import { Header } from "@/lib/components/core/components/header"
 import { ArrowRight } from "lucide-react"
 import { useAuth } from "@/lib/components/core/auth/auth-context"
 
-const forms = [
+const items = [
   {
     title: "01. Seguimiento",
     description: "Formulario de seguimiento de casos",
@@ -89,69 +88,80 @@ const forms = [
     description: "Formulario para reportar fecha de cambios",
     path: "/forms/fecha-cambios"
   },
-] as const;
+] as const
 
-type FormType = typeof forms[number];
+type HomeItem = typeof items[number]
 
 export default function HomePage() {
   const router = useRouter()
-  const { user } = useAuth();
+  const { user } = useAuth()
 
-  let visibleForms: FormType[] = [];
-  if (user?.user_type === 'tipo1') {
-    visibleForms = [forms[0]];
-  } else if (user?.user_type === 'tipo2') {
-    visibleForms = [
-      forms[1],
-      forms[2],
-      forms[3],
-      forms[4],
-      forms[5],
-      forms[6],
-      forms[7],
-      forms[8],
-      forms[9],
-      forms[10],
-      forms[11],
-      forms[12],
-      forms[13],
-      forms[14],
-      forms[15]
-    ];
+  const formularios = items.slice(0, 4)
+  const novedades = items.slice(4)
+
+  let visibleFormularios: HomeItem[] = []
+  let visibleNovedades: HomeItem[] = []
+
+  if (user?.user_type === "tipo1") {
+    visibleFormularios = [...formularios]
+    visibleNovedades = novedades.slice(0, -2)
+  } else if (user?.user_type === "tipo2") {
+    visibleFormularios = [...formularios]
+    visibleNovedades = [...novedades]
   }
+
+  const renderItemCard = (item: HomeItem) => (
+    <Card
+      onClick={() => router.push(item.path)}
+      key={item.path}
+      className="group relative overflow-hidden rounded-2xl border border-orange-100 bg-white hover:border-orange-400 hover:bg-orange-50/40 hover:shadow-lg transition-all duration-200 cursor-pointer"
+   >
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg font-semibold text-gray-800 group-hover:text-orange-600">
+          {item.title}
+        </CardTitle>
+        <div className="mt-2 h-1 w-12 rounded-full bg-orange-400/80 group-hover:bg-orange-500" />
+      </CardHeader>
+      <CardContent className="flex items-start justify-between">
+        <p className="text-sm text-gray-600 pr-4">{item.description}</p>
+        <ArrowRight className="h-5 w-5 text-orange-500 group-hover:text-orange-600 group-hover:translate-x-1 transition-transform" />
+      </CardContent>
+    </Card>
+  )
 
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <Header />
-        <main className="flex-1 flex flex-col items-center justify-center py-12">
-          {user?.user_type !== 'tipo1' && user?.user_type !== 'tipo2' ? (
+        <main className="flex-1 flex flex-col items-center py-12">
+          {user?.user_type !== "tipo1" && user?.user_type !== "tipo2" ? (
             <div className="bg-red-100 border border-red-300 text-red-700 rounded-lg p-6 text-center max-w-lg mx-auto">
               <h2 className="text-xl font-bold mb-2">Acceso denegado</h2>
-              <p>No tienes permisos para acceder a ningún módulo. Por favor comunícate con soporte.</p>
+              <p>
+                No tienes permisos para acceder a ningún módulo. Por favor comunícate con soporte.
+              </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl px-2 md:px-4">
-              {visibleForms.map(form => (
-                <Card onClick={() => router.push(form.path)} key={form.path}
-                  className="group relative overflow-hidden rounded-3xl border-2 border-orange-200 shadow-xl bg-gradient-to-br from-orange-50 via-white to-orange-100 hover:from-orange-50 hover:to-orange-100 hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer w-full h-full flex flex-col justify-between p-4 sm:p-6">
-                  <div className=" bg-gradient-to-br from-orange-200/40 to-orange-100/10 opacity-0 group-hover:opacity-80 transition-opacity duration-300 z-0" />
-                  <CardHeader className="z-10 relative pb-2 flex flex-col items-center">
-                    <CardTitle className="text-2xl font-bold text-orange-700 group-hover:text-orange-900 transition-colors duration-200 drop-shadow-sm text-center w-full">
-                      {form.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="z-10 relative flex flex-col justify-between items-center w-full px-0 pb-4 sm:px-2 sm:pb-8">
-                    <p className="mb-6 text-gray-700 group-hover:text-gray-900 transition-colors duration-200 min-h-[40px] text-center text-base sm:text-lg font-medium w-full">
-                      {form.description}
-                    </p>
-                    <button onClick={() => router.push(form.path)} className="w-full mt-2 sm:mt-4 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white font-bold py-2 sm:py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg group-hover:scale-110 transition-transform duration-200 text-base">
-                      Ir al formulario
-                      <ArrowRight className="h-5 w-5" />
-                    </button>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="w-full max-w-6xl px-2 md:px-4 space-y-10">
+              {visibleFormularios.length > 0 && (
+                <section>
+                  <h2 className="text-2xl font-bold text-gray-800">Formularios</h2>
+                  <div className="h-1 w-16 bg-orange-400 rounded-full mt-2 mb-6" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {visibleFormularios.map(renderItemCard)}
+                  </div>
+                </section>
+              )}
+
+              {visibleNovedades.length > 0 && (
+                <section>
+                  <h2 className="text-2xl font-bold text-gray-800">Novedades</h2>
+                  <div className="h-1 w-16 bg-orange-400 rounded-full mt-2 mb-6" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {visibleNovedades.map(renderItemCard)}
+                  </div>
+                </section>
+              )}
             </div>
           )}
         </main>
