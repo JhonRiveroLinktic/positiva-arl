@@ -53,7 +53,7 @@ export function ListaRegistros() {
       key: "codigoSubempresa",
       label: "Código Subempresa",
       render: (_, record: Registro) => (
-        <div className="font-medium">
+        <div className="font-medium truncate max-w-[100px]">
           {getSubempresaLabel(record.codigo_subempresa)}
         </div>
       ),

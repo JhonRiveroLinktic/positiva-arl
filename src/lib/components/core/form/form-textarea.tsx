@@ -68,10 +68,16 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
               rows={rows}
               maxLength={maxLength}
               className={cn(
-                "resize-none transition-colors",
+                "resize-none transition-colors w-full max-w-full min-w-0 overflow-hidden",
                 error && "border-red-500 focus-visible:ring-red-500",
                 disabled && "opacity-50 cursor-not-allowed",
               )}
+              style={{ 
+                wordWrap: "break-word", 
+                overflowWrap: "break-word", 
+                wordBreak: "break-all",
+                whiteSpace: "pre-wrap"
+              }}
               aria-invalid={error}
               aria-describedby={error ? `${textareaId}-error` : undefined}
             />

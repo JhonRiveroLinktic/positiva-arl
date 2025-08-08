@@ -75,6 +75,11 @@ const forms = [
     path: "/forms/cambio-ocupacion-independiente-voluntario"
   },
   {
+    title: "14. Notificación Desplazamiento Trabajador",
+    description: "Formulario para notificación de desplazamiento de trabajadores",
+    path: "/forms/notificacion-desplazamiento-trabajador"
+  },
+  {
     title: "Cambio de Riesgo",
     description: "Formulario para cambio de riesgo",
     path: "/forms/cambio-riesgo"
@@ -111,6 +116,7 @@ export default function HomePage() {
       forms[12],
       forms[13],
       forms[14],
+      forms[15]
     ];
   }
 

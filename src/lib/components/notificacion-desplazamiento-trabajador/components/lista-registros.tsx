@@ -6,9 +6,10 @@ import { Button } from "@/lib/components/ui/button"
 import { ListWrapper, TableColumn } from "@/lib/components/core/form/list"
 import { useRegistroStore } from "../stores/registro-store"
 import { EnvioRegistro } from "./envio-registros"
-import type { Registro } from "../types/novedad-sede-empleador-types"
+import type { Registro } from "../types/notificacion-desplazamiento-trabajador-types"
 import { SubEmpresaOptions } from "@/lib/options/codigo-subempresa"
 import { departamentosDaneOptions, getMunicipiosDaneOptionsByDepartamento } from "@/lib/components/independiente-con-contrato/options/index"
+import { tiposVinculacionOptions } from "../options/tipos-vinculacion"
 
 export function ListaRegistros() {
   const [openDialog, setOpenDialog] = useState(false)
@@ -41,7 +42,24 @@ export function ListaRegistros() {
     return municipio ? municipio.label : `${municipioCodigo} (no encontrado)`
   }
 
+  // Función para obtener el label del tipo de vinculación
+  const getVinculacionLabel = (codigo: string) => {
+    if (!codigo) return "-"
+    const vinculacion = tiposVinculacionOptions.find(option => option.value === codigo)
+    return vinculacion ? vinculacion.label : codigo
+  }
+
   const columns: TableColumn[] = [
+    {
+      key: "documentoTrabajador",
+      label: "Documento Trabajador",
+      render: (_, record: Registro) => (
+        <div>
+          <div className="font-medium">{record.tipo_documento_trabajador}</div>
+          <div className="text-sm text-gray-500">{record.documento_trabajador}</div>
+        </div>
+      ),
+    },
     {
       key: "documentoEmpleador",
       label: "Documento Empleador",
@@ -53,58 +71,53 @@ export function ListaRegistros() {
       ),
     },
     {
-      key: "nombresRazonSocial",
-      label: "Nombres y Apellidos o Razón Social",
-      render: (_, record: Registro) => (
-        <div className="font-medium capitalize">
-          {record.nombres_y_apellidos_y_o_razon_social}
-        </div>
-      ),
-    },
-    {
       key: "codigoSubempresa",
       label: "Código Subempresa",
       render: (_, record: Registro) => (
-        <div className="font-medium truncate max-w-[100px]">
+        <div className="font-medium truncate max-w-[100px]" title={getSubempresaLabel(record.codigo_subempresa)}>
           {getSubempresaLabel(record.codigo_subempresa)}
         </div>
       ),
     },
     {
-      key: "nombreSede",
-      label: "Nombre de la Sede",
+      key: "tipoVinculacion",
+      label: "Tipo de Vinculación",
       render: (_, record: Registro) => (
         <div className="font-medium">
-          {record.nombre_sede}
+          {getVinculacionLabel(record.tipo_vinculacion)}
         </div>
       ),
     },
     {
-      key: "departamentoMunicipioSede",
-      label: "Departamento/Municipio Sede",
+      key: "fechasDesplazamiento",
+      label: "Fechas Desplazamiento",
       render: (_, record: Registro) => (
         <div>
-          <div className="font-medium">{getDepartamentoLabel(record.codigo_dane_departamento_sede)}</div>
-          <div className="text-sm text-gray-500">{getMunicipioLabel(record.codigo_dane_departamento_sede, record.codigo_dane_municipio_sede)}</div>
+          <div className="font-medium">
+            {record.fecha_inicio_desplazamiento ? new Date(record.fecha_inicio_desplazamiento).toLocaleDateString('es-ES') : "-"}
+          </div>
+          <div className="text-sm text-gray-500">
+            {record.fecha_fin_desplazamiento ? new Date(record.fecha_fin_desplazamiento).toLocaleDateString('es-ES') : "-"}
+          </div>
         </div>
       ),
     },
     {
-      key: "contactoSede",
-      label: "Contacto Sede",
+      key: "departamentoMunicipio",
+      label: "Departamento/Municipio",
       render: (_, record: Registro) => (
         <div>
-          <div className="font-medium">{record.telefono_sede || "-"}</div>
-          <div className="text-sm text-gray-500">{record.correo_electronico_sede || "-"}</div>
+          <div className="font-medium">{getDepartamentoLabel(record.codigo_departamento)}</div>
+          <div className="text-sm text-gray-500">{getMunicipioLabel(record.codigo_departamento, record.codigo_municipio)}</div>
         </div>
       ),
     },
     {
-      key: "direccionSede",
-      label: "Dirección Sede",
+      key: "motivoDesplazamiento",
+      label: "Motivo del Desplazamiento",
       render: (_, record: Registro) => (
-        <div className="font-medium">
-          {record.direccion_sede || "-"}
+        <div className="font-medium max-w-xs truncate" title={record.motivo_desplazamiento}>
+          {record.motivo_desplazamiento || "-"}
         </div>
       ),
     },
