@@ -16,6 +16,15 @@ interface RegistroState {
   getTotalRegistros: () => number
 }
 
+// Función para transformar fechas al hidratar desde localStorage
+const transformarFechas = (registro: any): Registro => {
+  return {
+    ...registro,
+    fechaInicioContrato: registro.fechaInicioContrato ? new Date(registro.fechaInicioContrato) : registro.fechaInicioContrato,
+    fechaFinContrato: registro.fechaFinContrato ? new Date(registro.fechaFinContrato) : registro.fechaFinContrato,
+  }
+}
+
 export const useRegistroStore = create<RegistroState>()(
   persist(
     (set, get) => ({
@@ -66,6 +75,11 @@ export const useRegistroStore = create<RegistroState>()(
       partialize: (state) => ({
         registros: state.registros,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.registros = state.registros.map(transformarFechas)
+        }
+      },
     }
   )
 ) 

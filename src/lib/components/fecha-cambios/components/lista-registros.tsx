@@ -8,6 +8,18 @@ import { useRegistroStore } from "../stores/fecha-cambios-store"
 import { EnvioRegistro } from "./envio-registros"
 import type { Registro } from "../types/fecha-cambios"
 
+const formatearFecha = (fecha: Date | string | null | undefined): string => {
+  if (!fecha) return "No especificada"
+  
+  try {
+    const fechaObj = fecha instanceof Date ? fecha : new Date(fecha)
+    if (isNaN(fechaObj.getTime())) return "Fecha inválida"
+    return fechaObj.toLocaleDateString('es-ES')
+  } catch {
+    return "Fecha inválida"
+  }
+}
+
 export function ListaRegistros() {
   const [openDialog, setOpenDialog] = useState(false)
   const {
@@ -43,8 +55,8 @@ export function ListaRegistros() {
       label: "Fechas de Contrato",
       render: (_, record: Registro) => (
         <div>
-          <div className="font-medium">Inicio: {record.fechaInicioContrato?.toLocaleDateString('es-ES')}</div>
-          <div className="text-sm text-gray-500">Fin: {record.fechaFinContrato?.toLocaleDateString('es-ES')}</div>
+          <div className="font-medium">Inicio: {formatearFecha(record.fechaInicioContrato)}</div>
+          <div className="font-medium">Fin: {formatearFecha(record.fechaFinContrato)}</div>
         </div>
       ),
     },
