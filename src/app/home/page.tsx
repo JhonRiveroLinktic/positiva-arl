@@ -103,8 +103,8 @@ export default function HomePage() {
   let visibleNovedades: HomeItem[] = []
 
   if (user?.user_type === "tipo1") {
-    visibleFormularios = [...formularios]
-    visibleNovedades = novedades.slice(0, -2)
+    visibleFormularios = [formularios[0]]
+    visibleNovedades = []
   } else if (user?.user_type === "tipo2") {
     visibleFormularios = [...formularios]
     visibleNovedades = [...novedades]
