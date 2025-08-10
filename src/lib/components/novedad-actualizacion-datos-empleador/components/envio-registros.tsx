@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/lib/components/ui/button"
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/lib/components/ui/dialog"
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/lib/components/ui/dialog"
 import { useRegistroStore } from "../stores/registro-store"
 import { supabase } from "@/lib/utils/supabase"
 import { toast } from "@/lib/utils/toast"
@@ -43,7 +43,12 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
           telefono: registro.telefono,
           departamento: registro.departamento,
           municipio: registro.municipio,
-          representante_legal: registro.representante_legal,
+          tipo_documento_representante_legal: registro.tipo_documento_representante_legal,
+          documento_representante_legal: registro.documento_representante_legal,
+          primer_nombre_representante_legal: registro.primer_nombre_representante_legal,
+          segundo_nombre_representante_legal: registro.segundo_nombre_representante_legal,
+          primer_apellido_representante_legal: registro.primer_apellido_representante_legal,
+          segundo_apellido_representante_legal: registro.segundo_apellido_representante_legal,
           metodo_subida: registro.metodo_subida,
         })))
         

@@ -22,9 +22,14 @@ const EXCEL_COLUMN_MAPPING = {
   'CORREO_ELECTRONICO': 'correo_electronico',
   'DIRECCION': 'direccion',
   'TELEFONO': 'telefono',
-  'DEPARTAMENTO': 'departamento',
-  'MUNICIPIO': 'municipio',
-  'REPRESENTANTE_LEGAL': 'representante_legal',
+  'CODIGO_DEPARTAMENTO': 'departamento',
+  'CODIGO_MUNICIPIO': 'municipio',
+  'TIPO_DOCUMENTO_REPRESENTANTE_LEGAL': 'tipo_documento_representante_legal',
+  'DOCUMENTO_REPRESENTANTE_LEGAL': 'documento_representante_legal',
+  'PRIMER_NOMBRE_REPRESENTANTE_LEGAL': 'primer_nombre_representante_legal',
+  'SEGUNDO_NOMBRE_REPRESENTANTE_LEGAL': 'segundo_nombre_representante_legal',
+  'PRIMER_APELLIDO_REPRESENTANTE_LEGAL': 'primer_apellido_representante_legal',
+  'SEGUNDO_APELLIDO_REPRESENTANTE_LEGAL': 'segundo_apellido_representante_legal',
 } as const;
 
 type FormFieldKeys = (typeof EXCEL_COLUMN_MAPPING)[keyof typeof EXCEL_COLUMN_MAPPING];
@@ -211,9 +216,12 @@ export function NovedadActualizacionDatosEmpleadorMassiveUpload({ trigger, onSuc
       normalizeHeader('CORREO_ELECTRONICO'),
       normalizeHeader('DIRECCION'),
       normalizeHeader('TELEFONO'),
-      normalizeHeader('DEPARTAMENTO'),
-      normalizeHeader('MUNICIPIO'),
-      normalizeHeader('REPRESENTANTE_LEGAL'),
+      normalizeHeader('CODIGO_DEPARTAMENTO'),
+      normalizeHeader('CODIGO_MUNICIPIO'),
+      normalizeHeader('TIPO_DOCUMENTO_REPRESENTANTE_LEGAL'),
+      normalizeHeader('DOCUMENTO_REPRESENTANTE_LEGAL'),
+      normalizeHeader('PRIMER_NOMBRE_REPRESENTANTE_LEGAL'),
+      normalizeHeader('PRIMER_APELLIDO_REPRESENTANTE_LEGAL'),
     ];
 
     const missingColumns = requiredColumnsNormalized.filter((col) => {

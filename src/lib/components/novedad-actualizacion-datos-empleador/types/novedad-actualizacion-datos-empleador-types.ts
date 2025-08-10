@@ -7,7 +7,12 @@ export interface NovedadActualizacionDatosEmpleadorFormData {
   telefono: string;
   departamento: string;
   municipio: string;
-  representante_legal: string;
+  tipo_documento_representante_legal: string;
+  documento_representante_legal: string;
+  primer_nombre_representante_legal: string;
+  segundo_nombre_representante_legal: string;
+  primer_apellido_representante_legal: string;
+  segundo_apellido_representante_legal: string;
   metodo_subida?: string;
 }
 
@@ -20,7 +25,12 @@ export interface NovedadActualizacionDatosEmpleador {
   telefono: string;
   departamento: string;
   municipio: string;
-  representante_legal: string;
+  tipo_documento_representante_legal: string;
+  documento_representante_legal: string;
+  primer_nombre_representante_legal: string;
+  segundo_nombre_representante_legal: string;
+  primer_apellido_representante_legal: string;
+  segundo_apellido_representante_legal: string;
   metodo_subida?: string;
 }
 
@@ -56,7 +66,12 @@ export function convertToSupabaseFormat(formData: NovedadActualizacionDatosEmple
     telefono: trimmedData.telefono || "",
     departamento: trimmedData.departamento || "",
     municipio: trimmedData.municipio || "",
-    representante_legal: trimmedData.representante_legal || "",
+    tipo_documento_representante_legal: trimmedData.tipo_documento_representante_legal || "",
+    documento_representante_legal: trimmedData.documento_representante_legal || "",
+    primer_nombre_representante_legal: trimmedData.primer_nombre_representante_legal || "",
+    segundo_nombre_representante_legal: trimmedData.segundo_nombre_representante_legal || "",
+    primer_apellido_representante_legal: trimmedData.primer_apellido_representante_legal || "",
+    segundo_apellido_representante_legal: trimmedData.segundo_apellido_representante_legal || "",
     metodo_subida: trimmedData.metodo_subida || undefined,
   };
 } 

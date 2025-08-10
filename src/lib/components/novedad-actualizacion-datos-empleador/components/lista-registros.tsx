@@ -91,8 +91,17 @@ export function ListaRegistros() {
       key: "representanteLegal",
       label: "Representante Legal",
       render: (_, record: Registro) => (
-        <div className="font-medium">
-          {record.representante_legal || "-"}
+        <div>
+          <div className="text-sm text-gray-500">
+            {record.tipo_documento_representante_legal && record.documento_representante_legal 
+              ? `${record.tipo_documento_representante_legal} ${record.documento_representante_legal}`
+              : "-"}
+          </div>
+          <div className="text-sm text-gray-500">
+            {record.primer_nombre_representante_legal && record.primer_apellido_representante_legal
+              ? `${record.primer_nombre_representante_legal} ${record.segundo_nombre_representante_legal || ""} ${record.primer_apellido_representante_legal} ${record.segundo_apellido_representante_legal || ""}`.trim()
+              : "-"}
+          </div>
         </div>
       ),
     },

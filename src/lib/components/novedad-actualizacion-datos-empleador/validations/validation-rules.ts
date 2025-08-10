@@ -78,11 +78,56 @@ export const novedadActualizacionDatosEmpleadorValidationRules = {
       return true
     }
   },
-  representante_legal: {
-    required: "El representante legal es requerido",
+  tipo_documento_representante_legal: {
+    required: "El tipo de documento del representante legal es requerido",
+    validate: (value: string) => {
+      if (hasDangerousContent(value)) {
+        return "El tipo de documento del representante legal contiene caracteres no permitidos"
+      }
+      return true
+    }
+  },
+  documento_representante_legal: {
+    required: "El número de documento del representante legal es requerido",
+    minLength: { value: 5, message: "Debe tener al menos 5 caracteres" },
+    maxLength: { value: 20, message: "Máximo 20 caracteres" },
+    validate: (value: string) => {
+      if (hasDangerousContent(value)) {
+        return "El documento del representante legal contiene caracteres no permitidos"
+      }
+      return true
+    }
+  },
+  primer_nombre_representante_legal: {
+    required: "El primer nombre del representante legal es requerido",
     validate: (value: string) => {
       if (value && hasDangerousContent(value)) {
-        return "El representante legal contiene caracteres no permitidos"
+        return "El primer nombre del representante legal contiene caracteres no permitidos"
+      }
+      return true
+    }
+  },
+  segundo_nombre_representante_legal: {
+    validate: (value: string) => {
+      if (value && hasDangerousContent(value)) {
+        return "El segundo nombre del representante legal contiene caracteres no permitidos"
+      }
+      return true
+    }
+  },
+  primer_apellido_representante_legal: {
+    required: "El primer apellido del representante legal es requerido",
+    validate: (value: string) => {
+      if (value && hasDangerousContent(value)) {
+        return "El primer apellido del representante legal contiene caracteres no permitidos"
+      }
+      return true
+    }
+  },
+  segundo_apellido_representante_legal: {
+    validate: (value: string) => {
+      if (value && hasDangerousContent(value)) {
+        return "El segundo apellido del representante legal contiene caracteres no permitidos"
       }
       return true
     }

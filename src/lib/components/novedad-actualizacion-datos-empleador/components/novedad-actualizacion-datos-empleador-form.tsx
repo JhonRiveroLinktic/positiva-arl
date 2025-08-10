@@ -26,7 +26,12 @@ const initialDefaultValues = {
   telefono: "",
   departamento: "",
   municipio: "",
-  representante_legal: "",
+  tipo_documento_representante_legal: "",
+  documento_representante_legal: "",
+  primer_nombre_representante_legal: "",
+  segundo_nombre_representante_legal: "",
+  primer_apellido_representante_legal: "",
+  segundo_apellido_representante_legal: "",
   metodo_subida: undefined,
 }
 
@@ -306,15 +311,112 @@ export function NovedadActualizacionDatosEmpleadorForm() {
                 />
               )}
             />
+          </div>
+
+          <div className="col-span-3 my-8">
+            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Información del Representante Legal</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+            <Controller
+              name="tipo_documento_representante_legal"
+              control={control}
+              rules={novedadActualizacionDatosEmpleadorValidationRules.tipo_documento_representante_legal}
+              render={({ field, fieldState }) => (
+                <FormSelect
+                  label="Tipo de Documento Representante Legal"
+                  placeholder="Seleccione tipo de documento"
+                  options={documentTypeOptions}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  required
+                />
+              )}
+            />
 
             <Controller
-              name="representante_legal"
+              name="documento_representante_legal"
               control={control}
-              rules={novedadActualizacionDatosEmpleadorValidationRules.representante_legal}
+              rules={novedadActualizacionDatosEmpleadorValidationRules.documento_representante_legal}
               render={({ field, fieldState }) => (
                 <FormInput
-                  label="Representante Legal"
-                  placeholder="Ingrese el representante legal"
+                  label="Número de Documento Representante Legal"
+                  placeholder="Ingrese el número de documento"
+                  value={field.value}
+                  onChange={field.onChange}
+                  maxLength={20}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  required
+                />
+              )}
+            />
+
+            <Controller
+              name="primer_nombre_representante_legal"
+              control={control}
+              rules={novedadActualizacionDatosEmpleadorValidationRules.primer_nombre_representante_legal}
+              render={({ field, fieldState }) => (
+                <FormInput
+                  label="Primer Nombre Representante Legal"
+                  placeholder="Ingrese el primer nombre"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  required
+                />
+              )}
+            />
+
+            <Controller
+              name="segundo_nombre_representante_legal"
+              control={control}
+              rules={novedadActualizacionDatosEmpleadorValidationRules.segundo_nombre_representante_legal}
+              render={({ field, fieldState }) => (
+                <FormInput
+                  label="Segundo Nombre Representante Legal"
+                  placeholder="Ingrese el segundo nombre (opcional)"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <Controller
+              name="primer_apellido_representante_legal"
+              control={control}
+              rules={novedadActualizacionDatosEmpleadorValidationRules.primer_apellido_representante_legal}
+              render={({ field, fieldState }) => (
+                <FormInput
+                  label="Primer Apellido Representante Legal"
+                  placeholder="Ingrese el primer apellido"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  error={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  required
+                />
+              )}
+            />
+
+            <Controller
+              name="segundo_apellido_representante_legal"
+              control={control}
+              rules={novedadActualizacionDatosEmpleadorValidationRules.segundo_apellido_representante_legal}
+              render={({ field, fieldState }) => (
+                <FormInput
+                  label="Segundo Apellido Representante Legal"
+                  placeholder="Ingrese el segundo apellido (opcional)"
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
