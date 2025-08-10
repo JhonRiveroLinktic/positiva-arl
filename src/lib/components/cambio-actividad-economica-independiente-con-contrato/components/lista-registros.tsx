@@ -39,29 +39,11 @@ export function ListaRegistros() {
       ),
     },
     {
-      key: "nombreCompleto",
-      label: "Nombres/Razón social contratante",
-      render: (_, record: Registro) => (
-        <div className="font-medium capitalize">
-          {record.nombre_razon_social_contratante}
-        </div>
-      ),
-    },
-    {
       key: "actividadEconomica",
       label: "Actividad económica",
       render: (_, record: Registro) => (
         <div className="font-medium">
           {record.nueva_actividad_economica}
-        </div>
-      ),
-    },
-    {
-      key: "correoNotificacion",
-      label: "Correo de notificación",
-      render: (_, record: Registro) => (
-        <div className="font-medium">
-          {record.correo_notificacion}
         </div>
       ),
     },

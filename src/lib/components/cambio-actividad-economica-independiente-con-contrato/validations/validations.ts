@@ -54,22 +54,6 @@ export const cambioActividadEconomicaIndependienteConContratoValidationRules = {
         }
     },
     
-    nombre_razon_social_contratante: {
-        required: "El nombre o razón social es requerido",
-        minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
-        maxLength: { value: 200, message: "Máximo 200 caracteres" },
-        pattern: {
-          value: /^[A-ZÁÉÍÓÚÜÑ0-9\s\-.,()]+$/i,
-          message: "Solo se permiten letras, números y algunos símbolos como - , . ( )"
-        },
-        validate: (value: string) => {
-          if (hasDangerousContent(value)) {
-            return "El nombre contiene caracteres no permitidos"
-          }
-          return true
-        }
-    },
-    
     tipo_doc_trabajador: {
         required: "El tipo de documento del trabajador es requerido",
     },
@@ -114,20 +98,6 @@ export const cambioActividadEconomicaIndependienteConContratoValidationRules = {
           return true
         }
     },
-    
-    correo_notificacion: {
-        required: "El correo de notificación es requerido",
-        pattern: {
-          value: VALIDATION_PATTERNS.email,
-          message: "Debe ingresar un correo electrónico válido"
-        },
-        validate: (value: string) => {
-          if (hasDangerousContent(value)) {
-            return "El correo contiene caracteres no permitidos"
-          }
-          return true
-        }
-    }
   }
   
   export const sanitizeFormData = (data: any) => {

@@ -28,7 +28,7 @@ export default function CambioActividadEconomicaIndependienteConContrato() {
           title="¿Necesitas cargar varios registros a la vez?"
           description="Descarga nuestra plantilla base en Excel, diligénciala con la información de cada trabajador y contratante y súbela fácilmente mediante la opción de carga masiva."
           fileTitle="Descargar Plantilla Cambio de Actividad Económica a Ejecutar - Trabajador Independiente con Contrato"
-          file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets//05-PLANTILLA%20CAMBIO%20ACTIVIDAD%20ECONOMICA%20A%20EJECUTAR%20TRABAJADOR%20INDEPENDIENTE%20CON%20CONTRATO.xlsx"
+          file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets/05-PLANTILLA%20CAMBIO%20ACTIVIDAD%20ECONOMICA%20A%20EJECUTAR%20TRABAJADOR%20INDEPENDIENTE%20CON%20CONTRATO.xlsx"
         />
         <Suspense fallback={<FormularioCambioActividadEconomicaIndependienteConContratoFallback />}>
           <CambioActividadEconomicaIndependienteConContratoForm />

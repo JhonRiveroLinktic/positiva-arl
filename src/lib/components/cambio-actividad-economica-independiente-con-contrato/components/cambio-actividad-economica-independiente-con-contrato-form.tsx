@@ -20,12 +20,10 @@ import { SubEmpresaOptions } from "@/lib/options/codigo-subempresa"
 const initialDefaultValues: CambioActividadEconomicaIndependienteConContratoFormData = {
     tipo_doc_contratante: "",
     nume_doc_contratante: "",
-    nombre_razon_social_contratante: "",
     codigo_subempresa: "",
     tipo_doc_trabajador: "",
     nume_doc_trabajador: "",
     nueva_actividad_economica: "",
-    correo_notificacion: ""
 }
 
 export function CambioActividadEconomicaIndependienteConContratoForm() {
@@ -152,7 +150,7 @@ export function CambioActividadEconomicaIndependienteConContratoForm() {
                 <FormSelect
                   label="Tipo Documento Trabajador"
                   placeholder="Seleccionar tipo"
-                  options={documentTypesOptions}
+                  options={documentTypesOptions.filter((item) => item.value !== "NI")}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -200,25 +198,6 @@ export function CambioActividadEconomicaIndependienteConContratoForm() {
                 />
               )}
             />
-
-            <Controller
-              name="correo_notificacion"
-              control={control}
-              rules={cambioActividadEconomicaIndependienteConContratoValidationRules.correo_notificacion}
-              render={({ field, fieldState }) => (
-                <FormInput
-                  label="Correo Electrónico"
-                  type="email"
-                  placeholder="correo@ejemplo.com"
-                  value={field.value}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                  required
-                />
-              )}
-            />
             
             <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 my-5 col-span-full">Información del Contratante</h3>
 
@@ -252,25 +231,6 @@ export function CambioActividadEconomicaIndependienteConContratoForm() {
                   value={field.value}
                   onChange={field.onChange}
                   maxLength={20}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                  required
-                />
-              )}
-            />
-
-            <Controller
-              name="nombre_razon_social_contratante"
-              control={control}
-              rules={cambioActividadEconomicaIndependienteConContratoValidationRules.nombre_razon_social_contratante}
-              render={({ field, fieldState }) => (
-                <FormInput
-                  label="Nombres y apellidos o Razón Social"
-                  placeholder="Ingrese nombre completo o razón social"
-                  value={field.value}
-                  onChange={field.onChange}
-                  maxLength={100}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}

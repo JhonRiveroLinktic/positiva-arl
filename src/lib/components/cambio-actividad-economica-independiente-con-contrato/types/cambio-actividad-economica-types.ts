@@ -2,12 +2,10 @@ export interface Registro {
     id: string
     tipo_doc_contratante: string
     nume_doc_contratante: string
-    nombre_razon_social_contratante: string
     codigo_subempresa: string
     tipo_doc_trabajador: string
     nume_doc_trabajador: string
     nueva_actividad_economica: string
-    correo_notificacion: string
     metodo_subida?: string
 }
   
@@ -15,12 +13,10 @@ export interface CambioActividadEconomicaIndependienteConContrato {
     id?: string
     tipo_doc_contratante: string
     nume_doc_contratante: string
-    nombre_razon_social_contratante: string
     codigo_subempresa: string
     tipo_doc_trabajador: string
     nume_doc_trabajador: string
     nueva_actividad_economica: string
-    correo_notificacion: string
     metodo_subida?: string
     independiente_con_contrato_id?: string
 }
@@ -28,12 +24,10 @@ export interface CambioActividadEconomicaIndependienteConContrato {
 export interface CambioActividadEconomicaIndependienteConContratoFormData {
     tipo_doc_contratante: string
     nume_doc_contratante: string
-    nombre_razon_social_contratante: string
     codigo_subempresa: string
     tipo_doc_trabajador: string
     nume_doc_trabajador: string
     nueva_actividad_economica: string
-    correo_notificacion: string
 }
   
 export function trimRegistroFields(registro: Partial<Registro>): Partial<Registro> {
@@ -56,12 +50,10 @@ export function convertToSupabaseFormat(formData: Partial<Registro>): CambioActi
     return {
         tipo_doc_contratante: trimmedData.tipo_doc_contratante || "",
         nume_doc_contratante: trimmedData.nume_doc_contratante || "",
-        nombre_razon_social_contratante: trimmedData.nombre_razon_social_contratante || "",
         codigo_subempresa: trimmedData.codigo_subempresa || "",
         tipo_doc_trabajador: trimmedData.tipo_doc_trabajador || "",
         nume_doc_trabajador: trimmedData.nume_doc_trabajador || "",
         nueva_actividad_economica: trimmedData.nueva_actividad_economica || "",
-        correo_notificacion: trimmedData.correo_notificacion || "",
         metodo_subida: trimmedData.metodo_subida || undefined,
     }
 }

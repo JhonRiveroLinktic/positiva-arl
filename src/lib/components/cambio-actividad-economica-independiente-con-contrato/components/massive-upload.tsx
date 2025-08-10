@@ -17,12 +17,10 @@ import { Button } from "@/lib/components/ui/button";
 const EXCEL_COLUMN_MAPPING = {
   'TIPO_DOCUMENTO_CONTRATANTE': 'tipo_doc_contratante',
   'DOCUMENTO_CONTRATANTE': 'nume_doc_contratante',
-  'NOMBRES_Y_APELLIDOS_Y/O_RAZON_SOCIAL': 'nombre_razon_social_contratante',
   'CODIGO_SUBEMPRESA (SOLO PARA EL NIT 899999061)': 'codigo_subempresa',
   'TIPO_DOCUMENTO_TRABAJADOR': 'tipo_doc_trabajador',
   'DOCUMENTO_TRABAJADOR': 'nume_doc_trabajador',
   'ACTIVIDAD_ECONÓMICA': 'nueva_actividad_economica',
-  'CORREO_ELECTRONICO_DE_NOTIFICACION': 'correo_notificacion',
 } as const;
 
 type FormFieldKeys = (typeof EXCEL_COLUMN_MAPPING)[keyof typeof EXCEL_COLUMN_MAPPING];
@@ -200,12 +198,10 @@ export function IndependienteConContratoMassiveUpload({ trigger, onSuccess, onEr
     const requiredColumnsNormalized = [
       normalizeHeader('TIPO_DOCUMENTO_CONTRATANTE'),
       normalizeHeader('DOCUMENTO_CONTRATANTE'),
-      normalizeHeader('NOMBRES_Y_APELLIDOS_Y/O_RAZON_SOCIAL'),
       normalizeHeader('CODIGO_SUBEMPRESA (SOLO PARA EL NIT 899999061)'),
       normalizeHeader('TIPO_DOCUMENTO_TRABAJADOR'),
       normalizeHeader('DOCUMENTO_TRABAJADOR'),
       normalizeHeader('ACTIVIDAD_ECONÓMICA'),
-      normalizeHeader('CORREO_ELECTRONICO_DE_NOTIFICACION'),
     ];
 
     const missingColumns = requiredColumnsNormalized.filter((col) => {
