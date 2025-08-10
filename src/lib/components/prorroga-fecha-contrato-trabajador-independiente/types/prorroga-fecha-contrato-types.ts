@@ -2,77 +2,80 @@ export interface Registro {
     id: string
     tipo_doc_contratante: string
     documento_contratante: string
-    razon_social: string
     codigo_subempresa: string
     tipo_doc_trabajador: string
     documento_trabajador: string
+    cambio_fechas_o_prorroga: string
     fecha_inicio_contrato_original: string
     fecha_fin_contrato_nueva: string
-    valor_contrato_prorroga: string
-    correo_electronico: string
+    valor_contrato_prorroga: string | null
     metodo_subida?: string
-    registro_id?: string
   }
   
   export interface ProrrogaFechaContratoTrabajadorIndependiente {
     id?: string
     tipo_doc_contratante: string
     documento_contratante: string
-    razon_social: string
     codigo_subempresa: string
     tipo_doc_trabajador: string
     documento_trabajador: string
+    cambio_fechas_o_prorroga: string
     fecha_inicio_contrato_original: string
     fecha_fin_contrato_nueva: string
-    valor_contrato_prorroga: string
-    correo_electronico: string
+    valor_contrato_prorroga: string | null
     metodo_subida?: string
-    registro_id?: string
   }
   
   export interface ProrrogaFechaContratoTrabajadorIndependienteFormData {
     tipo_doc_contratante: string
     documento_contratante: string
-    razon_social: string
     codigo_subempresa: string
     tipo_doc_trabajador: string
     documento_trabajador: string
+    cambio_fechas_o_prorroga: string
     fecha_inicio_contrato_original: string
     fecha_fin_contrato_nueva: string
-    valor_contrato_prorroga: string
-    correo_electronico: string
+    valor_contrato_prorroga: string | null
+    metodo_subida?: string
   }
   
 export function trimRegistroFields(registro: Partial<Registro>): Partial<Registro> {
-    const trimmed: Partial<Registro> = {}
+    const trimmed: any = {}
   
     for (const [key, value] of Object.entries(registro)) {
       if (typeof value === "string") {
-        trimmed[key as keyof Registro] = value.trim()
+        if (key === 'valor_contrato_prorroga') {
+          const trimmedValue = value.trim();
+          trimmed[key] = trimmedValue === "" ? null : trimmedValue;
+        } else {
+          trimmed[key] = value.trim()
+        }
       } else {
-        trimmed[key as keyof Registro] = value
+        trimmed[key] = value
       }
     }
   
-    return trimmed
+    return trimmed as Partial<Registro>
 }
   
 export function convertToSupabaseFormat(formData: Partial<Registro>): Registro {
   const trimmedData = trimRegistroFields(formData)
 
-  return {
+  const result = {
     id: trimmedData.id || "",
     tipo_doc_contratante: trimmedData.tipo_doc_contratante || "",
     documento_contratante: trimmedData.documento_contratante || "",
-    razon_social: trimmedData.razon_social || "",
     codigo_subempresa: trimmedData.codigo_subempresa || "",
     tipo_doc_trabajador: trimmedData.tipo_doc_trabajador || "",
     documento_trabajador: trimmedData.documento_trabajador || "",
+    cambio_fechas_o_prorroga: trimmedData.cambio_fechas_o_prorroga || "",
     fecha_inicio_contrato_original: trimmedData.fecha_inicio_contrato_original || "",
     fecha_fin_contrato_nueva: trimmedData.fecha_fin_contrato_nueva || "",
-    valor_contrato_prorroga: trimmedData.valor_contrato_prorroga || "",
-    correo_electronico: trimmedData.correo_electronico || "",
     metodo_subida: trimmedData.metodo_subida || undefined,
-    registro_id: trimmedData.registro_id || undefined,
-  }
+  } as Registro
+
+  // Manejar valor_contrato_prorroga por separado
+  result.valor_contrato_prorroga = trimmedData.valor_contrato_prorroga || null
+
+  return result
 } 

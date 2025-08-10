@@ -17,24 +17,22 @@ import { Button } from "@/lib/components/ui/button";
 const EXCEL_COLUMN_MAPPING = {
   'TIPO_DOCUMENTO_CONTRATANTE': 'tipo_doc_contratante',
   'DOCUMENTO_CONTRATANTE': 'documento_contratante',
-  'NOMBRES_Y_APELLIDOS_Y/O_RAZON_SOCIAL': 'razon_social',
-  'CODIGO_SUBEMPRESA_(SOLO_PARA_EL_NIT_899999061)': 'codigo_subempresa',
+  'CODIGO_SUBEMPRESA_(SOLO PARA EL NIT 899999061)': 'codigo_subempresa',
   'TIPO_DOCUMENTO_TRABAJADOR': 'tipo_doc_trabajador',
   'DOCUMENTO_TRABAJADOR': 'documento_trabajador',
-  'FECHA_INICIO_DE_CONTRATO_(AAAA/MM/DD)': 'fecha_inicio_contrato_original',
-  'FECHA_FIN_DE_CONTRATO_(AAAA/MM/DD)': 'fecha_fin_contrato_nueva',
-  'VALOR_DEL_CONTRATO_(SOLO_APLICA_PARA_PRORROGA)': 'valor_contrato_prorroga',
-  'VALOR_DEL_CONTRATO_(_SOLO_APLICA_PARA_PRORROGA)': 'valor_contrato_prorroga',
-  'VALOR DEL CONTRATO (SOLO APLICA PARA PRORROGA)': 'valor_contrato_prorroga',
-  'VALOR DEL CONTRATO ( SOLO APLICA PARA PRORROGA )': 'valor_contrato_prorroga',
-  'VALOR_CONTRATO': 'valor_contrato_prorroga',
-  'VALOR': 'valor_contrato_prorroga',
-  'VALOR_CONTRATO_PRORROGA': 'valor_contrato_prorroga',
-  'VALOR_PRORROGA': 'valor_contrato_prorroga',
-  'VALOR_CONTRATO_(SOLO_APLICA_PARA_PRORROGA)': 'valor_contrato_prorroga',
-  'VALOR_CONTRATO_(_SOLO_APLICA_PARA_PRORROGA)': 'valor_contrato_prorroga',
-  'VALOR_CONTRATO_(_SOLO_APLICA_PARA_PRORROGA_)': 'valor_contrato_prorroga',
-  'CORREO_ELECTRONICO_DE_NOTIFICACION': 'correo_electronico',
+  '(1: CAMBIO_FECHAS_O_2:PRORROGA)': 'cambio_fechas_o_prorroga',
+  'FECHA_INICIO_DE_CONTRATO (AAAA/MM/DD)': 'fecha_inicio_contrato_original',
+  'FECHA_FIN_DE_CONTRATO (AAAA/MM/DD)': 'fecha_fin_contrato_nueva',
+  'VALOR DEL CONTRATO ( SOLO APLICA PARA PRORROGA)': 'valor_contrato_prorroga',
+  // Variaciones con espacios y comillas
+  'TIPO_DOCUMENTO_CONTRATANTE ': 'tipo_doc_contratante',
+  ' DOCUMENTO_CONTRATANTE': 'documento_contratante',
+  '" TIPO_DOCUMENTO_TRABAJADOR"': 'tipo_doc_trabajador',
+  'TIPO_DOCUMENTO_TRABAJADOR"': 'tipo_doc_trabajador',
+  'TIPO_DOCUMENTO_TRABAJADOR ': 'tipo_doc_trabajador',
+  'VALOR DEL CONTRATO ( SOLO APLICA PARA PRORROGA) ': 'valor_contrato_prorroga',
+  // Agregar la variación específica que aparece en tu Excel
+  '" TIPO_DOCUMENTO_TRABAJADOR\n"': 'tipo_doc_trabajador',
 } as const;
 
 type FormFieldKeys = (typeof EXCEL_COLUMN_MAPPING)[keyof typeof EXCEL_COLUMN_MAPPING];
@@ -49,7 +47,7 @@ export function ProrrogaFechaContratoTrabajadorIndependienteMassiveUpload({ trig
   const { agregarRegistro } = useRegistroStore();
 
   const normalizeHeader = useCallback((header: string): string => {
-    return header.trim().replace(/\s+/g, '_').toUpperCase();
+    return header.trim().replace(/\s+/g, '_').replace(/"/g, '').replace(/\n/g, '').toUpperCase();
   }, []);
 
   const createNormalizedMapping = useCallback(() => {
@@ -57,6 +55,23 @@ export function ProrrogaFechaContratoTrabajadorIndependienteMassiveUpload({ trig
     Object.entries(EXCEL_COLUMN_MAPPING).forEach(([excelColumn, formField]) => {
       normalizedMapping[normalizeHeader(excelColumn)] = formField;
     });
+    
+    const additionalMappings: Record<string, FormFieldKeys> = {
+      'TIPO_DOCUMENTO_CONTRATANTE': 'tipo_doc_contratante',
+      'DOCUMENTO_CONTRATANTE': 'documento_contratante',
+      'CODIGO_SUBEMPRESA_SOLO_PARA_EL_NIT_899999061': 'codigo_subempresa',
+      'TIPO_DOCUMENTO_TRABAJADOR': 'tipo_doc_trabajador',
+      'DOCUMENTO_TRABAJADOR': 'documento_trabajador',
+      '1_CAMBIO_FECHAS_O_2_PRORROGA': 'cambio_fechas_o_prorroga',
+      'FECHA_INICIO_DE_CONTRATO_AAAA_MM_DD': 'fecha_inicio_contrato_original',
+      'FECHA_FIN_DE_CONTRATO_AAAA_MM_DD': 'fecha_fin_contrato_nueva',
+      'VALOR_DEL_CONTRATO_SOLO_APLICA_PARA_PRORROGA': 'valor_contrato_prorroga',
+    };
+    
+    Object.entries(additionalMappings).forEach(([normalizedKey, formField]) => {
+      normalizedMapping[normalizedKey] = formField;
+    });
+    
     return normalizedMapping;
   }, [normalizeHeader]);
 
@@ -87,34 +102,40 @@ export function ProrrogaFechaContratoTrabajadorIndependienteMassiveUpload({ trig
               const normalizedKey = normalizeHeader(originalKey);
               const formField = normalizedMapping[normalizedKey];
 
-              if (formField) {
-                let value = row[originalKey];
-                value = value !== undefined && value !== null ? String(value).trim() : "";
-                
-                // Convertir fechas de Excel a formato YYYY-MM-DD
-                if (formField === 'fecha_inicio_contrato_original' || formField === 'fecha_fin_contrato_nueva') {
-                  if (value && !isNaN(Number(value))) {
-                    // Convertir número de Excel a fecha
-                    const excelDate = Number(value);
-                    const date = new Date((excelDate - 25569) * 86400 * 1000);
-                    value = date.toISOString().split('T')[0]; // YYYY-MM-DD
+              console.log(`Mapeo: "${originalKey}" -> "${normalizedKey}" -> ${formField || 'NO ENCONTRADO'}`);
+
+                              if (formField) {
+                  let value = row[originalKey];
+                  value = value !== undefined && value !== null ? String(value).trim() : "";
+                  
+                  if (formField === 'fecha_inicio_contrato_original' || formField === 'fecha_fin_contrato_nueva') {
+                    if (value && !isNaN(Number(value))) {
+                      const excelDate = Number(value);
+                      const date = new Date((excelDate - 25569) * 86400 * 1000);
+                      value = date.toISOString().split('T')[0];
+                    }
                   }
-                }
-                
-                // Para codigo_subempresa, intentar extraer solo el ID si es posible
-                if (formField === 'codigo_subempresa' && value) {
-                  // Intentar extraer solo el número al inicio
-                  const match = value.match(/^(\d+)/);
-                  if (match) {
-                    value = match[1];
+                  
+                  if (formField === 'codigo_subempresa' && value) {
+                    const match = value.match(/^(\d+)/);
+                    if (match) {
+                      value = match[1];
+                    }
                   }
+                  
+                  if (formField === 'valor_contrato_prorroga') {
+                    if (value === "" || value === null || value === undefined) {
+                      value = "";
+                    } else {
+                      value = String(value).trim();
+                    }
+                  }
+                  
+                  (formData as any)[formField] = value;
                 }
-                
-                (formData as any)[formField] = value;
-              }
             });
 
-                                if (rowErrors.length > 0) {
+          if (rowErrors.length > 0) {
             validationResults.push({
                 isValid: false,
                 errorData: {
@@ -134,25 +155,45 @@ export function ProrrogaFechaContratoTrabajadorIndependienteMassiveUpload({ trig
               metodo_subida: "cargue masivo",
             };
 
-          const fieldErrors: string[] = [];
-          Object.entries(prorrogaFechaContratoTrabajadorIndependienteValidationRules).forEach(([fieldName, rules]) => {
-            const fieldValue = tempRegistro[fieldName as keyof Registro];
-            if ('required' in rules && rules.required && (fieldValue === undefined || fieldValue === null || fieldValue === "")) {
-                fieldErrors.push(typeof rules.required === 'string' ? `${fieldName}: ${rules.required}` : `${fieldName}: Campo requerido.`);
-            }
+                     const fieldErrors: string[] = [];
+           Object.entries(prorrogaFechaContratoTrabajadorIndependienteValidationRules).forEach(([fieldName, rules]) => {
+             const fieldValue = tempRegistro[fieldName as keyof Registro];
+             
+             // Para valor_contrato_prorroga, aplicar validación especial
+             if (fieldName === 'valor_contrato_prorroga') {
+               if ('validate' in rules && typeof rules.validate === 'function') {
+                 try {
+                   // Convertir null a string vacío para la validación
+                   const valueForValidation = fieldValue === null ? "" : fieldValue;
+                   const validationResult = rules.validate(valueForValidation as string, tempRegistro);
+                   if (validationResult !== true && typeof validationResult === "string") {
+                     fieldErrors.push(`${fieldName}: ${validationResult}`);
+                   }
+                 } catch (error) {
+                   console.warn(`Error al ejecutar validación personalizada para ${fieldName} (fila ${i + 2}):`, error);
+                   fieldErrors.push(`${fieldName}: Error en validación personalizada.`);
+                 }
+               }
+               return; // Saltamos la validación de requerido para este campo en carga masiva
+             }
+             
+             // Para otros campos, aplicar validación normal
+             if ('required' in rules && rules.required && (fieldValue === undefined || fieldValue === null || fieldValue === "")) {
+                 fieldErrors.push(typeof rules.required === 'string' ? `${fieldName}: ${rules.required}` : `${fieldName}: Campo requerido.`);
+             }
 
-            if (fieldValue !== undefined && fieldValue !== null && 'validate' in rules && typeof rules.validate === 'function') {
-              try {
-                const validationResult = rules.validate(fieldValue as string);
-                if (validationResult !== true && typeof validationResult === "string") {
-                  fieldErrors.push(`${fieldName}: ${validationResult}`);
-                }
-              } catch (error) {
-                console.warn(`Error al ejecutar validación personalizada para ${fieldName} (fila ${i + 2}):`, error);
-                fieldErrors.push(`${fieldName}: Error en validación personalizada.`);
-              }
-            }
-          });
+             if (fieldValue !== undefined && fieldValue !== null && fieldValue !== "" && 'validate' in rules && typeof rules.validate === 'function') {
+               try {
+                 const validationResult = rules.validate(fieldValue as string, tempRegistro);
+                 if (validationResult !== true && typeof validationResult === "string") {
+                   fieldErrors.push(`${fieldName}: ${validationResult}`);
+                 }
+               } catch (error) {
+                 console.warn(`Error al ejecutar validación personalizada para ${fieldName} (fila ${i + 2}):`, error);
+                 fieldErrors.push(`${fieldName}: Error en validación personalizada.`);
+               }
+             }
+           });
 
           if (fieldErrors.length === 0) {
             validationResults.push({
@@ -229,13 +270,12 @@ export function ProrrogaFechaContratoTrabajadorIndependienteMassiveUpload({ trig
     const requiredColumnsNormalized = [
       normalizeHeader('TIPO_DOCUMENTO_CONTRATANTE'),
       normalizeHeader('DOCUMENTO_CONTRATANTE'),
-      normalizeHeader('NOMBRES_Y_APELLIDOS_Y/O_RAZON_SOCIAL'),
       normalizeHeader('CODIGO_SUBEMPRESA_(SOLO_PARA_EL_NIT_899999061)'),
       normalizeHeader('TIPO_DOCUMENTO_TRABAJADOR'),
       normalizeHeader('DOCUMENTO_TRABAJADOR'),
-      normalizeHeader('FECHA_INICIO_DE_CONTRATO_(AAAA/MM/DD)'),
-      normalizeHeader('FECHA_FIN_DE_CONTRATO_(AAAA/MM/DD)'),
-      normalizeHeader('CORREO_ELECTRONICO_DE_NOTIFICACION'),
+      normalizeHeader('(1: CAMBIO_FECHAS_O_2:PRORROGA)'),
+      normalizeHeader('FECHA_INICIO_DE_CONTRATO (AAAA/MM/DD)'),
+      normalizeHeader('FECHA_FIN_DE_CONTRATO (AAAA/MM/DD)'),
     ];
 
     const missingColumns = requiredColumnsNormalized.filter((col) => {

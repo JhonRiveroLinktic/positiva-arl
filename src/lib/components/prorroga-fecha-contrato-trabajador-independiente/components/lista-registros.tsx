@@ -23,11 +23,6 @@ export function ListaRegistros() {
       render: (value: string) => value
     },
     {
-      key: "razon_social",
-      label: "Razón Social",
-      render: (value: string) => value
-    },
-    {
       key: "tipo_doc_trabajador",
       label: "Tipo Doc. Trabajador",
       render: (value: string) => value
@@ -43,6 +38,11 @@ export function ListaRegistros() {
       render: (value: string) => value
     },
     {
+      key: "cambio_fechas_o_prorroga",
+      label: "Tipo",
+      render: (value: string) => value === "1" ? "Cambio de Fechas" : value === "2" ? "Prórroga" : value
+    },
+    {
       key: "valor_contrato_prorroga",
       label: "Valor Contrato",
       render: (value: string) => value ? `$${value}` : "-"
@@ -52,7 +52,7 @@ export function ListaRegistros() {
   const extraHeader = (
     <Button
       onClick={() => setOpenDialog(true)}
-      className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white"
+      className="flex items-center gap-2 w-full text-white bg-orange-500 hover:bg-orange-600"
     >
       <Send className="h-4 w-4" />
       Enviar Registros

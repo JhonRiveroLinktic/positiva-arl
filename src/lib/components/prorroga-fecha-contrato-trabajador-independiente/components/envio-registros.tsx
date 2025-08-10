@@ -44,14 +44,13 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
         .insert(registros.map(registro => ({
           tipo_doc_contratante: registro.tipo_doc_contratante,
           documento_contratante: registro.documento_contratante,
-          razon_social: registro.razon_social,
           codigo_subempresa: registro.codigo_subempresa,
           tipo_doc_trabajador: registro.tipo_doc_trabajador,
           documento_trabajador: registro.documento_trabajador,
+          cambio_fechas_o_prorroga: registro.cambio_fechas_o_prorroga,
           fecha_inicio_contrato_original: registro.fecha_inicio_contrato_original,
           fecha_fin_contrato_nueva: registro.fecha_fin_contrato_nueva,
           valor_contrato_prorroga: registro.valor_contrato_prorroga,
-          correo_electronico: registro.correo_electronico,
           metodo_subida: registro.metodo_subida
         })))
         .select()
