@@ -54,22 +54,6 @@ export const RetiroTrabajadoresValidationRules = {
     },
   },
 
-  nombreRazonSocialContratante: {
-    required: "El nombre o razón social es requerido",
-    minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
-    maxLength: { value: 200, message: "Máximo 200 caracteres" },
-    pattern: {
-      value: /^[A-ZÁÉÍÓÚÜÑ0-9\s\-.,()]+$/i,
-      message: "Solo se permiten letras, números y algunos símbolos como - , . ( )"
-    },
-    validate: (value: string) => {
-      if (hasDangerousContent(value)) {
-        return "El nombre contiene caracteres no permitidos"
-      }
-      return true
-    }
-  },
-
   tipoDocTrabajador: {
     required: "El tipo de documento es requerido",
     validate: (value: string) => {
@@ -122,19 +106,6 @@ export const RetiroTrabajadoresValidationRules = {
       const date = new Date(value)
       if (isNaN(date.getTime())) {
         return "Fecha inválida"
-      }
-      return true
-    },
-  },
-
-  correoNotificacion: {
-    required: "El correo de notificación es requerido",
-    validate: (value: string) => {
-      if (!validateEmail(value)) {
-        return "El formato del correo electrónico no es válido"
-      }
-      if (hasDangerousContent(value)) {
-        return "El correo contiene caracteres no permitidos"
       }
       return true
     },

@@ -7,7 +7,7 @@ import { ListWrapper, TableColumn } from "@/lib/components/core/form/list"
 import { useRegistroStore } from "../stores/retiro-trabajador-store"
 import { EnvioRegistro } from "./envio-registros"
 import type { Registro } from "../types/retiro-trabajador"
-import { TIPOS_VINCULACION } from "@/lib/options/tipos-vinculacion"
+import { TIPOS_VINCULACION_NUMERICOS } from "@/lib/options/tipos-vinculacion"
 
 export function ListaRegistros() {
   const [openDialog, setOpenDialog] = useState(false)
@@ -43,7 +43,7 @@ export function ListaRegistros() {
       key: "tipoVinculacion",
       label: "Tipo de Vinculación",
       render: (_, record: Registro) => {
-        const tipo = TIPOS_VINCULACION.find(t => t.value === record.tipoVinculacion)
+        const tipo = TIPOS_VINCULACION_NUMERICOS.find(t => t.value === record.tipoVinculacion)
         return <span>{tipo ? tipo.label : record.tipoVinculacion}</span>
       },
     },
@@ -54,7 +54,6 @@ export function ListaRegistros() {
         <span>{record.fechaRetiroTrabajador ? new Date(record.fechaRetiroTrabajador).toLocaleDateString('es-ES') : ''}</span>
       ),
     },
-    { key: "correoNotificacion", label: "Correo de Notificación" },
   ]
 
   const extraHeader = (

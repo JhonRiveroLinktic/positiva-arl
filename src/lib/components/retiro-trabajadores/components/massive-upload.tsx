@@ -18,13 +18,21 @@ import { Button } from "@/lib/components/ui/button"
 const EXCEL_COLUMN_MAPPING = {
   'TIPO_DOCUMENTO_EMPLEADOR': 'tipoDocEmpleador',
   'DOCUMENTO_EMPLEADOR': 'documentoEmpleador',
-  'RAZÓN SOCIAL': 'nombreRazonSocialContratante',
   'CODIGO_SUBEMPRESA (SOLO PARA EL NIT 899999061)': 'codigoSubempresa',
   'TIPO_DOCUMENTO_TRABAJADOR': 'tipoDocTrabajador',
   'DOCUMENTO_TRABAJADOR': 'documentoTrabajador',
-  'TIPO_VINCULACION': 'tipoVinculacion',
-  'FECHA_RETIRO_TRABAJADOR (DD/MM/AAAA)': 'fechaRetiroTrabajador',
-  'CORREO_DE_NOTIFICACION_DONDE_SE_REMITIRAN_LOS_CERTIFICADOS_CON_LA_NOVEDAD': 'correoNotificacion',
+  'TIPO_VINCULACION(1:DEPENDIENTE_O_2:INDEPENDIENTE)': 'tipoVinculacion',
+  'TIPO_VINCULACION (1:DEPENDIENTE_O_2:INDEPENDIENTE)': 'tipoVinculacion',
+  'TIPO_VINCULACION (1:DEPENDIENTE_O_ 2:INDEPENDIENTE)': 'tipoVinculacion',
+  'FECHA_RETIRO_TRABAJADOR (AAAA/MM/DD)': 'fechaRetiroTrabajador',
+  // Variaciones con espacios y comillas
+  'TIPO_DOCUMENTO_EMPLEADOR ': 'tipoDocEmpleador',
+  ' DOCUMENTO_EMPLEADOR': 'documentoEmpleador',
+  '" TIPO_DOCUMENTO_TRABAJADOR"': 'tipoDocTrabajador',
+  'TIPO_DOCUMENTO_TRABAJADOR"': 'tipoDocTrabajador',
+  'TIPO_DOCUMENTO_TRABAJADOR ': 'tipoDocTrabajador',
+  // Agregar la variación específica que aparece en tu Excel
+  '" TIPO_DOCUMENTO_TRABAJADOR\n"': 'tipoDocTrabajador',
 }
 
 interface RetiroTrabajadoresMassiveUploadProps {
@@ -35,6 +43,34 @@ interface RetiroTrabajadoresMassiveUploadProps {
 
 export function RetiroTrabajadoresMassiveUpload({ trigger, onSuccess, onError }: RetiroTrabajadoresMassiveUploadProps) {
   const { agregarRegistro } = useRegistroStore()
+
+  const normalizeHeader = useCallback((header: string): string => {
+    return header.trim().replace(/\s+/g, '_').replace(/"/g, '').replace(/\n/g, '').toUpperCase();
+  }, []);
+
+  const createNormalizedMapping = useCallback(() => {
+    const normalizedMapping: Record<string, string> = {};
+    Object.entries(EXCEL_COLUMN_MAPPING).forEach(([excelColumn, formField]) => {
+      normalizedMapping[normalizeHeader(excelColumn)] = formField;
+    });
+    
+    const additionalMappings: Record<string, string> = {
+      'TIPO_DOCUMENTO_EMPLEADOR': 'tipoDocEmpleador',
+      'DOCUMENTO_EMPLEADOR': 'documentoEmpleador',
+      'CODIGO_SUBEMPRESA_SOLO_PARA_EL_NIT_899999061': 'codigoSubempresa',
+      'TIPO_DOCUMENTO_TRABAJADOR': 'tipoDocTrabajador',
+      'DOCUMENTO_TRABAJADOR': 'documentoTrabajador',
+      'TIPO_VINCULACION1_DEPENDIENTE_O_2_INDEPENDIENTE': 'tipoVinculacion',
+      'TIPO_VINCULACION_1_DEPENDIENTE_O__2_INDEPENDIENTE': 'tipoVinculacion',
+      'FECHA_RETIRO_TRABAJADOR_AAAA_MM_DD': 'fechaRetiroTrabajador',
+    };
+    
+    Object.entries(additionalMappings).forEach(([normalizedKey, formField]) => {
+      normalizedMapping[normalizedKey] = formField;
+    });
+    
+    return normalizedMapping;
+  }, [normalizeHeader]);
 
   // Conversión de fechas Excel a YYYY-MM-DD (formato esperado DD/MM/AAAA)
   const convertDateFormat = useCallback((dateStr: any): string => {
@@ -98,17 +134,34 @@ export function RetiroTrabajadoresMassiveUpload({ trigger, onSuccess, onError }:
         
         try {
           const formData: Partial<RetiroTrabajadoresFormData> = {}
+          const normalizedMapping = createNormalizedMapping();
           
-          Object.keys(row).forEach(originalHeader => {
-            const cleanHeader = originalHeader.trim()
-            const mappedField = EXCEL_COLUMN_MAPPING[cleanHeader as keyof typeof EXCEL_COLUMN_MAPPING]
-            
-            if (mappedField) {
-              let value = row[originalHeader]
-              if (mappedField === "fechaRetiroTrabajador") {
-                value = convertDateFormat(value)
+          Object.keys(row).forEach(originalKey => {
+            const normalizedKey = normalizeHeader(originalKey);
+            const formField = normalizedMapping[normalizedKey];
+
+            console.log(`Mapeo: "${originalKey}" -> "${normalizedKey}" -> ${formField || 'NO ENCONTRADO'}`);
+
+            if (formField) {
+              let value = row[originalKey];
+              value = value !== undefined && value !== null ? String(value).trim() : "";
+              
+              if (formField === 'fechaRetiroTrabajador') {
+                if (value && !isNaN(Number(value))) {
+                  const excelDate = Number(value);
+                  const date = new Date((excelDate - 25569) * 86400 * 1000);
+                  value = date.toISOString().split('T')[0];
+                }
               }
-              formData[mappedField as keyof RetiroTrabajadoresFormData] = value !== undefined && value !== null ? String(value).trim() : ""
+              
+              if (formField === 'codigoSubempresa' && value) {
+                const match = value.match(/^(\d+)/);
+                if (match) {
+                  value = match[1];
+                }
+              }
+              
+              (formData as any)[formField] = value;
             }
           })
                     
@@ -210,7 +263,7 @@ export function RetiroTrabajadoresMassiveUpload({ trigger, onSuccess, onError }:
       
       return result
     },
-    [agregarRegistro, convertDateFormat],
+    [agregarRegistro, normalizeHeader, createNormalizedMapping],
   )
 
   const getContactInfo = useCallback((): ContactInfo | null => {
@@ -218,37 +271,68 @@ export function RetiroTrabajadoresMassiveUpload({ trigger, onSuccess, onError }:
   }, [])
 
   const validateFileStructure = useCallback((headers: string[]) => {
-    // Limpiar headers de espacios en blanco
-    const cleanHeaders = headers.map(h => h.trim())
+    console.log('Headers originales:', headers);
     
-    // Columnas exactas requeridas
-    const requiredColumns = [
-      'TIPO_DOCUMENTO_EMPLEADOR',
-      'DOCUMENTO_EMPLEADOR', 
-      'RAZÓN SOCIAL',
-      'TIPO_DOCUMENTO_TRABAJADOR',
-      'DOCUMENTO_TRABAJADOR',
-      'TIPO_VINCULACION',
-      'FECHA_RETIRO_TRABAJADOR (DD/MM/AAAA)',
-      'CORREO_DE_NOTIFICACION_DONDE_SE_REMITIRAN_LOS_CERTIFICADOS_CON_LA_NOVEDAD'
-    ]
-    
-    // Verificar columnas requeridas
-    const missingColumns = requiredColumns.filter(col => !cleanHeaders.includes(col))
-    
-    // Identificar columnas adicionales (que no estén en las esperadas)
-    const expectedColumns = [
-      ...requiredColumns,
-      'CODIGO_SUBEMPRESA (SOLO PARA EL NIT 899999061)' // opcional
-    ]
-    const extraColumns = cleanHeaders.filter(col => !expectedColumns.includes(col))
-    
+    const expectedNormalizedMapping = createNormalizedMapping();
+    const expectedNormalizedHeaders = Object.keys(expectedNormalizedMapping);
+
+    const normalizedHeadersInFile = headers.map(header => normalizeHeader(header));
+    console.log('Headers normalizados:', normalizedHeadersInFile);
+    console.log('Headers esperados:', expectedNormalizedHeaders);
+
+    // Columnas requeridas básicas
+    const requiredBasicColumns = [
+      normalizeHeader('TIPO_DOCUMENTO_EMPLEADOR'),
+      normalizeHeader('DOCUMENTO_EMPLEADOR'),
+      normalizeHeader('CODIGO_SUBEMPRESA (SOLO PARA EL NIT 899999061)'),
+      normalizeHeader('TIPO_DOCUMENTO_TRABAJADOR'),
+      normalizeHeader('DOCUMENTO_TRABAJADOR'),
+      normalizeHeader('FECHA_RETIRO_TRABAJADOR (AAAA/MM/DD)'),
+    ];
+
+    // Verificar columnas básicas requeridas
+    const missingBasicColumns = requiredBasicColumns.filter((col) => {
+       const found = normalizedHeadersInFile.includes(col);
+       return !found;
+    });
+
+    // Verificar que existe al menos una variación de TIPO_VINCULACION
+    const tipoVinculacionVariations = [
+      normalizeHeader('TIPO_VINCULACION(1:DEPENDIENTE_O_2:INDEPENDIENTE)'),
+      normalizeHeader('TIPO_VINCULACION (1:DEPENDIENTE_O_2:INDEPENDIENTE)'),
+      normalizeHeader('TIPO_VINCULACION (1:DEPENDIENTE_O_ 2:INDEPENDIENTE)'),
+    ];
+
+    console.log('Variaciones de TIPO_VINCULACION buscadas:', tipoVinculacionVariations);
+    console.log('¿Existe alguna variación?', tipoVinculacionVariations.some(variation => 
+      normalizedHeadersInFile.includes(variation)
+    ));
+
+    const hasTipoVinculacion = tipoVinculacionVariations.some(variation => 
+      normalizedHeadersInFile.includes(variation)
+    );
+
+    const missingColumns = [...missingBasicColumns];
+    if (!hasTipoVinculacion) {
+      missingColumns.push('TIPO_VINCULACION (cualquier variación válida)');
+    }
+
+    const extraColumns = normalizedHeadersInFile.filter((col) => {
+       const isValid = expectedNormalizedHeaders.includes(col);
+       return !isValid;
+    });
+
     return {
       isValid: missingColumns.length === 0,
-      missingColumns,
-      extraColumns,
-    }
-  }, [])
+      missingColumns: missingColumns.map(col => {
+        if (col === 'TIPO_VINCULACION (cualquier variación válida)') {
+          return col;
+        }
+        return Object.keys(EXCEL_COLUMN_MAPPING).find(key => normalizeHeader(key) === col) || col;
+      }),
+      extraColumns: extraColumns.map(col => headers[normalizedHeadersInFile.indexOf(col)] || col),
+    };
+  }, [normalizeHeader, createNormalizedMapping]);
 
   const config: MassiveUploadConfig = {
     acceptedFileTypes: [".xlsx", ".xls"],
@@ -256,9 +340,7 @@ export function RetiroTrabajadoresMassiveUpload({ trigger, onSuccess, onError }:
     title: "Carga Masiva de Retiro de Trabajadores",
     instructions: [
       'Seleccione un archivo Excel (.xlsx) con la hoja "DATOS" con el formato correcto para retiro de trabajadores',
-      'Columnas requeridas (exactas): TIPO_DOCUMENTO_EMPLEADOR, DOCUMENTO_EMPLEADOR, RAZÓN SOCIAL, TIPO_DOCUMENTO_TRABAJADOR, DOCUMENTO_TRABAJADOR, TIPO_VINCULACION, FECHA_RETIRO_TRABAJADOR (DD/MM/AAAA), CORREO_DE_NOTIFICACION_DONDE_SE_REMITIRAN_LOS_CERTIFICADOS_CON_LA_NOVEDAD',
-      'CODIGO_SUBEMPRESA (SOLO PARA EL NIT 899999061) es opcional',
-      'Formato de fecha esperado: DD/MM/AAAA',
+      'Asegúrese de que los encabezados de las columnas coincidan exactamente con la plantilla.',
     ],
     processData: processRetiroData,
     getContactInfo,

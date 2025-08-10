@@ -16,19 +16,18 @@ import {
 import { toast } from "@/lib/utils/toast"
 import type { Registro, RetiroTrabajadoresFormData } from "../types/retiro-trabajador"
 import { RetiroTrabajadoresMassiveUpload } from "./massive-upload"
-import { TIPOS_VINCULACION } from "@/lib/options/tipos-vinculacion"
+import { TIPOS_VINCULACION_NUMERICOS } from "@/lib/options/tipos-vinculacion"
 import { SubEmpresaOptions } from "@/lib/options/codigo-subempresa"
 
 const initialDefaultValues: RetiroTrabajadoresFormData = {
   tipoDocEmpleador: "",
   documentoEmpleador: "",
-  nombreRazonSocialContratante: "",
   codigoSubempresa: "",
   tipoDocTrabajador: "",
   documentoTrabajador: "",
   tipoVinculacion: "",
   fechaRetiroTrabajador: undefined as any,
-  correoNotificacion: "",
+  metodoSubida: undefined
 }
 
 export function RetiroTrabajadoresForm() {
@@ -78,7 +77,7 @@ export function RetiroTrabajadoresForm() {
     label: `${item.code} - ${item.name}`,
   }))
 
-  const vinculationTypeOptions = TIPOS_VINCULACION.map((item) => ({
+  const vinculationTypeOptions = TIPOS_VINCULACION_NUMERICOS.map((item) => ({
     value: item.value,
     label: item.label,
   }))
@@ -184,25 +183,6 @@ export function RetiroTrabajadoresForm() {
                   value={field.value}
                   onChange={field.onChange}
                   maxLength={50}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                  required
-                />
-              )}
-            />
-
-            <Controller
-              name="nombreRazonSocialContratante"
-              control={control}
-              rules={RetiroTrabajadoresValidationRules.nombreRazonSocialContratante}
-              render={({ field, fieldState }) => (
-                <FormInput
-                  label="Nombre completo o Razón Social"
-                  placeholder="Ingrese nombre completo o razón social"
-                  value={field.value}
-                  onChange={field.onChange}
-                  maxLength={100}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
@@ -316,28 +296,6 @@ export function RetiroTrabajadoresForm() {
                 />
               )}
             />
-
-            <div>
-              <Controller
-                name="correoNotificacion"
-                control={control}
-                rules={RetiroTrabajadoresValidationRules.correoNotificacion}
-                render={({ field, fieldState }) => (
-                  <FormInput
-                    label="Correo de Notificacion"
-                    type="email"
-                    placeholder="correo@ejemplo.com"
-                    value={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    error={!!fieldState.error}
-                    errorMessage={fieldState.error?.message}
-                    required
-                  />
-                )}
-                />
-                <p className="text-xs pt-1 text-gray-500 font-medium">Donde se remitirán los certificados con la novedad</p>
-            </div>
           </div>
         </div>
       </FormWrapper>
