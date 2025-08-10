@@ -39,7 +39,7 @@ const items = [
     path: "/forms/novedad-actualizacion-cargo-trabajador"
   },
   {
-    title: "07. Ajuste Fecha de Cotrato Prorroga de Trabajador Independiente",
+    title: "07. Ajuste Fecha de Contrato Prorroga de Trabajador Independiente",
     description: "Formulario para prorrogar la fecha de contrato del trabajador independiente",
     path: "/forms/prorroga-fecha-contrato-trabajador-independiente"
   },

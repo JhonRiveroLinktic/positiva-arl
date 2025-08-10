@@ -46,7 +46,8 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
         TIPO_DOCUMENTO_TRABAJADOR: registro.tipo_doc_trabajador,
         DOCUMENTO_TRABAJADOR: registro.documento_trabajador,
         TIPO_VINCULACION: registro.tipo_vinculacion,
-        ID_CARGO: registro.cargo_nuevo
+        ID_CARGO: registro.cargo_nuevo,
+        METODO_SUBIDA: registro.metodo_subida
       }))
 
       const { data, error } = await supabase.rpc('procesar_novedad_actualizacion_cargo', {

@@ -24,7 +24,8 @@ const initialDefaultValues: NovedadActualizacionCargoTrabajadorFormData = {
     tipo_doc_trabajador: "",
     documento_trabajador: "",
     tipo_vinculacion: "",
-    cargo_nuevo: ""
+    cargo_nuevo: "",
+    metodo_subida: undefined
 }
 
 const tipoVinculacionOptions = [
