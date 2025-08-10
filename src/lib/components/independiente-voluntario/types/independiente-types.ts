@@ -17,8 +17,6 @@ export interface Registro {
   codigoAFP: string
   ingresoBaseCotizacion: string
   codigoOcupacion: string
-  codigoDaneDptoSitioTrabajo: string
-  codigoDaneMuniSitioTrabajo: string
   fechaCobertura: string
   tipoDocConyugeResponsable: string
   numeDocConyugeResponsable: string
@@ -28,7 +26,6 @@ export interface Registro {
   apellido2ConyugeResponsable: string
   dptoResidenciaConyugeResponsable: string
   muniResidenciaConyugeResponsable: string
-  direccionResidenciaConyugeResponsable: string
   telefonoConyugeResponsable: string
   metodoSubida?: string
   archivos?: File[]
@@ -53,8 +50,6 @@ export interface IndependienteVoluntario {
   codigo_afp: string
   ingreso_base_cotizacion: string
   codigo_ocupacion: string
-  codigo_dane_dpto_sitio_trabajo: string
-  codigo_dane_muni_sitio_trabajo: string
   fecha_cobertura: string
   tipo_doc_conyuge_responsable?: string
   nume_doc_conyuge_responsable?: string
@@ -64,7 +59,6 @@ export interface IndependienteVoluntario {
   apellido2_conyuge_responsable?: string
   dpto_residencia_conyuge_responsable?: string
   muni_residencia_conyuge_responsable?: string
-  direccion_residencia_conyuge_responsable?: string
   telefono_conyuge_responsable?: string
   metodo_subida?: string
 }
@@ -87,8 +81,6 @@ export interface IndependienteVoluntarioFormData {
   codigoAFP: string
   ingresoBaseCotizacion: string
   codigoOcupacion: string
-  codigoDaneDptoSitioTrabajo: string
-  codigoDaneMuniSitioTrabajo: string
   fechaCobertura: string
   tipoDocConyugeResponsable: string
   numeDocConyugeResponsable: string
@@ -98,7 +90,6 @@ export interface IndependienteVoluntarioFormData {
   apellido2ConyugeResponsable: string
   dptoResidenciaConyugeResponsable: string
   muniResidenciaConyugeResponsable: string
-  direccionResidenciaConyugeResponsable: string
   telefonoConyugeResponsable: string
 }
 
@@ -137,8 +128,6 @@ export function convertToSupabaseFormat(formData: Partial<Registro>): Independie
     codigo_afp: trimmedData.codigoAFP || "",
     ingreso_base_cotizacion: trimmedData.ingresoBaseCotizacion || "",
     codigo_ocupacion: trimmedData.codigoOcupacion || "",
-    codigo_dane_dpto_sitio_trabajo: trimmedData.codigoDaneDptoSitioTrabajo || "",
-    codigo_dane_muni_sitio_trabajo: trimmedData.codigoDaneMuniSitioTrabajo || "",
     fecha_cobertura: trimmedData.fechaCobertura || "",
     tipo_doc_conyuge_responsable: trimmedData.tipoDocConyugeResponsable || undefined,
     nume_doc_conyuge_responsable: trimmedData.numeDocConyugeResponsable || undefined,
@@ -148,7 +137,6 @@ export function convertToSupabaseFormat(formData: Partial<Registro>): Independie
     apellido2_conyuge_responsable: trimmedData.apellido2ConyugeResponsable || undefined,
     dpto_residencia_conyuge_responsable: trimmedData.dptoResidenciaConyugeResponsable || undefined,
     muni_residencia_conyuge_responsable: trimmedData.muniResidenciaConyugeResponsable || undefined,
-    direccion_residencia_conyuge_responsable: trimmedData.direccionResidenciaConyugeResponsable || undefined,
     telefono_conyuge_responsable: trimmedData.telefonoConyugeResponsable || undefined,
     metodo_subida: trimmedData.metodoSubida || undefined,
   }

@@ -12,18 +12,17 @@ import { ListaRegistros } from "./lista-registros"
 import { 
   getMaxDateCoverage,
   IndependienteVoluntarioValidationRules, 
+  MINIMUM_WAGE, 
   sanitizeFormData
 } from "../validations/validation-rules"
 import { toast } from "@/lib/utils/toast"
 import type { Registro, IndependienteVoluntarioFormData } from "../types/independiente-types"
 import { IndependienteVoluntarioMassiveUpload } from "./massive-upload"
-import { genderCodeOptions } from "@/lib/options/gender-codes"
 import { 
-  DocumentTypesOptions,
   departamentosDaneOptions,
   getMunicipiosDaneOptionsByDepartamento,
-  EPSOptions,
 } from "@/lib/components/independiente-con-contrato/options/index"
+import { useDebouncedCallback } from "../../core/hooks/use-debounced-callback"
 
 const initialDefaultValues: IndependienteVoluntarioFormData = {
   tipoDocTrabajador: "",
@@ -43,8 +42,6 @@ const initialDefaultValues: IndependienteVoluntarioFormData = {
   codigoAFP: "",
   ingresoBaseCotizacion: "",
   codigoOcupacion: "",
-  codigoDaneDptoSitioTrabajo: "",
-  codigoDaneMuniSitioTrabajo: "",
   fechaCobertura: "",
   tipoDocConyugeResponsable: "",
   numeDocConyugeResponsable: "",
@@ -54,14 +51,22 @@ const initialDefaultValues: IndependienteVoluntarioFormData = {
   apellido2ConyugeResponsable: "",
   dptoResidenciaConyugeResponsable: "",
   muniResidenciaConyugeResponsable: "",
-  direccionResidenciaConyugeResponsable: "",
   telefonoConyugeResponsable: "",
 }
 
 export function IndependienteVoluntarioForm() {
   const {
-    occupations,
+    occupationsDecreto,
+    documentTypes,
+    epsCodes,
+    genderCodes,
+    afpCodes,
     loading,
+    loadOccupationsDecreto,
+    loadDocumentTypes,
+    loadEpsCodes,
+    loadGenderCodes,
+    loadAfpCodes
   } = useCatalogStore()
 
   const {
@@ -70,6 +75,14 @@ export function IndependienteVoluntarioForm() {
     registroEditando,
     setRegistroEditando,
   } = useRegistroStore()
+
+  useEffect(() => {
+    loadOccupationsDecreto()
+    loadDocumentTypes()
+    loadEpsCodes()
+    loadGenderCodes()
+    loadAfpCodes()
+  }, [loadOccupationsDecreto, loadDocumentTypes, loadEpsCodes, loadGenderCodes, loadAfpCodes])
 
   const form = useForm<IndependienteVoluntarioFormData>({
     mode: "all",
@@ -87,11 +100,9 @@ export function IndependienteVoluntarioForm() {
   } = form
 
   const currentDepartamentoResidencia = watch("codigoDaneDptoResidencia");
-  const currentDepartamentoSitioTrabajo = watch("codigoDaneDptoSitioTrabajo");
   const currentDepartamentoConyugeResponsable = watch("dptoResidenciaConyugeResponsable");
 
   const [selectedDepartamento, setSelectedDepartamento] = useState<string | undefined>(undefined);
-  const [selectedDepartamentoWork, setSelectedDepartamentoWork] = useState<string | undefined>(undefined);
   const [selectedDepartamentoConyuge, setSelectedDepartamentoConyuge] = useState<string | undefined>(undefined);
   
   const isEditMode = Boolean(registroEditando)
@@ -109,33 +120,40 @@ export function IndependienteVoluntarioForm() {
   }, [currentDepartamentoResidencia]);
 
   useEffect(() => {
-    setSelectedDepartamentoWork(currentDepartamentoSitioTrabajo);
-  }, [currentDepartamentoSitioTrabajo]);
-
-  useEffect(() => {
     setSelectedDepartamentoConyuge(currentDepartamentoConyugeResponsable);
   }, [currentDepartamentoConyugeResponsable]);  
 
-  const genderOptions = genderCodeOptions.map((item) => ({
+  const debouncedSetSalary = useDebouncedCallback((value: string) => {
+    const numericValue = Number.parseInt(value)
+    if (isNaN(numericValue) || numericValue < MINIMUM_WAGE) {
+      setValue("ingresoBaseCotizacion", MINIMUM_WAGE.toString(), {
+        shouldValidate: true,
+        shouldDirty: true,
+      })
+    }
+  }, 1500)
+  
+  const genderOptions = genderCodes.map((item) => ({
     value: item.code,
     label: item.name,
   }))
 
-  const afpCodes = [
-    { code: "0", name: "SIN AFP (PENSIONADOS o NO OBLIGADOS A COTIZAR PENSION)" },
-    { code: "2", name: "PROTECCION" },
-    { code: "3", name: "PORVENIR" },
-    { code: "4", name: "COLFONDOS S.A. PENSIONES Y CESANTIAS" },
-    { code: "7", name: "OLD MUTUAL (ANTES SKANDIA)" },
-    { code: "14", name: "COLPENSIONES ADMINISTRADORA COLOMBIANA DE PENSIONES" },
-  ]
-  
-  const afpCodeOptions = afpCodes.map((item) => ({
+  const afpOptions = afpCodes.map((item) => ({
     value: item.code,
     label: `${item.code} - ${item.name}`,
   }))
 
-  const occupationOptions = (occupations || []).map((item) => ({
+  const epsOptions = epsCodes.map((item) => ({
+    value: item.code,
+    label: `${item.code} - ${item.name}`,
+  }))
+
+  const documentTypeOptions = documentTypes.map((item) => ({
+    value: item.code,
+    label: `${item.code} - ${item.name}`,
+  }))
+
+  const occupationDecretoOptions = occupationsDecreto.map((item) => ({
     value: item.code,
     label: `${item.code} - ${item.name}`,
   }))
@@ -170,7 +188,6 @@ export function IndependienteVoluntarioForm() {
 
       form.reset(initialDefaultValues);
       setSelectedDepartamento(undefined);
-      setSelectedDepartamentoWork(undefined);
     } catch (error) {
       console.error("Error al guardar registro:", error);
       toast.error({
@@ -191,7 +208,6 @@ export function IndependienteVoluntarioForm() {
     form.reset(initialDefaultValues)
     setRegistroEditando(null)
     setSelectedDepartamento(undefined);
-    setSelectedDepartamentoWork(undefined);
     toast.info({
       title: "Formulario limpiado",
       description: "Todos los campos han sido limpiados.",
@@ -221,7 +237,7 @@ export function IndependienteVoluntarioForm() {
                 <FormSelect
                   label="Tipo Documento Trabajador"
                   placeholder="Seleccionar tipo"
-                  options={DocumentTypesOptions.filter((i) => i.value !== 'N')}
+                  options={documentTypeOptions.filter((i) => i.value !== 'NI')}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -496,7 +512,7 @@ export function IndependienteVoluntarioForm() {
                 <FormSelect
                   label="NIT EPS"
                   placeholder="Seleccionar Código EPS"
-                  options={EPSOptions}
+                  options={epsOptions}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -515,7 +531,7 @@ export function IndependienteVoluntarioForm() {
                 <FormSelect
                   label="Código AFP"
                   placeholder="Seleccionar Código AFP"
-                  options={afpCodeOptions}
+                  options={afpOptions}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -526,26 +542,30 @@ export function IndependienteVoluntarioForm() {
               )}
             />
 
-            <Controller
-              name="ingresoBaseCotizacion"
-              control={control}
-              rules={IndependienteVoluntarioValidationRules.ingresoBaseCotizacion}
-              render={({ field, fieldState }) => (
-                <FormInput
-                  label="Ingreso Base de Cotización"
-                  type="number"
-                  placeholder="Ingreso en pesos"
-                  value={field.value || ""}
-                  onChange={(e) => {
-                    field.onChange(e.target.value);
-                  }}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                  required
-                />
-              )}
-            />
+            <div className="col-span-1">
+              <Controller
+                name="ingresoBaseCotizacion"
+                control={control}
+                rules={IndependienteVoluntarioValidationRules.ingresoBaseCotizacion}
+                render={({ field, fieldState }) => (
+                  <FormInput
+                    label="Ingreso Base de Cotización"
+                    type="number"
+                    placeholder="Ingreso en pesos"
+                    value={field.value || ""}
+                    onChange={(e) => {
+                      field.onChange(e.target.value);
+                      debouncedSetSalary(e.target.value);
+                    }}
+                    onBlur={field.onBlur}
+                    error={!!fieldState.error}
+                    errorMessage={fieldState.error?.message}
+                    required
+                  />
+                )}
+              />
+              <p className="text-xs mt-1 text-gray-500">Salario mínimo (SMLMV): ${MINIMUM_WAGE.toLocaleString('es-CO')}. Valores inferiores serán corregidos automáticamente.</p>
+            </div>
 
             <Controller
               name="codigoOcupacion"
@@ -554,64 +574,15 @@ export function IndependienteVoluntarioForm() {
               render={({ field, fieldState }) => (
                 <FormSelect
                   label="Código de Ocupación"
-                  placeholder="Seleccionar ocupación"
-                  options={occupationOptions}
+                  placeholder={loading.occupationsDecreto ? "Cargando..." : "Seleccionar ocupación"}
+                  options={occupationDecretoOptions}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}
                   required
-                />
-              )}
-            />
-
-            <Controller
-              name="codigoDaneDptoSitioTrabajo"
-              control={control}
-              rules={IndependienteVoluntarioValidationRules.codigoDaneDptoSitioTrabajo}
-              render={({ field, fieldState }) => (
-                <FormSelect
-                  label="Código DANE Departamento Sitio de Trabajo"
-                  placeholder="Seleccionar departamento"
-                  options={departamentosDaneOptions}
-                  value={field.value}
-                  onChange={(value) => {
-                    field.onChange(value)
-                    setValue("codigoDaneMuniSitioTrabajo", "")
-                  }}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                  required
-                />
-              )}
-            />
-            
-            <Controller
-              name="codigoDaneMuniSitioTrabajo"
-              control={control}
-              rules={IndependienteVoluntarioValidationRules.codigoDaneMuniSitioTrabajo}
-              render={({ field, fieldState }) => (
-                <FormSelect
-                  label="Código DANE Municipio Sitio de Trabajo"
-                  placeholder={
-                    !selectedDepartamentoWork
-                      ? "Seleccione un departamento primero"
-                      : "Seleccionar municipio"
-                  }
-                  options={
-                    selectedDepartamentoWork
-                      ? getMunicipiosDaneOptionsByDepartamento(selectedDepartamentoWork)
-                      : []
-                  }
-                  value={field.value}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                  required
-                  disabled={!selectedDepartamentoWork}
+                  disabled={loading.occupationsDecreto}
                 />
               )}
             />
@@ -643,7 +614,7 @@ export function IndependienteVoluntarioForm() {
           </div>
 
           <div className="col-span-3 my-8">
-            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Información del Cónyuge/Responsable (Opcional)</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Información del Cónyuge/Responsable/Familiar</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
@@ -653,9 +624,9 @@ export function IndependienteVoluntarioForm() {
               rules={IndependienteVoluntarioValidationRules.tipoDocConyugeResponsable}
               render={({ field, fieldState }) => (
                 <FormSelect
-                  label="Tipo Documento Cónyuge/Responsable"
+                  label="Tipo Documento Cónyuge/Responsable/Familiar"
                   placeholder="Seleccionar tipo"
-                  options={DocumentTypesOptions}
+                  options={documentTypeOptions.filter((i) => i.value !== 'NI')}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -671,7 +642,7 @@ export function IndependienteVoluntarioForm() {
               rules={IndependienteVoluntarioValidationRules.numeDocConyugeResponsable}
               render={({ field, fieldState }) => (
                 <FormInput
-                  label="Número Documento Cónyuge/Responsable"
+                  label="Número Documento Cónyuge/Responsable/Familiar"
                   placeholder="Número documento"
                   value={field.value}
                   onChange={field.onChange}
@@ -689,7 +660,7 @@ export function IndependienteVoluntarioForm() {
               rules={IndependienteVoluntarioValidationRules.nombre1ConyugeResponsable}
               render={({ field, fieldState }) => (
                 <FormInput
-                  label="Primer Nombre Cónyuge/Responsable"
+                  label="Primer Nombre Cónyuge/Responsable/Familiar"
                   placeholder="Primer nombre"
                   value={field.value}
                   onChange={field.onChange}
@@ -707,7 +678,7 @@ export function IndependienteVoluntarioForm() {
               rules={IndependienteVoluntarioValidationRules.nombre2ConyugeResponsable}
               render={({ field, fieldState }) => (
                 <FormInput
-                  label="Segundo Nombre Cónyuge/Responsable"
+                  label="Segundo Nombre Cónyuge/Responsable/Familiar"
                   placeholder="Segundo nombre (opcional)"
                   value={field.value}
                   onChange={field.onChange}
@@ -725,7 +696,7 @@ export function IndependienteVoluntarioForm() {
               rules={IndependienteVoluntarioValidationRules.apellido1ConyugeResponsable}
               render={({ field, fieldState }) => (
                 <FormInput
-                  label="Primer Apellido Cónyuge/Responsable"
+                  label="Primer Apellido Cónyuge/Responsable/Familiar"
                   placeholder="Primer apellido"
                   value={field.value}
                   onChange={field.onChange}
@@ -743,7 +714,7 @@ export function IndependienteVoluntarioForm() {
               rules={IndependienteVoluntarioValidationRules.apellido2ConyugeResponsable}
               render={({ field, fieldState }) => (
                 <FormInput
-                  label="Segundo Apellido Cónyuge/Responsable"
+                  label="Segundo Apellido Cónyuge/Responsable/Familiar"
                   placeholder="Segundo apellido (opcional)"
                   value={field.value}
                   onChange={field.onChange}
@@ -761,7 +732,7 @@ export function IndependienteVoluntarioForm() {
               rules={IndependienteVoluntarioValidationRules.dptoResidenciaConyugeResponsable}
               render={({ field, fieldState }) => (
                 <FormSelect
-                  label="Departamento Cónyuge/Responsable"
+                  label="Departamento Cónyuge/Responsable/Familiar"
                   placeholder="Seleccionar departamento"
                   options={departamentosDaneOptions}
                   value={field.value}
@@ -782,7 +753,7 @@ export function IndependienteVoluntarioForm() {
               rules={IndependienteVoluntarioValidationRules.muniResidenciaConyugeResponsable}
               render={({ field, fieldState }) => (
                 <FormSelect
-                  label="Municipio Cónyuge/Responsable"
+                  label="Municipio Cónyuge/Responsable/Familiar"
                   placeholder={
                     !selectedDepartamentoConyuge
                       ? "Seleccione un departamento primero"
@@ -804,30 +775,12 @@ export function IndependienteVoluntarioForm() {
             />
 
             <Controller
-              name="direccionResidenciaConyugeResponsable"
-              control={control}
-              rules={IndependienteVoluntarioValidationRules.direccionResidenciaConyugeResponsable}
-              render={({ field, fieldState }) => (
-                <FormInput
-                  label="Dirección Cónyuge/Responsable"
-                  placeholder="Dirección completa"
-                  value={field.value}
-                  onChange={field.onChange}
-                  maxLength={200}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                />
-              )}
-            />
-
-            <Controller
               name="telefonoConyugeResponsable"
               control={control}
               rules={IndependienteVoluntarioValidationRules.telefonoConyugeResponsable}
               render={({ field, fieldState }) => (
                 <FormInput
-                  label="Teléfono Cónyuge/Responsable"
+                  label="Teléfono Cónyuge/Responsable/Familiar"
                   placeholder="Número de teléfono"
                   value={field.value}
                   onChange={field.onChange}

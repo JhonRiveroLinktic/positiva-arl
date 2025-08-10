@@ -206,6 +206,7 @@ export const IndependienteVoluntarioValidationRules = {
   },
 
   telefonoTrabajador: {
+    required: "El teléfono es requerido",
     validate: (value: string) => {
       if (!value) return true
       const phoneValidation = validatePhoneNumber(value)
@@ -250,14 +251,6 @@ export const IndependienteVoluntarioValidationRules = {
     required: "El código de ocupación es requerido",
   },
 
-  codigoDaneDptoSitioTrabajo: {
-    required: "El código DANE del departamento donde trabaja es requerido",
-  },
-
-  codigoDaneMuniSitioTrabajo: {
-    required: "El código DANE del municipio donde trabaja es requerido",
-  },
-
   fechaCobertura: {
     required: "La fecha de cobertura es requerida",
     validate: (value: string) => {
@@ -280,179 +273,118 @@ export const IndependienteVoluntarioValidationRules = {
 
   // DATOS DEL CÓNYUGE/RESPONSABLE (OPCIONALES)
   tipoDocConyugeResponsable: {
-    validate: (value: string, formValues: any) => {
-      // Si se proporciona algún dato del cónyuge, el tipo de documento se vuelve requerido
-      const hasConyugeData = formValues.numeDocConyugeResponsable || 
-                           formValues.nombre1ConyugeResponsable || 
-                           formValues.apellido1ConyugeResponsable
-
-      if (hasConyugeData && !value) {
-        return "El tipo de documento del cónyuge/responsable es requerido cuando se proporcionan otros datos"
+    required: "El tipo de documento del cónyuge/responsable es requerido",
+    validate: (value: string) => {
+      if (hasDangerousContent(value)) {
+        return "El tipo de documento contiene caracteres no permitidos";
       }
-      return true
+      return true;
     },
   },
 
   numeDocConyugeResponsable: {
+    required: "El número de documento es requerido",
     validate: (value: string, formValues: any) => {
-      // Si no hay valor, no validar
-      if (!value) return true
-
       if (hasDangerousContent(value)) {
-        return "El documento contiene caracteres no permitidos"
+        return "El documento contiene caracteres no permitidos";
       }
 
       if (formValues.tipoDocConyugeResponsable === "NI") {
-        const nitValidation = validateNitVerificationDigit(value)
+        const nitValidation = validateNitVerificationDigit(value);
         if (!nitValidation.isValid) {
-          return nitValidation.errorMessage || "Formato de NIT inválido"
+          return nitValidation.errorMessage || "Formato de NIT inválido";
         }
       } else {
         if (!VALIDATION_PATTERNS.alphanumericNoSpaces.test(value)) {
-          return "El número de documento debe contener solo letras y números."
+          return "El número de documento debe contener solo letras y números.";
         }
         if (value.length < 5 || value.length > 20) {
-          return "El número de documento debe tener entre 5 y 20 caracteres."
+          return "El número de documento debe tener entre 5 y 20 caracteres.";
         }
       }
-      return true
+      return true;
     },
   },
 
   nombre1ConyugeResponsable: {
-    validate: (value: string, formValues: any) => {
-      // Si no hay valor, no validar
-      if (!value) return true
-
-      if (value.length < 2) {
-        return "Mínimo 2 caracteres"
-      }
-      if (value.length > 100) {
-        return "Máximo 100 caracteres"
-      }
-      if (!VALIDATION_PATTERNS.name.test(value)) {
-        return "Solo se permiten letras y espacios"
-      }
+    required: "El primer nombre es requerido",
+    minLength: { value: 2, message: "Mínimo 2 caracteres" },
+    maxLength: { value: 100, message: "Máximo 100 caracteres" },
+    pattern: {
+      value: VALIDATION_PATTERNS.name,
+      message: "Solo se permiten letras y espacios",
+    },
+    validate: (value: string) => {
       if (hasDangerousContent(value)) {
-        return "Este campo contiene caracteres no permitidos"
+        return "Este campo contiene caracteres no permitidos";
       }
-      return true
+      return true;
     },
   },
 
   nombre2ConyugeResponsable: {
+    maxLength: { value: 100, message: "Máximo 100 caracteres" },
+    pattern: {
+      value: VALIDATION_PATTERNS.name,
+      message: "Solo se permiten letras y espacios",
+    },
     validate: (value: string) => {
-      if (!value) return true
-      
-      if (value.length > 100) {
-        return "Máximo 100 caracteres"
-      }
-      if (!VALIDATION_PATTERNS.name.test(value)) {
-        return "Solo se permiten letras y espacios"
-      }
       if (hasDangerousContent(value)) {
-        return "Este campo contiene caracteres no permitidos"
+        return "Este campo contiene caracteres no permitidos";
       }
-      return true
+      return true;
     },
   },
 
   apellido1ConyugeResponsable: {
-    validate: (value: string, formValues: any) => {
-      // Si se proporciona nombre, apellido se vuelve requerido
-      const hasNombre = formValues.nombre1ConyugeResponsable
-
-      if (hasNombre && !value) {
-        return "El primer apellido es requerido cuando se proporciona el nombre"
-      }
-
-      if (!value) return true
-
-      if (value.length < 2) {
-        return "Mínimo 2 caracteres"
-      }
-      if (value.length > 100) {
-        return "Máximo 100 caracteres"
-      }
-      if (!VALIDATION_PATTERNS.name.test(value)) {
-        return "Solo se permiten letras y espacios"
-      }
+    required: "El primer apellido es requerido",
+    minLength: { value: 2, message: "Mínimo 2 caracteres" },
+    maxLength: { value: 100, message: "Máximo 100 caracteres" },
+    pattern: {
+      value: VALIDATION_PATTERNS.name,
+      message: "Solo se permiten letras y espacios",
+    },
+    validate: (value: string) => {
       if (hasDangerousContent(value)) {
-        return "Este campo contiene caracteres no permitidos"
+        return "Este campo contiene caracteres no permitidos";
       }
-      return true
+      return true;
     },
   },
 
   apellido2ConyugeResponsable: {
+    maxLength: { value: 100, message: "Máximo 100 caracteres" },
+    pattern: {
+      value: VALIDATION_PATTERNS.name,
+      message: "Solo se permiten letras y espacios",
+    },
     validate: (value: string) => {
-      if (!value) return true
-      
-      if (value.length > 100) {
-        return "Máximo 100 caracteres"
-      }
-      if (!VALIDATION_PATTERNS.name.test(value)) {
-        return "Solo se permiten letras y espacios"
-      }
       if (hasDangerousContent(value)) {
-        return "Este campo contiene caracteres no permitidos"
+        return "Este campo contiene caracteres no permitidos";
       }
-      return true
+      return true;
     },
   },
 
   dptoResidenciaConyugeResponsable: {
-    validate: (value: string, formValues: any) => {
-      // Si se proporciona municipio, departamento se vuelve requerido
-      if (formValues.muniResidenciaConyugeResponsable && !value) {
-        return "El departamento es requerido cuando se proporciona el municipio"
-      }
-      return true
-    },
+    required: "El departamento es requerido",
   },
 
   muniResidenciaConyugeResponsable: {
-    validate: (value: string, formValues: any) => {
-      // Si se proporciona dirección, municipio se vuelve requerido
-      if (formValues.direccionResidenciaConyugeResponsable && !value) {
-        return "El municipio es requerido cuando se proporciona la dirección"
-      }
-      return true
-    },
-  },
-
-  direccionResidenciaConyugeResponsable: {
-    validate: (value: string) => {
-      if (!value) return true
-
-      if (value.length < 5) {
-        return "Mínimo 5 caracteres"
-      }
-      if (value.length > 200) {
-        return "Máximo 200 caracteres"
-      }
-      if (!/^[A-ZÁÉÍÓÚÜÑ0-9\s#\-.,/]+$/i.test(value)) {
-        return "La dirección contiene caracteres inválidos. Solo se permiten letras, números y símbolos como # - , . /"
-      }
-      if (hasDangerousContent(value)) {
-        return "La dirección contiene caracteres no permitidos"
-      }
-      return true
-    },
+    required: "El municipio es requerido",
   },
 
   telefonoConyugeResponsable: {
+    required: "El teléfono es requerido",
     validate: (value: string) => {
-      if (!value) return true
-      
-      const phoneValidation = validatePhoneNumber(value)
+      const phoneValidation = validatePhoneNumber(value);
       if (!phoneValidation.isValid) {
-        return phoneValidation.message || "Ingrese un número de teléfono válido"
+        return phoneValidation.message || "Ingrese un número de teléfono válido";
       }
       if (hasDangerousContent(value)) {
-        return "El teléfono contiene caracteres no permitidos"
+        return "El teléfono contiene caracteres no permitidos";
       }
-      return true
+      return true;
     },
   },
 }

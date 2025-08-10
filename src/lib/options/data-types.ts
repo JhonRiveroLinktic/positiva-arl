@@ -30,6 +30,11 @@ export interface Occupation {
   Observación: string
 }
 
+export interface OccupationDecreto {
+  Id: string
+  Nombre: string
+}
+
 export interface EconomicActivity {
   "Nombre Actividad Económica": string
   Riesgo: string
@@ -58,5 +63,6 @@ export type MunicipalityOption = SelectOptionWithDepartment
 export type EPSCodeOption = SelectOption
 export type AFPCodeOption = SelectOption
 export type OccupationOption = SelectOption
+export type OccupationDecretoOption = SelectOption
 export type EconomicActivityOption = SelectOption & { risk: string }
 export type WorkModeOption = SelectOption 

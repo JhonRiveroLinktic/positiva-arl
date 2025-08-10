@@ -3,7 +3,6 @@ import { Banner } from "@/lib/components/core/components/banner";
 import { CardDownloadExcel } from "@/lib/components/core/components/card-download-excel";
 import { IndependienteVoluntarioForm } from "@/lib/components/independiente-voluntario";
 import { Suspense } from "react";
-import { Alert, AlertTitle } from "@/lib/components/ui/alert";
 
 function FormularioIndependienteVoluntarioPageFallback() {
   return (
@@ -29,7 +28,7 @@ export default function IndependienteVoluntarioPage() {
           title="¿Necesitas cargar varios registros a la vez?"
           description="Descarga nuestra plantilla base en Excel, diligénciala con la información de cada trabajador y su cónyuge o responsable de la afiliación y súbela fácilmente mediante la opción de carga masiva."
           fileTitle="Descargar Plantilla Masiva - Trabajador Independiente Voluntario"
-          file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets//04-PLANTILLA%20MASIVA%20INDEPENDIENTE%20VOLUNTARIO.xlsx"
+          file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets/04-PLANTILLA%20MASIVA%20INDEPENDIENTE%20VOLUNTARIO.xlsx"
         />
         <Suspense fallback={<FormularioIndependienteVoluntarioPageFallback />}>
           <IndependienteVoluntarioForm />
