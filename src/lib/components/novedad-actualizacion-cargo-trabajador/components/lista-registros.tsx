@@ -39,15 +39,6 @@ export function ListaRegistros() {
       ),
     },
     {
-      key: "nombreRazonSocialEmpleador",
-      label: "Nombres/Razón social empleador",
-      render: (_, record: Registro) => (
-        <div className="font-medium capitalize">
-          {record.razon_social}
-        </div>
-      ),
-    },
-    {
       key: "idCargo",
       label: "ID Cargo",
       render: (_, record: Registro) => (
@@ -61,7 +52,7 @@ export function ListaRegistros() {
       label: "Tipo de vinculación",
       render: (_, record: Registro) => (
         <div className="font-medium">
-          {record.tipo_vinculacion === "I" ? "Independiente" : "Dependiente"}
+          {record.tipo_vinculacion === "1" ? "Dependiente" : "Independiente"}
         </div>
       ),
     },

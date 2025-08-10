@@ -17,12 +17,11 @@ import { Button } from "@/lib/components/ui/button";
 const EXCEL_COLUMN_MAPPING = {
   'TIPO_DOCUMENTO_EMPLEADOR': 'tipo_doc_empleador',
   'DOCUMENTO_EMPLEADOR': 'documento_empleador',
-  'RAZON_SOCIAL': 'razon_social',
   'CODIGO_SUBEMPRESA_(SOLO_PARA_EL_NIT_899999061)': 'codigo_subempresa',
   'TIPO_DOCUMENTO_TRABAJADOR': 'tipo_doc_trabajador',
   'DOCUMENTO_TRABAJADOR': 'documento_trabajador',
-  'TIPO_VINCULACION': 'tipo_vinculacion',
-  'ID_CARGO': 'cargo_nuevo',
+  'TIPO_VINCULACION (1: DEPENDIENTE, 2:INDEPENDIENTE)': 'tipo_vinculacion',
+  'CODIGO_CARGO': 'cargo_nuevo',
 } as const;
 
 type FormFieldKeys = (typeof EXCEL_COLUMN_MAPPING)[keyof typeof EXCEL_COLUMN_MAPPING];
@@ -199,12 +198,11 @@ export function NovedadActualizacionCargoTrabajadorMassiveUpload({ trigger, onSu
     const requiredColumnsNormalized = [
       normalizeHeader('TIPO_DOCUMENTO_EMPLEADOR'),
       normalizeHeader('DOCUMENTO_EMPLEADOR'),
-      normalizeHeader('RAZON_SOCIAL'),
       normalizeHeader('CODIGO_SUBEMPRESA_(SOLO_PARA_EL_NIT_899999061)'),
       normalizeHeader('TIPO_DOCUMENTO_TRABAJADOR'),
       normalizeHeader('DOCUMENTO_TRABAJADOR'),
-      normalizeHeader('TIPO_VINCULACION'),
-      normalizeHeader('ID_CARGO'),
+      normalizeHeader('TIPO_VINCULACION (1: DEPENDIENTE, 2:INDEPENDIENTE)'),
+      normalizeHeader('CODIGO_CARGO'),
     ];
 
     const missingColumns = requiredColumnsNormalized.filter((col) => {

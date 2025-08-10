@@ -42,7 +42,6 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
       const novedadesJson = registros.map(registro => ({
         TIPO_DOCUMENTO_EMPLEADOR: registro.tipo_doc_empleador,
         DOCUMENTO_EMPLEADOR: registro.documento_empleador,
-        RAZON_SOCIAL: registro.razon_social,
         CODIGO_SUBEMPRESA: registro.codigo_subempresa,
         TIPO_DOCUMENTO_TRABAJADOR: registro.tipo_doc_trabajador,
         DOCUMENTO_TRABAJADOR: registro.documento_trabajador,
@@ -147,8 +146,6 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
               </p>
               <ul className="text-orange-700 mt-1 text-sm space-y-1">
                 <li>• Se registrarán las novedades de actualización de cargo</li>
-                <li>• Los datos se guardarán para trazabilidad</li>
-                <li>• No se realizarán validaciones de existencia</li>
               </ul>
             </AlertDescription>
           </Alert>

@@ -54,22 +54,6 @@ export const novedadActualizacionCargoTrabajadorValidationRules = {
         }
     },
     
-    razon_social: {
-        required: "La razón social es requerida",
-        minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
-        maxLength: { value: 200, message: "Máximo 200 caracteres" },
-        pattern: {
-          value: /^[A-ZÁÉÍÓÚÜÑ0-9\s\-.,()]+$/i,
-          message: "Solo se permiten letras, números y algunos símbolos como - , . ( )"
-        },
-        validate: (value: string) => {
-          if (hasDangerousContent(value)) {
-            return "La razón social contiene caracteres no permitidos"
-          }
-          return true
-        }
-    },
-    
     codigo_subempresa: {},
     
     tipo_doc_trabajador: {
@@ -104,7 +88,7 @@ export const novedadActualizacionCargoTrabajadorValidationRules = {
     tipo_vinculacion: {
         required: "El tipo de vinculación es requerido",
         validate: (value: string) => {
-          if (value !== 'I' && value !== 'D') {
+          if (value !== '1' && value !== '2') {
             return "Debe seleccionar un tipo de vinculación válido"
           }
           return true

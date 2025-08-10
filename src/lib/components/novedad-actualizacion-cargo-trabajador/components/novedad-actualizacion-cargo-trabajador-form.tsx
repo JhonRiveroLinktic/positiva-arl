@@ -20,7 +20,6 @@ import { SubEmpresaOptions } from "@/lib/options/codigo-subempresa"
 const initialDefaultValues: NovedadActualizacionCargoTrabajadorFormData = {
     tipo_doc_empleador: "",
     documento_empleador: "",
-    razon_social: "",
     codigo_subempresa: "",
     tipo_doc_trabajador: "",
     documento_trabajador: "",
@@ -29,8 +28,8 @@ const initialDefaultValues: NovedadActualizacionCargoTrabajadorFormData = {
 }
 
 const tipoVinculacionOptions = [
-    { value: "I", label: "I - Independiente con contrato" },
-    { value: "D", label: "D - Dependiente" }
+    { value: "1", label: "1 - Dependiente" },
+    { value: "2", label: "2 - Independiente" }
 ]
 
 export function NovedadActualizacionCargoTrabajadorForm() {
@@ -188,25 +187,6 @@ export function NovedadActualizacionCargoTrabajadorForm() {
             />
 
             <Controller
-              name="razon_social"
-              control={control}
-              rules={novedadActualizacionCargoTrabajadorValidationRules.razon_social}
-              render={({ field, fieldState }) => (
-                <FormInput
-                  label="Razón Social"
-                  placeholder="Ingrese razón social"
-                  value={field.value}
-                  onChange={field.onChange}
-                  maxLength={200}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                  required
-                />
-              )}
-            />
-
-            <Controller
               name="codigo_subempresa"
               control={control}
               render={({ field, fieldState }) => (
@@ -233,7 +213,7 @@ export function NovedadActualizacionCargoTrabajadorForm() {
                 <FormSelect
                   label="Tipo Documento Trabajador"
                   placeholder="Seleccionar tipo"
-                  options={documentTypesOptions}
+                  options={documentTypesOptions.filter((item) => item.value !== "NI")}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
