@@ -42,13 +42,6 @@ export function ListaRegistros() {
         <div className="font-medium">{record.nueva_ocupacion}</div>
       ),
     },
-    {
-      key: "correoNotificacion",
-      label: "Correo de notificación",
-      render: (_, record: CambioOcupacionIndependienteVoluntarioFormData) => (
-        <div className="font-medium">{record.correo_electronico_notificacion}</div>
-      ),
-    },
   ]
 
   const extraHeader = (

@@ -26,7 +26,6 @@ const initialDefaultValues: CambioOcupacionIndependienteVoluntarioFormData = {
   tipo_doc_trabajador: "",
   documento_trabajador: "",
   nueva_ocupacion: "",
-  correo_electronico_notificacion: ""
 }
 
 export function CambioOcupacionIndependienteVoluntarioForm() {
@@ -209,25 +208,6 @@ export function CambioOcupacionIndependienteVoluntarioForm() {
                   label="Ocupación"
                   placeholder="Seleccionar Ocupación"
                   options={occupationOptions}
-                  value={field.value}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                  required
-                />
-              )}
-            />
-
-            <Controller
-              name="correo_electronico_notificacion"
-              control={control}
-              rules={cambioOcupacionIndependienteVoluntarioValidationRules.correo_electronico_notificacion}
-              render={({ field, fieldState }) => (
-                <FormInput
-                  label="Correo Electrónico de Notificación"
-                  type="email"
-                  placeholder="correo@ejemplo.com"
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}

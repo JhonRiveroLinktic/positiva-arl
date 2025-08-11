@@ -28,7 +28,7 @@ export default function CambioOcupacionIndependienteVoluntario() {
           title="¿Necesitas cargar varios registros a la vez?"
           description="Descarga nuestra plantilla base en Excel, diligénciala con la información de cada trabajador y súbela fácilmente mediante la opción de carga masiva."
           fileTitle="Descargar Plantilla Cambio Ocupación Trabajador Independiente Voluntario"
-          file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets//13-PLANTILLA%20CAMBIO%20OCUPACION%20TRABAJADOR%20INDEPENDIENTE%20VOLUNTARIO.xlsx"
+          file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets/13-PLANTILLA%20CAMBIO%20OCUPACION%20TRABAJADOR%20INDEPENDIENTE%20VOLUNTARIO%20(1).xlsx"
         />
         <Suspense fallback={<FormularioCambioOcupacionIndependienteVoluntarioFormFallback />}>
           <CambioOcupacionIndependienteVoluntarioForm />

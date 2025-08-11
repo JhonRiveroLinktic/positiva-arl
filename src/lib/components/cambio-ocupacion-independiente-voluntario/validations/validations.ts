@@ -59,20 +59,6 @@ export const cambioOcupacionIndependienteVoluntarioValidationRules = {
           return true;
       },
   },
-
-  correo_electronico_notificacion: {
-      required: "El correo de notificación es requerido",
-      pattern: {
-          value: VALIDATION_PATTERNS.email,
-          message: "Debe ingresar un correo electrónico válido",
-      },
-      validate: (value: string) => {
-          if (hasDangerousContent(value)) {
-              return "El correo contiene caracteres no permitidos";
-          }
-          return true;
-      },
-  },
 };
   
 export const sanitizeCambioOcupacionFormData = (data: any) => {

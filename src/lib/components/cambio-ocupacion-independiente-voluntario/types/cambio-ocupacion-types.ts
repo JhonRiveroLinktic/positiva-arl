@@ -3,7 +3,6 @@ export interface CambioOcupacionIndependienteVoluntarioFormData {
     tipo_doc_trabajador: string;
     documento_trabajador: string;
     nueva_ocupacion: string;
-    correo_electronico_notificacion: string;
     metodo_subida?: string;
 }
 
@@ -14,9 +13,7 @@ export interface Registro {
     documento_trabajador: string;
     ocupacion_anterior?: string;
     nueva_ocupacion: string;
-    correo_electronico_notificacion: string;
     metodo_subida?: string;
-    independiente_voluntario_id?: string;
 }
 
 export function trimFormDataFields(formData: Partial<CambioOcupacionIndependienteVoluntarioFormData>): Partial<CambioOcupacionIndependienteVoluntarioFormData> {
@@ -40,7 +37,6 @@ export function convertToSupabaseFormat(formData: Partial<CambioOcupacionIndepen
         tipo_doc_trabajador: trimmedData.tipo_doc_trabajador || "",
         documento_trabajador: trimmedData.documento_trabajador || "",
         nueva_ocupacion: trimmedData.nueva_ocupacion || "",
-        correo_electronico_notificacion: trimmedData.correo_electronico_notificacion || "",
         metodo_subida: trimmedData.metodo_subida || undefined,
     };
 }

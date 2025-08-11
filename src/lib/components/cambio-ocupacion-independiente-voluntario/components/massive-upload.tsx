@@ -21,7 +21,6 @@ const EXCEL_COLUMN_MAPPING = {
   'TIPO_DOCUMENTO_TRABAJADOR': 'tipo_doc_trabajador',
   'DOCUMENTO_TRABAJADOR': 'documento_trabajador',
   'OCUPACION': 'nueva_ocupacion',
-  'CORREO_ELECTRONICO_DE_NOTIFICACION': 'correo_electronico_notificacion',
 } as const;
 
 type FormFieldKeys = (typeof EXCEL_COLUMN_MAPPING)[keyof typeof EXCEL_COLUMN_MAPPING];
