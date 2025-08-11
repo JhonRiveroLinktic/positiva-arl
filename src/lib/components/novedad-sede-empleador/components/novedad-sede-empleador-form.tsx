@@ -20,7 +20,6 @@ import { SubEmpresaOptions } from "@/lib/options/codigo-subempresa"
 const initialDefaultValues = {
   tipo_documento_empleador: "",
   documento_empleador: "",
-  nombres_y_apellidos_y_o_razon_social: "",
   codigo_subempresa: "",
   nombre_sede: "",
   codigo_dane_departamento_sede: "",
@@ -59,7 +58,6 @@ export function NovedadSedeEmpleadorForm() {
 
   useEffect(() => {
     if (registroEditando) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { metodo_subida, ...resto } = registroEditando
       setSelectedDepartamento(resto.codigo_dane_departamento_sede)
       reset({
@@ -181,24 +179,6 @@ export function NovedadSedeEmpleadorForm() {
                   value={field.value}
                   onChange={field.onChange}
                   maxLength={20}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                  required
-                />
-              )}
-            />
-
-            <Controller
-              name="nombres_y_apellidos_y_o_razon_social"
-              control={control}
-              rules={novedadSedeEmpleadorValidationRules.nombres_y_apellidos_y_o_razon_social}
-              render={({ field, fieldState }) => (
-                <FormInput
-                  label="Nombres y Apellidos o Razón Social"
-                  placeholder="Ingrese nombres y apellidos o razón social"
-                  value={field.value}
-                  onChange={field.onChange}
                   onBlur={field.onBlur}
                   error={!!fieldState.error}
                   errorMessage={fieldState.error?.message}

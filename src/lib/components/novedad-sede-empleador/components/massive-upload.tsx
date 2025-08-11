@@ -18,7 +18,6 @@ import { getMunicipiosDaneOptionsByDepartamento } from "@/lib/components/indepen
 const EXCEL_COLUMN_MAPPING = {
   'TIPO_DOCUMENTO_EMPLEADOR': 'tipo_documento_empleador',
   'DOCUMENTO_EMPLEADOR': 'documento_empleador',
-  'NOMBRES_Y_APELLIDOS_Y/O_RAZON_SOCIAL': 'nombres_y_apellidos_y_o_razon_social',
   'CODIGO_SUBEMPRESA_(SOLO_PARA_EL_NIT_899999061)': 'codigo_subempresa',
   'NOMBRE_SEDE': 'nombre_sede',
   'CODIGO_DANE_DEPARTAMENTO_SEDE': 'codigo_dane_departamento_sede',
@@ -230,7 +229,6 @@ export function NovedadSedeEmpleadorMassiveUpload({ trigger, onSuccess, onError 
     const requiredColumnsNormalized = [
       normalizeHeader('TIPO_DOCUMENTO_EMPLEADOR'),
       normalizeHeader('DOCUMENTO_EMPLEADOR'),
-      normalizeHeader('NOMBRES_Y_APELLIDOS_Y/O_RAZON_SOCIAL'),
       normalizeHeader('CODIGO_SUBEMPRESA_(SOLO_PARA_EL_NIT_899999061)'),
       normalizeHeader('NOMBRE_SEDE'),
       normalizeHeader('CODIGO_DANE_DEPARTAMENTO_SEDE'),

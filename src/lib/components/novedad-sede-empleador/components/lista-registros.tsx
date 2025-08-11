@@ -53,15 +53,6 @@ export function ListaRegistros() {
       ),
     },
     {
-      key: "nombresRazonSocial",
-      label: "Nombres y Apellidos o Razón Social",
-      render: (_, record: Registro) => (
-        <div className="font-medium capitalize">
-          {record.nombres_y_apellidos_y_o_razon_social}
-        </div>
-      ),
-    },
-    {
       key: "codigoSubempresa",
       label: "Código Subempresa",
       render: (_, record: Registro) => (

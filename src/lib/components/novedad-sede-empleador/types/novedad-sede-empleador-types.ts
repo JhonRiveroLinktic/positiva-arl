@@ -1,7 +1,6 @@
 export interface NovedadSedeEmpleadorFormData {
   tipo_documento_empleador: string;
   documento_empleador: string;
-  nombres_y_apellidos_y_o_razon_social: string;
   codigo_subempresa: string;
   nombre_sede: string;
   codigo_dane_departamento_sede: string;
@@ -15,7 +14,6 @@ export interface NovedadSedeEmpleadorFormData {
 export interface NovedadSedeEmpleador {
   tipo_documento_empleador: string;
   documento_empleador: string;
-  nombres_y_apellidos_y_o_razon_social: string;
   codigo_subempresa: string;
   nombre_sede: string;
   codigo_dane_departamento_sede: string;
@@ -29,7 +27,6 @@ export interface NovedadSedeEmpleador {
 export interface Registro extends Omit<NovedadSedeEmpleador, "metodo_subida"> {
   id?: string;
   metodo_subida?: string;
-  registro_id?: string;
 }
 
 export function trimRegistroFields(registro: Partial<NovedadSedeEmpleador>): Partial<NovedadSedeEmpleador> {
@@ -52,7 +49,6 @@ export function convertToSupabaseFormat(formData: NovedadSedeEmpleadorFormData):
   return {
     tipo_documento_empleador: trimmedData.tipo_documento_empleador || "",
     documento_empleador: trimmedData.documento_empleador || "",
-    nombres_y_apellidos_y_o_razon_social: trimmedData.nombres_y_apellidos_y_o_razon_social || "",
     codigo_subempresa: trimmedData.codigo_subempresa || "",
     nombre_sede: trimmedData.nombre_sede || "",
     codigo_dane_departamento_sede: trimmedData.codigo_dane_departamento_sede || "",

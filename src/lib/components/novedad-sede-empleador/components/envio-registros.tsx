@@ -37,7 +37,6 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
         .insert(registros.map(registro => ({
           tipo_documento_empleador: registro.tipo_documento_empleador,
           documento_empleador: registro.documento_empleador,
-          nombres_y_apellidos_y_o_razon_social: registro.nombres_y_apellidos_y_o_razon_social,
           codigo_subempresa: registro.codigo_subempresa,
           nombre_sede: registro.nombre_sede,
           codigo_dane_departamento_sede: registro.codigo_dane_departamento_sede,

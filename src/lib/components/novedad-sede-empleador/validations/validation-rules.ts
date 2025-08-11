@@ -21,15 +21,6 @@ export const novedadSedeEmpleadorValidationRules = {
       return true
     }
   },
-  nombres_y_apellidos_y_o_razon_social: {
-    required: "Los nombres y apellidos o razón social es requerido",
-    validate: (value: string) => {
-      if (hasDangerousContent(value)) {
-        return "Los nombres y apellidos o razón social contiene caracteres no permitidos"
-      }
-      return true
-    }
-  },
   codigo_subempresa: {
     validate: (value: string) => {
       if (value && hasDangerousContent(value)) {
