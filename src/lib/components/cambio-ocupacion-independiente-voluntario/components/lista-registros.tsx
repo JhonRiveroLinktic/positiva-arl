@@ -22,7 +22,7 @@ export function ListaRegistros() {
       key: "tipoNovedad",
       label: "Tipo de Novedad",
       render: (_, record: CambioOcupacionIndependienteVoluntarioFormData) => (
-        <div className="font-medium capitalize">{record.tipo_novedad}</div>
+        <div className="font-medium capitalize">{record.tipo_novedad === "1" ? "CAMBIO OCUPACIÓN PRINCIPAL" : "ADICIÓN OCUPACIÓN"}</div>
       ),
     },
     {

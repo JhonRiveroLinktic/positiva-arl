@@ -16,9 +16,6 @@ import { toast } from "@/lib/utils/toast"
 import type { 
   CambioOcupacionIndependienteVoluntarioFormData,
 } from "../types/cambio-ocupacion-types"
-import { 
-    DocumentTypesOptions,
-} from "@/lib/components/independiente-con-contrato/options/index"
 import { CambioOcupacionIndependienteVoluntarioMassiveUpload } from "./massive-upload"
 
 const initialDefaultValues: CambioOcupacionIndependienteVoluntarioFormData = {
@@ -30,7 +27,8 @@ const initialDefaultValues: CambioOcupacionIndependienteVoluntarioFormData = {
 
 export function CambioOcupacionIndependienteVoluntarioForm() {
   const {
-    occupations,
+    occupationsDecreto,
+    documentTypes,
   } = useCatalogStore()
 
   const {
@@ -69,9 +67,14 @@ export function CambioOcupacionIndependienteVoluntarioForm() {
     { value: "2", label: "ADICIÓN OCUPACIÓN" },
   ]
 
-  const occupationOptions = (occupations || []).map((item) => ({
+  const DocumentTypesOptions = (documentTypes || []).map((item) => ({
     value: item.code,
-    label: `${item.code} - ${item.name.substring(0, 60)}...`,
+    label: `${item.code} - ${item.name}`,
+  }))
+
+  const occupationOptions = (occupationsDecreto || []).map((item) => ({
+    value: item.code,
+    label: `${item.code} - ${item.name}`,
   }))
 
   const onValidSubmit = async (data: CambioOcupacionIndependienteVoluntarioFormData) => {
@@ -169,7 +172,7 @@ export function CambioOcupacionIndependienteVoluntarioForm() {
                 <FormSelect
                   label="Tipo Documento Trabajador"
                   placeholder="Seleccionar tipo"
-                  options={DocumentTypesOptions.filter((i) => i.value !== 'N')}
+                  options={DocumentTypesOptions.filter((i) => i.value !== 'NI')}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
