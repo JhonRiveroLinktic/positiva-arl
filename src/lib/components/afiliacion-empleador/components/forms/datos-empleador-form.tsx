@@ -13,7 +13,6 @@ import type { AfiliacionEmpleadorFormData } from "../../types/afiliacion-emplead
 import { useCatalogStore } from "@/lib/components/core/stores/catalog-store"
 import { genderCodeOptions } from "@/lib/options/gender-codes"
 import { 
-  DocumentTypesOptions,
   departamentosDaneOptions,
   getMunicipiosDaneOptionsByDepartamento,
   EPSOptions,
@@ -31,6 +30,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
   const {
     occupations,
     economicActivities,
+    documentTypes,
     loading,
   } = useCatalogStore()
 
@@ -41,7 +41,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
   const [selectedDepartamentoEmpleador, setSelectedDepartamentoEmpleador] = useState<string | undefined>(undefined)
 
   const isTraslado = currentOrigen === "2"
-  const isNit = currentTipoDocEmpleador === "N"
+  const isNit = currentTipoDocEmpleador === "NI"
 
   useEffect(() => {
     if (!isTraslado) {
@@ -66,6 +66,11 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
       setSelectedDepartamentoEmpleador(currentDepartamentoEmpleador)
     }
   }, [currentDepartamentoEmpleador, setValue, selectedDepartamentoEmpleador])
+
+  const DocumentTypesOptions = (documentTypes || []).map((item) => ({
+    value: item.code,
+    label: `${item.code} - ${item.name}`,
+  }))
 
   const genderOptions = genderCodeOptions.map((item) => ({
     value: item.code,
@@ -268,7 +273,7 @@ export function DatosEmpleador({ control, errors, watch, setValue }: DatosEmplea
               placeholder="Número de teléfono"
               value={field.value || ""}
               onChange={field.onChange}
-              maxLength={20}
+              maxLength={10}
               onBlur={field.onBlur}
               error={!!fieldState.error}
               errorMessage={fieldState.error?.message}

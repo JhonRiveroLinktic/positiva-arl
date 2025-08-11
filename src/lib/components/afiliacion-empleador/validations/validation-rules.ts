@@ -763,9 +763,6 @@ export const SedeValidationRules = {
     required: "El tipo de documento del responsable es requerido",
     validate: (value: string | undefined) => {
       if (!value) return true
-      if (!validateNaturalPersonDocumentType(value)) {
-        return "El tipo de documento debe ser válido para personas naturales"
-      }
       return true
     },
   },

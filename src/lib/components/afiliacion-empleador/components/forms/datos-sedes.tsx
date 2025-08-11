@@ -7,7 +7,6 @@ import { FormSelect } from "@/lib/components/core/form/form-select"
 import { FormDatePicker } from "@/lib/components/core/form/form-datepicker"
 import { SedeValidationRules } from "../../validations/validation-rules"
 import { 
-  DocumentTypesOptions,
   departamentosDaneOptions,
   getMunicipiosDaneOptionsByDepartamento,
 } from "@/lib/components/independiente-con-contrato/options"
@@ -92,6 +91,7 @@ export function DatosSedes({ control, watch }: DatosSedesProps) {
 
   const {
     economicActivities,
+    documentTypes,
     loading,
   } = useCatalogStore()
   
@@ -110,6 +110,11 @@ export function DatosSedes({ control, watch }: DatosSedesProps) {
   const economicActivityOptions = (economicActivities || []).map((item) => ({
     value: item.code,
     label: `${item.code} - ${item.name.substring(0, 60)}...`,
+  }))
+
+  const DocumentTypesOptions = (documentTypes || []).map((item) => ({
+    value: item.code,
+    label: `${item.code} - ${item.name}`,
   }))
 
   const booleanOptions = [
@@ -472,7 +477,7 @@ export function DatosSedes({ control, watch }: DatosSedesProps) {
                       placeholder="Número de teléfono"
                       value={field.value || ""}
                       onChange={field.onChange}
-                      maxLength={20}
+                      maxLength={10}
                       onBlur={field.onBlur}
                       error={!!fieldState.error}
                       errorMessage={fieldState.error?.message}

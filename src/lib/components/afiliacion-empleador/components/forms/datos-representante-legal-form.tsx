@@ -7,7 +7,6 @@ import { FormSelect } from "@/lib/components/core/form/form-select"
 import { FormDatePicker } from "@/lib/components/core/form/form-datepicker"
 import { RepresentanteLegalValidationRules } from "../../validations/validation-rules"
 import { 
-  DocumentTypesOptions,
   departamentosDaneOptions,
   getMunicipiosDaneOptionsByDepartamento,
   EPSOptions,
@@ -16,6 +15,7 @@ import {
 import { genderCodeOptions } from "@/lib/options/gender-codes"
 import type { AfiliacionEmpleadorFormData } from "../../types/afiliacion-empleador-types"
 import { countriesOptions } from "@/lib/options/countries"
+import { useCatalogStore } from "@/lib/components/core/stores/catalog-store"
 
 interface DatosRepresentanteLegalProps {
   control: Control<AfiliacionEmpleadorFormData>
@@ -28,6 +28,13 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
   const paisSeleccionado = watch("representanteLegal.pais")
   const currentDepartamento = useWatch({ control, name: "representanteLegal.departamento" })
   const [selectedDepartamento, setSelectedDepartamento] = useState<string | undefined>(undefined)
+
+  const { documentTypes } = useCatalogStore()
+
+  const DocumentTypesOptions = (documentTypes || []).map((item) => ({
+    value: item.code,
+    label: `${item.code} - ${item.name}`,
+  }))
 
   useEffect(() => {
     if (currentDepartamento && !selectedDepartamento) {
@@ -64,7 +71,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
             <FormSelect
               label="Tipo de Documento"
               placeholder="Seleccionar tipo"
-              options={DocumentTypesOptions.filter((i) => i.value !== 'N')}
+              options={DocumentTypesOptions.filter((i) => i.value !== 'NI')}
               value={field.value || ""}
               onChange={field.onChange}
               onBlur={field.onBlur}
@@ -330,7 +337,7 @@ export function DatosRepresentanteLegal({ control, errors, watch, setValue }: Da
               placeholder="Número de teléfono"
               value={field.value || ""}
               onChange={field.onChange}
-              maxLength={20}
+              maxLength={10}
               onBlur={field.onBlur}
               error={!!fieldState.error}
               errorMessage={fieldState.error?.message}

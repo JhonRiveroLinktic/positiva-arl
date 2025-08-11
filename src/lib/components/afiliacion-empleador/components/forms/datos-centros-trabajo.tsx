@@ -28,9 +28,6 @@ import { Badge } from "@/lib/components/ui/badge"
 import { toast } from "@/lib/utils/toast"
 import type { AfiliacionEmpleadorFormData } from "../../types/afiliacion-empleador-types"
 import { useCatalogStore } from "@/lib/components/core/stores/catalog-store"
-import { 
-  DocumentTypesOptions
-} from "@/lib/components/independiente-con-contrato/options"
 import { SubEmpresaOptions } from "@/lib/options/codigo-subempresa"
 
 interface DatosCentrosTrabajoProps {
@@ -66,6 +63,7 @@ export function DatosCentrosTrabajo({ control, watch }: DatosCentrosTrabajoProps
 
   const {
     economicActivities,
+    documentTypes,
     loading,
   } = useCatalogStore()
 
@@ -79,6 +77,11 @@ export function DatosCentrosTrabajo({ control, watch }: DatosCentrosTrabajoProps
     mode: "all",
     defaultValues: initialCentroTrabajoFormData,
   })
+
+  const DocumentTypesOptions = (documentTypes || []).map((item) => ({
+    value: item.code,
+    label: `${item.code} - ${item.name}`,
+  }))
 
   const economicActivityOptions = (economicActivities || []).map((item) => ({
     value: item.code,
