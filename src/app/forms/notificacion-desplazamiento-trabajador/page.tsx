@@ -28,7 +28,7 @@ export default function NotificacionDesplazamientoTrabajador() {
           title="¿Necesitas cargar varios registros a la vez?"
           description="Descarga nuestra plantilla base en Excel, diligénciala con la información de cada notificación de desplazamiento y súbela fácilmente mediante la opción de carga masiva."
           fileTitle="Descargar Plantilla Notificación Desplazamiento Trabajador"
-          file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets/14-PLANTILLA%20NOTIFICACION%20DESPLAZAMIENTO%20TRABAJADOR.xlsx"
+          file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets/14-PLANTILLA%20NOTIFICACION%20DESPLAZAMIENTO%20TRABAJADOR%20(1).xlsx"
         />
         <Suspense fallback={<FormularioNotificacionDesplazamientoTrabajadorFallback />}>
           <NotificacionDesplazamientoTrabajadorForm />

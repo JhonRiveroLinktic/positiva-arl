@@ -310,7 +310,7 @@ export function NotificacionDesplazamientoTrabajadorForm() {
               rules={notificacionDesplazamientoTrabajadorValidationRules.codigo_departamento}
               render={({ field, fieldState }) => (
                 <FormSelect
-                  label="Código del Departamento"
+                  label="Código del Departamento - Desplazamiento"
                   placeholder="Seleccione departamento"
                   options={departamentosDaneOptions}
                   value={field.value}
@@ -332,7 +332,7 @@ export function NotificacionDesplazamientoTrabajadorForm() {
               rules={notificacionDesplazamientoTrabajadorValidationRules.codigo_municipio}
               render={({ field, fieldState }) => (
                 <FormSelect
-                  label="Código del Municipio"
+                  label="Código del Municipio - Desplazamiento"
                   placeholder={
                     !selectedDepartamento
                       ? "Seleccione un departamento primero"

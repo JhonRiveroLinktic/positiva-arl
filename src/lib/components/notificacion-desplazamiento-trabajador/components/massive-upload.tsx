@@ -21,12 +21,12 @@ const EXCEL_COLUMN_MAPPING = {
   'TIPO_DOCUMENTO_EMPLEADOR': 'tipo_documento_empleador',
   'DOCUMENTO_EMPLEADOR': 'documento_empleador',
   'CODIGO_SUBEMPRESA_(SOLO_PARA_EL_NIT_899999061)': 'codigo_subempresa',
-  'TIPO_VINCULACION': 'tipo_vinculacion',
-  'FECHA_INICIO_DESPLAZAMIENTO_(AAAA/MM/DD)': 'fecha_inicio_desplazamiento',
-  'FECHA_FIN_DESPLAZAMIENTO_(AAAA/MM/DD)': 'fecha_fin_desplazamiento',
-  'CODIGO_DEPARTAMENTO': 'codigo_departamento',
-  'CODIGO_MUNICIPIO': 'codigo_municipio',
-  'MOTIVO_DESPLAZAMIENTO_(MAX_200_CARACTERES)': 'motivo_desplazamiento',
+  'CODIGO_TIPO_VINCULACION': 'tipo_vinculacion',
+  'FECHA_INICIO_DESPLAZAMIENTO (AAAA/MM/DD)': 'fecha_inicio_desplazamiento',
+  'FECHA_FIN_DESPLAZAMIENTO (AAAA/MM/DD)': 'fecha_fin_desplazamiento',
+  'CODIGO_DANE_DEPARTAMENTO_DESPLAZAMIENTO': 'codigo_departamento',
+  'CODIGO_DANE_MUNICIPIO_DESPLAZAMIENTO': 'codigo_municipio',
+  'MOTIVO_DESPLAZAMIENTO (MAX 200 CARACTERES)': 'motivo_desplazamiento',
 } as const;
 
 type FormFieldKeys = (typeof EXCEL_COLUMN_MAPPING)[keyof typeof EXCEL_COLUMN_MAPPING];
@@ -243,12 +243,12 @@ export function NotificacionDesplazamientoTrabajadorMassiveUpload({ trigger, onS
       normalizeHeader('TIPO_DOCUMENTO_EMPLEADOR'),
       normalizeHeader('DOCUMENTO_EMPLEADOR'),
       normalizeHeader('CODIGO_SUBEMPRESA_(SOLO_PARA_EL_NIT_899999061)'),
-      normalizeHeader('TIPO_VINCULACION'),
-      normalizeHeader('FECHA_INICIO_DESPLAZAMIENTO_(AAAA/MM/DD)'),
-      normalizeHeader('FECHA_FIN_DESPLAZAMIENTO_(AAAA/MM/DD)'),
-      normalizeHeader('CODIGO_DEPARTAMENTO'),
-      normalizeHeader('CODIGO_MUNICIPIO'),
-      normalizeHeader('MOTIVO_DESPLAZAMIENTO_(MAX_200_CARACTERES)'),
+      normalizeHeader('CODIGO_TIPO_VINCULACION'),
+      normalizeHeader('FECHA_INICIO_DESPLAZAMIENTO (AAAA/MM/DD)'),
+      normalizeHeader('FECHA_FIN_DESPLAZAMIENTO (AAAA/MM/DD)'),
+      normalizeHeader('CODIGO_DANE_DEPARTAMENTO_DESPLAZAMIENTO'),
+      normalizeHeader('CODIGO_DANE_MUNICIPIO_DESPLAZAMIENTO'),
+      normalizeHeader('MOTIVO_DESPLAZAMIENTO (MAX 200 CARACTERES)'),
     ];
 
     const missingColumns = requiredColumnsNormalized.filter((col) => {

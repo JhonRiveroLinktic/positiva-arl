@@ -69,10 +69,20 @@ export const notificacionDesplazamientoTrabajadorValidationRules = {
   },
   fecha_fin_desplazamiento: {
     required: "La fecha de fin del desplazamiento es requerida",
-    validate: (value: string) => {
+    validate: (value: string, formData?: any) => {
       if (hasDangerousContent(value)) {
         return "La fecha de fin contiene caracteres no permitidos"
       }
+      
+      if (value && formData?.fecha_inicio_desplazamiento) {
+        const fechaInicio = new Date(formData.fecha_inicio_desplazamiento)
+        const fechaFin = new Date(value)
+        
+        if (fechaFin < fechaInicio) {
+          return "La fecha de fin del desplazamiento no puede ser menor a la fecha de inicio"
+        }
+      }
+      
       return true
     }
   },
