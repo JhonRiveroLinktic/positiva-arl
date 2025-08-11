@@ -12,6 +12,7 @@ import { ListaRegistros } from "./lista-registros"
 import { 
   getMaxDateCoverage,
   IndependienteConContratoValidationRules, 
+  MINIMUM_WAGE, 
   sanitizeFormData
 } from "../validations/validation-rules"
 import { toast } from "@/lib/utils/toast"
@@ -19,13 +20,11 @@ import type { Registro, IndependienteConContratoFormData } from "../types/indepe
 import { IndependienteConContratoMassiveUpload } from "./massive-upload"
 import { genderCodeOptions } from "@/lib/options/gender-codes"
 import { 
-  DocumentTypesOptions,
   departamentosDaneOptions,
   getMunicipiosDaneOptionsByDepartamento,
-  EPSOptions,
-  PensionFundOptions,
 } from "../options"
 import { SubEmpresaOptions } from "@/lib/options/codigo-subempresa"
+import { useDebouncedCallback } from "../../core/hooks/use-debounced-callback"
 
 const initialDefaultValues: IndependienteConContratoFormData = {
   tipoDocTrabajador: "",
@@ -64,6 +63,9 @@ const initialDefaultValues: IndependienteConContratoFormData = {
 export function IndependienteConContratoForm() {
   const {
     occupations,
+    documentTypes,
+    epsCodes,
+    afpCodes,
     economicActivities,
     loading,
   } = useCatalogStore()
@@ -114,20 +116,45 @@ export function IndependienteConContratoForm() {
     setSelectedDepartamentoWork(currentDepartamentoLabor);
   }, [currentDepartamentoLabor]);
 
+  const debouncedSetSalary = useDebouncedCallback((value: string) => {
+    const numericValue = Number.parseInt(value)
+    if (isNaN(numericValue) || numericValue < MINIMUM_WAGE) {
+      setValue("valorTotalContrato", MINIMUM_WAGE.toString(), {
+        shouldValidate: true,
+        shouldDirty: true,
+      })
+    }
+  }, 1500)
+
   const genderOptions = genderCodeOptions.map((item) => ({
     value: item.code,
     label: item.name,
   }))
 
+  const documentTypesOptions = documentTypes.map((item) => ({
+    value: item.code,
+    label: `${item.code} - ${item.name}`,
+  }))
+
+  const epsOptions = epsCodes.map((item) => ({
+    value: item.code,
+    label: `${item.code} - ${item.name}`,
+  }))
+
+  const pensionFundOptions = afpCodes.map((item) => ({
+    value: item.code,
+    label: `${item.code} - ${item.name}`,
+  }))
+
   const naturalezaOptions = [
-    { value: "PB", label: "PB - PÚBLICO" },
-    { value: "PR", label: "PR - PRIVADO" },
+    { value: "1", label: "1 - PÚBLICO" },
+    { value: "2", label: "2 - PRIVADO" },
   ]
 
   const tipoContratoOptions = [
-    { value: "AD", label: "AD - ADMINISTRATIVO" },
-    { value: "CO", label: "CO - COMERCIAL" },
-    { value: "CI", label: "CI - CIVIL" },
+    { value: "1", label: "1 - ADMINISTRATIVO" },
+    { value: "2", label: "2 - COMERCIAL" },
+    { value: "3", label: "3 - CIVIL" },
   ]
 
   const economicActivityOptions = (economicActivities || []).map((item) => ({
@@ -215,7 +242,7 @@ export function IndependienteConContratoForm() {
         showMassiveUpload={true}
         massiveUploadComponent={<IndependienteConContratoMassiveUpload />}
         >
-        <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-8">Información del Trabajador</h3>
+        <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-8">Información del Independiente</h3>
         <div className="w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
             <Controller
@@ -224,9 +251,9 @@ export function IndependienteConContratoForm() {
               rules={IndependienteConContratoValidationRules.tipoDocTrabajador}
               render={({ field, fieldState }) => (
                 <FormSelect
-                  label="Tipo Documento Trabajador"
+                  label="Tipo Documento Independiente"
                   placeholder="Seleccionar tipo"
-                  options={DocumentTypesOptions.filter((i) => i.value !== 'NI')}
+                  options={documentTypesOptions.filter((i) => i.value !== 'NI')}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -243,8 +270,8 @@ export function IndependienteConContratoForm() {
               rules={IndependienteConContratoValidationRules.numeDocTrabajador}
               render={({ field, fieldState }) => (
                 <FormInput
-                  label="Número Documento Trabajador"
-                  placeholder="Número documento trabajador"
+                  label="Número Documento Independiente"
+                  placeholder="Número documento independiente"
                   value={field.value}
                   onChange={field.onChange}
                   maxLength={20}
@@ -336,7 +363,7 @@ export function IndependienteConContratoForm() {
               rules={IndependienteConContratoValidationRules.fechaNacimientoTrabajador}
               render={({ field, fieldState }) => (
                 <FormDatePicker
-                  label="Fecha de Nacimiento"
+                  label="Fecha de Nacimiento del Independiente"
                   placeholder="Seleccionar fecha de nacimiento"
                   value={field.value ? new Date(field.value + 'T00:00:00') : undefined}
                   onChange={(date) =>
@@ -361,7 +388,7 @@ export function IndependienteConContratoForm() {
               rules={IndependienteConContratoValidationRules.sexoTrabajador}
               render={({ field, fieldState }) => (
                 <FormSelect
-                  label="Sexo"
+                  label="Sexo del Independiente"
                   placeholder={loading.genderCodes ? "Cargando..." : "Seleccionar sexo"}
                   options={genderOptions}
                   value={field.value}
@@ -381,7 +408,7 @@ export function IndependienteConContratoForm() {
               rules={IndependienteConContratoValidationRules.emailTrabajador}
               render={({ field, fieldState }) => (
                 <FormInput
-                  label="Correo Electrónico"
+                  label="Correo Electrónico del Independiente"
                   type="email"
                   placeholder="correo@ejemplo.com"
                   value={field.value}
@@ -396,7 +423,7 @@ export function IndependienteConContratoForm() {
           </div>
 
           <div className="col-span-3 my-8">
-            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Información de Residencia del Trabajador</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Información de Residencia del Independiente</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
@@ -475,7 +502,7 @@ export function IndependienteConContratoForm() {
               rules={IndependienteConContratoValidationRules.telefonoTrabajador}
               render={({ field, fieldState }) => (
                 <FormInput
-                  label="Teléfono"
+                  label="Teléfono del Independiente"
                   placeholder="Número de teléfono"
                   value={field.value}
                   onChange={field.onChange}
@@ -489,7 +516,7 @@ export function IndependienteConContratoForm() {
           </div>
 
           <div className="col-span-3 my-8">
-            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Información Laboral del Trabajador</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Información Laboral del Independiente</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
@@ -518,9 +545,9 @@ export function IndependienteConContratoForm() {
               rules={IndependienteConContratoValidationRules.codigoEPS}
               render={({ field, fieldState }) => (
                 <FormSelect
-                  label="NIT EPS"
+                  label="Código EPS del Independiente"
                   placeholder="Seleccionar Código EPS"
-                  options={EPSOptions}
+                  options={epsOptions}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -539,7 +566,7 @@ export function IndependienteConContratoForm() {
                 <FormSelect
                   label="NIT AFP"
                   placeholder="Seleccionar Código AFP"
-                  options={PensionFundOptions}
+                  options={pensionFundOptions}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
@@ -661,26 +688,30 @@ export function IndependienteConContratoForm() {
               )}
             />
 
-            <Controller
-              name="valorTotalContrato"
-              control={control}
-              rules={IndependienteConContratoValidationRules.valorTotalContrato}
-              render={({ field, fieldState }) => (
-                <FormInput
-                  label="Valor Total del Contrato"
-                  type="number"
-                  placeholder="Valor en pesos"
-                  value={field.value || ""}
-                  onChange={(e) => {
-                    field.onChange(e.target.value);
-                  }}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                  required
+            <div className="col-span-1">
+              <Controller
+                name="valorTotalContrato"
+                control={control}
+                rules={IndependienteConContratoValidationRules.valorTotalContrato}
+                render={({ field, fieldState }) => (
+                  <FormInput
+                    label="Valor Total del Contrato"
+                    type="number"
+                    placeholder="Valor en pesos"
+                    value={field.value || ""}
+                    onChange={(e) => {
+                      field.onChange(e.target.value);
+                      debouncedSetSalary(e.target.value);
+                    }}
+                    onBlur={field.onBlur}
+                    error={!!fieldState.error}
+                    errorMessage={fieldState.error?.message}
+                    required
+                  />
+                  )}
                 />
-              )}
-            />
+              <p className="text-xs mt-2 text-gray-500">Salario mínimo (SMLMV): ${MINIMUM_WAGE.toLocaleString('es-CO')}. Valores inferiores serán corregidos automáticamente.</p>
+            </div>
 
             <Controller
               name="codigoActividadEjecutar"
@@ -707,8 +738,8 @@ export function IndependienteConContratoForm() {
               rules={IndependienteConContratoValidationRules.departamentoLabor}
               render={({ field, fieldState }) => (
                 <FormSelect
-                  label="Departamento donde Labora"
-                  placeholder="Seleccionar Código de actividad"
+                  label="Código Departamento donde Labora"
+                  placeholder="Seleccionar Código de departamento"
                   options={departamentosDaneOptions}
                   value={field.value}
                   onChange={(value) => {
@@ -729,7 +760,7 @@ export function IndependienteConContratoForm() {
               rules={IndependienteConContratoValidationRules.ciudadLabor}
               render={({ field, fieldState }) => (
                 <FormSelect
-                  label="Ciudad donde Labora"
+                  label="Código Ciudad donde Labora"
                   placeholder={
                     !selectedDepartamentoWork
                       ? "Seleccione un departamento primero"
@@ -757,7 +788,7 @@ export function IndependienteConContratoForm() {
               rules={IndependienteConContratoValidationRules.fechaInicioCobertura}
               render={({ field, fieldState }) => (
                 <FormDatePicker
-                  label="Fecha de Cobertura"
+                  label="Fecha Inicio de Cobertura"
                   placeholder="Seleccionar fecha de cobertura"
                   value={field.value ? new Date(field.value + 'T00:00:00') : undefined}
                   onChange={(date) =>
@@ -809,7 +840,7 @@ export function IndependienteConContratoForm() {
                 <FormSelect
                   label="Tipo Documento Contratante"
                   placeholder="Seleccionar tipo"
-                  options={DocumentTypesOptions}
+                  options={documentTypesOptions}
                   value={field.value}
                   onChange={field.onChange}
                   onBlur={field.onBlur}

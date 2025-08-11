@@ -42,11 +42,11 @@ export function validateEpsCode(epsCode: string): boolean {
 
 export const IndependienteConContratoValidationRules = {
   tipoDocTrabajador: {
-    required: "El tipo de documento del trabajador es requerido",
+    required: "El tipo de documento del independiente es requerido",
   },
 
   numeDocTrabajador: {
-    required: "El número de documento es requerido",
+    required: "El número de documento del independiente es requerido",
     validate: (value: string, formValues: any) => {
       if (hasDangerousContent(value)) {
         return "El documento contiene caracteres no permitidos"
@@ -132,9 +132,9 @@ export const IndependienteConContratoValidationRules = {
   },
 
   fechaNacimientoTrabajador: {
-    required: "La fecha de nacimiento es requerida",
+    required: "La fecha de nacimiento del independiente es requerida",
     validate: (value: string) => {
-      if (!value) return "La fecha de nacimiento es requerida";
+      if (!value) return "La fecha de nacimiento del independiente es requerida";
 
       const date = new Date(value);
       if (isNaN(date.getTime())) {
@@ -163,11 +163,11 @@ export const IndependienteConContratoValidationRules = {
 
 
   sexoTrabajador: {
-    required: "El sexo del trabajador es requerido",
+    required: "El sexo del independiente es requerido",
   },
 
   emailTrabajador: {
-    required: "El correo electrónico es requerido",
+    required: "El correo electrónico del independiente es requerido",
     pattern: {
       value: VALIDATION_PATTERNS.email,
       message: "Ingrese un correo electrónico válido",
@@ -206,6 +206,7 @@ export const IndependienteConContratoValidationRules = {
   },
 
   telefonoTrabajador: {
+    required: "El teléfono del independiente es requerido",
     validate: (value: string) => {
       if (!value) return true
       const phoneValidation = validatePhoneNumber(value)
@@ -213,7 +214,7 @@ export const IndependienteConContratoValidationRules = {
         return phoneValidation.message || "Ingrese un número de teléfono válido"
       }
       if (hasDangerousContent(value)) {
-        return "El teléfono contiene caracteres no permitidos"
+        return "El teléfono del independiente contiene caracteres no permitidos"
       }
       return true
     },
@@ -224,7 +225,7 @@ export const IndependienteConContratoValidationRules = {
   },
 
   codigoEPS: {
-    required: "El código EPS es requerido",
+    required: "El código EPS del independiente es requerido",
   },
 
   codigoAFP: {
@@ -292,6 +293,10 @@ export const IndependienteConContratoValidationRules = {
     validate: (value: string) => {
       if (!value) return "El valor total del contrato es requerido"
 
+      if (Number(value) < MINIMUM_WAGE) {
+        return `El valor total del contrato debe ser mayor o igual a ${MINIMUM_WAGE.toLocaleString('es-CO')}`
+      }
+
       if (!/^[0-9]+$/.test(value)) {
         return "El salario debe ser un número entero sin puntos, comas, espacios ni símbolos"
       }
@@ -305,17 +310,17 @@ export const IndependienteConContratoValidationRules = {
   },
 
   departamentoLabor: {
-    required: "El departamento donde labora es requerido",
+    required: "El código del departamento donde labora es requerido",
   },
 
   ciudadLabor: {
-    required: "La ciudad donde labora es requerida",
+    required: "El código de la ciudad donde labora es requerido",
   },
 
   fechaInicioCobertura: {
-    required: "La fecha de cobertura es requerida",
+    required: "La fecha de inicio de cobertura es requerida",
     validate: (value: string) => {
-      if (!value) return "La fecha de cobertura es requerida";
+              if (!value) return "La fecha de inicio de cobertura es requerida";
 
       const date = new Date(value);
       if (isNaN(date.getTime())) {

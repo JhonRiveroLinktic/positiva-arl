@@ -28,7 +28,7 @@ export function ListaRegistros() {
   const columns: TableColumn[] = [
     {
       key: "documento",
-      label: "Documento Trabajador",
+      label: "Documento Independiente",
       render: (_, record: Registro) => (
         <div>
           <div className="font-medium">{record.tipoDocTrabajador}</div>
@@ -38,7 +38,7 @@ export function ListaRegistros() {
     },
     {
       key: "nombreCompleto",
-      label: "Nombre Trabajador",
+      label: "Nombre Independiente",
       render: (_, record: Registro) => (
         <div>
           <div className="font-medium capitalize">
@@ -57,7 +57,17 @@ export function ListaRegistros() {
       ),
     },
     { key: "cargoOcupacion", label: "Cargo/Ocupación" },
-    { key: "tipoContrato", label: "Tipo Contrato" },
+    { 
+      key: "tipoContrato", 
+      label: "Tipo Contrato",
+      render: (_, record: Registro) => (
+        <span>{record.tipoContrato === "1" ? "Administrativo" : 
+               record.tipoContrato === "2" ? "Comercial" :
+               record.tipoContrato === "3" ? "Civil" :
+               "-"}
+        </span>
+      ),
+    },
     {
       key: "valorTotalContrato",
       label: "Valor Contrato",

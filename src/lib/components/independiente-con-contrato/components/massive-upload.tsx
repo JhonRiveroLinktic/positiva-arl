@@ -16,33 +16,33 @@ import { Upload } from "lucide-react";
 import { Button } from "@/lib/components/ui/button";
 
 const EXCEL_COLUMN_MAPPING = {
-  'TIPO_DE_DOCUMENTO_TRABAJADOR': 'tipoDocTrabajador',
-  'NUMERO_DE_DOCUMENTO_TRABAJADOR': 'numeDocTrabajador',
+  'TIPO_DE_DOCUMENTO_INDEPENDIENTE': 'tipoDocTrabajador',
+  'NUMERO_DE_DOCUMENTO_INDEPENDIENTE': 'numeDocTrabajador',
   'PRIMER_APELLIDO': 'apellido1Trabajador',
   'SEGUNDO_APELLIDO': 'apellido2Trabajador',
   'PRIMER_NOMBRE': 'nombre1Trabajador',
   'SEGUNDO_NOMBRE': 'nombre2Trabajador',
-  'FECHA_DE_NACIMIENTO_DEL_TRABAJADOR_(DD/MM/AAAA)': 'fechaNacimientoTrabajador',
-  'SEXO_DEL_TRABAJADOR': 'sexoTrabajador',
-  'CORREO_ELECTRONICO_TRABAJADOR': 'emailTrabajador',
+  'FECHA_DE_NACIMIENTO_DE_INDEPENDIENTE(AAAA/MM/DD)': 'fechaNacimientoTrabajador',
+  'SEXO_DEL_INDEPENDIENTE': 'sexoTrabajador',
+  'CORREO_ELECTRONICO_INDEPENDIENTE': 'emailTrabajador',
   'CODIGO_DANE_DEPARTAMENTO_RESIDENCIA_INDEPENDIENTE': 'codigoDaneDptoResidencia',
   'CODIGO_DANE_MUNICIPIO_DE_RESIDENCIA_INDEPENDIENTE': 'codigoDaneMuniResidencia',
   'DIRECCION_RESIDENCIA_INDEPENDIENTE': 'direccionResidencia',
-  'NUMERO_DE_TELEFONO_DEL_TRABAJADOR': 'telefonoTrabajador',
+  'NUMERO_DE_TELEFONO_DE_INDEPENDIENTE': 'telefonoTrabajador',
   'CARGO_OCUPACION': 'cargoOcupacion',
-  'NIT_EPS_DEL_INDEPENDIENTE': 'codigoEPS',
-  'NIT_AFP': 'codigoAFP',
-  'TIPO_DE_CONTRATO_ADMINISTRATIVO_COMERCIAL_CIVIL': 'tipoContrato',
-  'NATURALEZA_DEL_CONTRATO_(PUBLICO_O_PRIVADO)': 'naturalezaContrato',
-  'SUMINISTRA_TRANSPORTE_(SI_O_NO)': 'suministraTransporte',
-  'FECHA_DE_INICIO_CONTRATO_(DD/MM/AAAA)': 'fechaInicioContrato',
-  'FECHA_DE_TERMINACION-CONTRATO_(DD/MM/AAAA)': 'fechaFinContrato',
+  'CODIGO_EPS_DEL_INDEPENDIENTE': 'codigoEPS',
+  'CODIGO_AFP': 'codigoAFP',
+  'TIPO_DE_CONTRATO_1:ADMINISTRATIVO_2:COMERCIAL_3:CIVIL': 'tipoContrato',
+  'NATURALEZA_DEL_CONTRATO_(1:PUBLICO_O_2:PRIVADO)': 'naturalezaContrato',
+  'SUMINISTRA_TRANSPORTE_(S:SI_O_N:NO)': 'suministraTransporte',
+  'FECHA_DE_INICIO_CONTRATO_(AAAA/MM/DD': 'fechaInicioContrato',
+  'FECHA_DE_TERMINACION-CONTRATO_(AAAA/MM/DD)': 'fechaFinContrato',
   'VALOR_TOTAL_DEL_CONTRATO': 'valorTotalContrato',
   'CODIGO_DE_ACTIVIDAD_A_EJECUTAR': 'codigoActividadEjecutar',
-  'DEPARTAMENTO_DONDE_LABORA': 'departamentoLabor',
-  'CIUDAD_DONDE_LABORA': 'ciudadLabor',
-  'FECHA_DE_COBERTURA_(DD/MM/AAAA)': 'fechaInicioCobertura',
-  'TIPO_DE_DOCUMENTO_DEL_CONTRATANTE': 'tipoDocContratante',
+  'CODIGO_DEPARTAMENTO_DONDE_LABORA': 'departamentoLabor',
+  'CODIGO_CIUDAD_DONDE_LABORA': 'ciudadLabor',
+  'FECHA_INICIO_DE_COBERTURA': 'fechaInicioCobertura',
+  'TIPO_DOCUMENTO_CONTRATANTE': 'tipoDocContratante',
   'NUMERO_DE_DOCUMENTO_DEL_CONTRATANTE': 'numeDocContratante',
   'CODIGO_SUBEMPRESA_(SOLO PARA EL NIT 899999061)': 'codigoSubempresa',
   'ACTIVIDAD_CENTRO_DE_TRABAJO_DEL_CONTRATANTE': 'actividadCentroTrabajoContratante',
@@ -92,31 +92,33 @@ export function IndependienteConContratoMassiveUpload({ trigger, onSuccess, onEr
     if (typeof dateStr === "string" && dateStr.trim() !== "") {
       const trimmed = dateStr.trim();
 
+      // Nuevo formato: AAAA/MM/DD
       if (trimmed.includes("/")) {
         const parts = trimmed.split("/");
         if (parts.length === 3) {
-          const [day, month, year] = parts;
-          const dayNum = Number.parseInt(day, 10);
-          const monthNum = Number.parseInt(month, 10);
+          const [year, month, day] = parts;
           const yearNum = Number.parseInt(year, 10);
+          const monthNum = Number.parseInt(month, 10);
+          const dayNum = Number.parseInt(day, 10);
 
-          if (dayNum >= 1 && dayNum <= 31 &&
+          if (yearNum >= 1900 && yearNum <= 2100 &&
             monthNum >= 1 && monthNum <= 12 &&
-            yearNum >= 1900 && yearNum <= 2100) {
+            dayNum >= 1 && dayNum <= 31) {
 
+            const formattedYear = String(yearNum).padStart(4, "0");
             const formattedMonth = String(monthNum).padStart(2, "0");
             const formattedDay = String(dayNum).padStart(2, "0");
-            const result = `${yearNum}-${formattedMonth}-${formattedDay}`;
+            const result = `${formattedYear}-${formattedMonth}-${formattedDay}`;
 
             const testDate = new Date(result + 'T00:00:00');
             if (!isNaN(testDate.getTime()) && testDate.getDate() === dayNum && (testDate.getMonth() + 1) === monthNum && testDate.getFullYear() === yearNum) {
               return result;
             } else {
-              console.warn(`Fecha inválida (DD/MM/AAAA) después de la conversión lógica: ${trimmed}`);
+              console.warn(`Fecha inválida (AAAA/MM/DD) después de la conversión lógica: ${trimmed}`);
               return "";
             }
           } else {
-            console.warn(`Valores de fecha fuera de rango (DD/MM/AAAA): ${trimmed}`);
+            console.warn(`Valores de fecha fuera de rango (AAAA/MM/DD): ${trimmed}`);
             return "";
           }
         }
@@ -179,10 +181,12 @@ export function IndependienteConContratoMassiveUpload({ trigger, onSuccess, onEr
                 }
                 value = convertedDate;
               }
-              else if (
-                formField === "suministraTransporte" ||
-                formField === "esAfiliacionTaxista"
-              ) {
+              else if (formField === "suministraTransporte") {
+                const strValue = String(value).trim().toUpperCase();
+                value = (strValue === "SI" || strValue === "SÍ" || strValue === "S" ||
+                  strValue === "YES" || strValue === "TRUE" || strValue === "1") ? "S" : "N";
+              }
+              else if (formField === "esAfiliacionTaxista") {
                 const strValue = String(value).trim().toUpperCase();
                 value = (strValue === "SI" || strValue === "SÍ" || strValue === "S" ||
                   strValue === "YES" || strValue === "TRUE" || strValue === "1") ? "S" : "N";
@@ -320,30 +324,31 @@ export function IndependienteConContratoMassiveUpload({ trigger, onSuccess, onEr
     console.log('Headers normalizados del archivo:', normalizedHeadersInFile);
 
     const requiredColumnsNormalized = [
-      normalizeHeader('TIPO_DE_DOCUMENTO_TRABAJADOR'),
-      normalizeHeader('NUMERO_DE_DOCUMENTO_TRABAJADOR'),
+      normalizeHeader('TIPO_DE_DOCUMENTO_INDEPENDIENTE'),
+      normalizeHeader('NUMERO_DE_DOCUMENTO_INDEPENDIENTE'),
       normalizeHeader('PRIMER_APELLIDO'),
       normalizeHeader('PRIMER_NOMBRE'),
-      normalizeHeader('FECHA_DE_NACIMIENTO_DEL_TRABAJADOR_(DD/MM/AAAA)'),
-      normalizeHeader('SEXO_DEL_TRABAJADOR'),
-      normalizeHeader('CORREO_ELECTRONICO_TRABAJADOR'),
+      normalizeHeader('FECHA_DE_NACIMIENTO_DE_INDEPENDIENTE(AAAA/MM/DD)'),
+      normalizeHeader('SEXO_DEL_INDEPENDIENTE'),
+      normalizeHeader('CORREO_ELECTRONICO_INDEPENDIENTE'),
       normalizeHeader('CODIGO_DANE_DEPARTAMENTO_RESIDENCIA_INDEPENDIENTE'),
       normalizeHeader('CODIGO_DANE_MUNICIPIO_DE_RESIDENCIA_INDEPENDIENTE'),
       normalizeHeader('DIRECCION_RESIDENCIA_INDEPENDIENTE'),
+      normalizeHeader('NUMERO_DE_TELEFONO_DE_INDEPENDIENTE'),
       normalizeHeader('CARGO_OCUPACION'),
-      normalizeHeader('NIT_EPS_DEL_INDEPENDIENTE'),
-      normalizeHeader('NIT_AFP'),
-      normalizeHeader('TIPO_DE_CONTRATO_ADMINISTRATIVO_COMERCIAL_CIVIL'),
-      normalizeHeader('NATURALEZA_DEL_CONTRATO_(PUBLICO_O_PRIVADO)'),
-      normalizeHeader('SUMINISTRA_TRANSPORTE_(SI_O_NO)'),
-      normalizeHeader('FECHA_DE_INICIO_CONTRATO_(DD/MM/AAAA)'),
-      normalizeHeader('FECHA_DE_TERMINACION-CONTRATO_(DD/MM/AAAA)'),
+      normalizeHeader('CODIGO_EPS_DEL_INDEPENDIENTE'),
+      normalizeHeader('CODIGO_AFP'),
+      normalizeHeader('TIPO_DE_CONTRATO_1:ADMINISTRATIVO_2:COMERCIAL_3:CIVIL'),
+      normalizeHeader('NATURALEZA_DEL_CONTRATO_(1:PUBLICO_O_2:PRIVADO)'),
+      normalizeHeader('SUMINISTRA_TRANSPORTE_(S:SI_O_N:NO)'),
+      normalizeHeader('FECHA_DE_INICIO_CONTRATO_(AAAA/MM/DD'),
+      normalizeHeader('FECHA_DE_TERMINACION-CONTRATO_(AAAA/MM/DD)'),
       normalizeHeader('VALOR_TOTAL_DEL_CONTRATO'),
       normalizeHeader('CODIGO_DE_ACTIVIDAD_A_EJECUTAR'),
-      normalizeHeader('DEPARTAMENTO_DONDE_LABORA'),
-      normalizeHeader('CIUDAD_DONDE_LABORA'),
-      normalizeHeader('FECHA_DE_COBERTURA_(DD/MM/AAAA)'),
-      normalizeHeader('TIPO_DE_DOCUMENTO_DEL_CONTRATANTE'),
+      normalizeHeader('CODIGO_DEPARTAMENTO_DONDE_LABORA'),
+      normalizeHeader('CODIGO_CIUDAD_DONDE_LABORA'),
+      normalizeHeader('FECHA_INICIO_DE_COBERTURA'),
+      normalizeHeader('TIPO_DOCUMENTO_CONTRATANTE'),
       normalizeHeader('NUMERO_DE_DOCUMENTO_DEL_CONTRATANTE'),
       normalizeHeader('ACTIVIDAD_CENTRO_DE_TRABAJO_DEL_CONTRATANTE'),
       normalizeHeader('¿LA_AFILIACION_ES_DE_TAXISTA?'),
@@ -385,8 +390,8 @@ export function IndependienteConContratoMassiveUpload({ trigger, onSuccess, onEr
     title: "Carga Masiva de Independiente con Contrato",
     instructions: [
       'Seleccione un archivo Excel (.xlsx) con la hoja "DATOS" con el formato correcto para independiente con contrato.',
-      'Asegúrese de que los encabezados de las columnas coincidan exactamente con la plantilla. Las fechas deben estar en formato DD/MM/AAAA.',
-      'Columnas opcionales: SEGUNDO_APELLIDO, SEGUNDO_NOMBRE, NUMERO_DE_TELEFONO_DEL_TRABAJADOR, CODIGO_SUBEMPRESA_(SOLO PARA EL NIT 899999061).',
+      'Asegúrese de que los encabezados de las columnas coincidan exactamente con la plantilla. Las fechas deben estar en formato AAAA/MM/DD.',
+      'Columnas opcionales: SEGUNDO_APELLIDO, SEGUNDO_NOMBRE, CODIGO_SUBEMPRESA_(SOLO PARA EL NIT 899999061).',
     ],
     processData: processIndependienteData,
     getContactInfo,
