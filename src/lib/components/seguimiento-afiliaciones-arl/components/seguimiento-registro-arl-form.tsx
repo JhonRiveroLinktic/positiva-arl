@@ -772,7 +772,7 @@ export function SeguimientoARLRegistrationForm() {
              rules={arlValidationRules.codigoSubEmpresa}
              render={({ field, fieldState }) => (
                <FormSelect
-                 label="Código Sub Empresa (Opcional)"
+                 label="Código Sub Empresa (Solo para el NIT 899999061)"
                  placeholder="Código de sub empresa"
                  options={SubEmpresaOptions}
                  value={field.value}
