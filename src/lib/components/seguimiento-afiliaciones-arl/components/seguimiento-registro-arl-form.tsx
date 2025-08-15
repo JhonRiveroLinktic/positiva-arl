@@ -1,7 +1,7 @@
 "use client"
 
 import { useForm, Controller } from "react-hook-form"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { FormInput } from "@/lib/components/core/form/form-input"
 import { FormSelect } from "@/lib/components/core/form/form-select"
 import { FormDatePicker } from "@/lib/components/core/form/form-datepicker"
@@ -20,6 +20,10 @@ import { toast } from "@/lib/utils/toast"
 import { useDebouncedCallback } from "@/lib/components/core/hooks/use-debounced-callback"
 import type { Registro, SeguimientoARLFormData } from "../types/seguimiento-arl-registration"
 import { ARLMassiveUpload } from "./massive-upload"
+import { 
+  departamentosDaneOptions,
+  getMunicipiosDaneOptionsByDepartamento,
+} from "@/lib/components/independiente-con-contrato/options"
 
 const initialDefaultValues: SeguimientoARLFormData = {
   tipoDocPersona: "",
@@ -30,7 +34,8 @@ const initialDefaultValues: SeguimientoARLFormData = {
   nombre2: "",
   fechaNacimiento: "",
   sexo: "",
-  codigoMuniResidencia: "",
+  codigoDaneDepartamentoResidencia: "",
+  codigoDaneMunicipioResidencia: "",
   direccion: "",
   telefono: "",
   codigoEPS: "",
@@ -39,8 +44,11 @@ const initialDefaultValues: SeguimientoARLFormData = {
   codigoOcupacion: "",
   salario: "",
   codigoActividadEconomica: "",
+  codigoDepartamentoDondeLabora: "",
+  codigoCiudadDondeLabora: "",
   tipoDocEmp: "",
   numeDocEmp: "",
+  codigoSubEmpresa: "",
   modoTrabajo: "",
 }
 
@@ -48,7 +56,6 @@ export function SeguimientoARLRegistrationForm() {
   const {
     documentTypes,
     genderCodes,
-    municipalities,
     epsCodes,
     afpCodes,
     occupations,
@@ -57,7 +64,6 @@ export function SeguimientoARLRegistrationForm() {
     loading,
     loadDocumentTypes,
     loadGenderCodes,
-    loadMunicipalities,
     loadEpsCodes,
     loadAfpCodes,
     loadOccupations,
@@ -82,15 +88,21 @@ export function SeguimientoARLRegistrationForm() {
     control,
     handleSubmit,
     setValue,
+    watch,
     formState: { isSubmitting },
   } = form
 
+  const currentDepartamentoResidencia = watch("codigoDaneDepartamentoResidencia");
+  const currentDepartamentoLabora = watch("codigoDepartamentoDondeLabora");
+
+  const [selectedDepartamentoResidencia, setSelectedDepartamentoResidencia] = useState<string | undefined>(undefined);
+  const [selectedDepartamentoLabora, setSelectedDepartamentoLabora] = useState<string | undefined>(undefined);
+  
   const isEditMode = Boolean(registroEditando)
 
   useEffect(() => {
     loadDocumentTypes()
     loadGenderCodes()
-    loadMunicipalities()
     loadEpsCodes()
     loadAfpCodes()
     loadOccupations()
@@ -99,7 +111,6 @@ export function SeguimientoARLRegistrationForm() {
   }, [
     loadDocumentTypes,
     loadGenderCodes,
-    loadMunicipalities,
     loadEpsCodes,
     loadAfpCodes,
     loadOccupations,
@@ -114,6 +125,14 @@ export function SeguimientoARLRegistrationForm() {
       form.reset(initialDefaultValues)
     }
   }, [registroEditando, form])
+
+  useEffect(() => {
+    setSelectedDepartamentoResidencia(currentDepartamentoResidencia);
+  }, [currentDepartamentoResidencia]);
+
+  useEffect(() => {
+    setSelectedDepartamentoLabora(currentDepartamentoLabora);
+  }, [currentDepartamentoLabora]);
 
   const debouncedSetSalary = useDebouncedCallback((value: string) => {
     const numericValue = Number.parseInt(value)
@@ -133,11 +152,6 @@ export function SeguimientoARLRegistrationForm() {
   const genderCodeOptions = (genderCodes || []).map((item) => ({
     value: item.code,
     label: `${item.code} - ${item.name}`,
-  }))
-
-  const municipalityOptions = (municipalities || []).map((item) => ({
-    value: item.code,
-    label: `${item.code} - ${item.name}${item.department ? `, ${item.department}` : ""}`,
   }))
 
   const epsCodeOptions = (epsCodes || []).map((item) => ({
@@ -194,6 +208,8 @@ export function SeguimientoARLRegistrationForm() {
       }
 
       form.reset(initialDefaultValues);
+      setSelectedDepartamentoResidencia(undefined);
+      setSelectedDepartamentoLabora(undefined);
     } catch (error) {
       console.error("Error al guardar registro:", error);
       toast.error({
@@ -213,6 +229,8 @@ export function SeguimientoARLRegistrationForm() {
   const handleClear = () => {
     form.reset(initialDefaultValues)
     setRegistroEditando(null)
+    setSelectedDepartamentoResidencia(undefined);
+    setSelectedDepartamentoLabora(undefined);
     toast.info({
       title: "Formulario limpiado",
       description: "Todos los campos han sido limpiados.",
@@ -393,25 +411,55 @@ export function SeguimientoARLRegistrationForm() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
 
-            <Controller
-              name="codigoMuniResidencia"
-              control={control}
-              rules={arlValidationRules.codigoMuniResidencia}
-              render={({ field, fieldState }) => (
-                <FormSelect
-                  label="Municipio de Residencia"
-                  placeholder={loading.municipalities ? "Cargando..." : "Seleccionar municipio"}
-                  options={municipalityOptions}
-                  value={field.value}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  error={!!fieldState.error}
-                  errorMessage={fieldState.error?.message}
-                  required
-                  disabled={loading.municipalities}
-                />
-              )}
-            />
+             <Controller
+               name="codigoDaneDepartamentoResidencia"
+               control={control}
+               rules={arlValidationRules.codigoDaneDepartamentoResidencia}
+               render={({ field, fieldState }) => (
+                 <FormSelect
+                   label="Departamento de Residencia"
+                   placeholder="Seleccionar departamento"
+                   options={departamentosDaneOptions}
+                   value={field.value}
+                   onChange={(value) => {
+                     field.onChange(value)
+                     setValue("codigoDaneMunicipioResidencia", "")
+                   }}
+                   onBlur={field.onBlur}
+                   error={!!fieldState.error}
+                   errorMessage={fieldState.error?.message}
+                   required
+                 />
+               )}
+             />
+
+             <Controller
+               name="codigoDaneMunicipioResidencia"
+               control={control}
+               rules={arlValidationRules.codigoDaneMunicipioResidencia}
+               render={({ field, fieldState }) => (
+                 <FormSelect
+                   label="Municipio de Residencia"
+                   placeholder={
+                     !selectedDepartamentoResidencia
+                       ? "Seleccione un departamento primero"
+                       : "Seleccionar municipio"
+                   }
+                   options={
+                     selectedDepartamentoResidencia
+                       ? getMunicipiosDaneOptionsByDepartamento(selectedDepartamentoResidencia)
+                       : []
+                   }
+                   value={field.value}
+                   onChange={field.onChange}
+                   onBlur={field.onBlur}
+                   error={!!fieldState.error}
+                   errorMessage={fieldState.error?.message}
+                   required
+                   disabled={!selectedDepartamentoResidencia}
+                 />
+               )}
+             />
 
             <Controller
               name="direccion"
@@ -623,26 +671,94 @@ export function SeguimientoARLRegistrationForm() {
             )}
           />
 
-          <Controller
-            name="modoTrabajo"
-            control={control}
-            rules={arlValidationRules.modoTrabajo}
-            render={({ field, fieldState }) => (
-              <FormSelect
-                label="Modo de Trabajo"
-                placeholder={loading.workModes ? "Cargando..." : "Seleccionar modo"}
-                options={workModeOptions}
-                value={field.value}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                error={!!fieldState.error}
-                errorMessage={fieldState.error?.message}
-                required
-                disabled={loading.workModes}
-              />
-            )}
-          />
-        </div>
+           <Controller
+             name="modoTrabajo"
+             control={control}
+             rules={arlValidationRules.modoTrabajo}
+             render={({ field, fieldState }) => (
+               <FormSelect
+                 label="Modo de Trabajo"
+                 placeholder={loading.workModes ? "Cargando..." : "Seleccionar modo"}
+                 options={workModeOptions}
+                 value={field.value}
+                 onChange={field.onChange}
+                 onBlur={field.onBlur}
+                 error={!!fieldState.error}
+                 errorMessage={fieldState.error?.message}
+                 required
+                 disabled={loading.workModes}
+               />
+             )}
+           />
+
+           <Controller
+             name="codigoDepartamentoDondeLabora"
+             control={control}
+             rules={arlValidationRules.codigoDepartamentoDondeLabora}
+             render={({ field, fieldState }) => (
+               <FormSelect
+                 label="Departamento donde Labora"
+                 placeholder="Seleccionar departamento"
+                 options={departamentosDaneOptions}
+                 value={field.value}
+                 onChange={(value) => {
+                   field.onChange(value)
+                   setValue("codigoCiudadDondeLabora", "")
+                 }}
+                 onBlur={field.onBlur}
+                 error={!!fieldState.error}
+                 errorMessage={fieldState.error?.message}
+                 required
+               />
+             )}
+           />
+
+           <Controller
+             name="codigoCiudadDondeLabora"
+             control={control}
+             rules={arlValidationRules.codigoCiudadDondeLabora}
+             render={({ field, fieldState }) => (
+               <FormSelect
+                 label="Ciudad donde Labora"
+                 placeholder={
+                   !selectedDepartamentoLabora
+                     ? "Seleccione un departamento primero"
+                     : "Seleccionar ciudad"
+                 }
+                 options={
+                   selectedDepartamentoLabora
+                     ? getMunicipiosDaneOptionsByDepartamento(selectedDepartamentoLabora)
+                     : []
+                 }
+                 value={field.value}
+                 onChange={field.onChange}
+                 onBlur={field.onBlur}
+                 error={!!fieldState.error}
+                 errorMessage={fieldState.error?.message}
+                 required
+                 disabled={!selectedDepartamentoLabora}
+               />
+             )}
+           />
+
+           <Controller
+             name="codigoSubEmpresa"
+             control={control}
+             rules={arlValidationRules.codigoSubEmpresa}
+             render={({ field, fieldState }) => (
+               <FormInput
+                 label="Código Sub Empresa (Opcional)"
+                 placeholder="Código de sub empresa"
+                 value={field.value}
+                 onChange={field.onChange}
+                 maxLength={50}
+                 onBlur={field.onBlur}
+                 error={!!fieldState.error}
+                 errorMessage={fieldState.error?.message}
+               />
+             )}
+           />
+         </div>
       </FormWrapper>
 
       <ListaRegistros />

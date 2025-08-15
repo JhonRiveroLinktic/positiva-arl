@@ -187,10 +187,7 @@ export const arlValidationRules = {
     required: "El sexo es requerido",
   },
 
-  // Municipio de residencia
-  codigoMuniResidencia: {
-    required: "El municipio de residencia es requerido",
-  },
+
 
   // Dirección
   direccion: {
@@ -312,6 +309,38 @@ export const arlValidationRules = {
   // Modo de trabajo
   modoTrabajo: {
     required: "El modo de trabajo es requerido",
+  },
+
+  // Código DANE departamento residencia
+  codigoDaneDepartamentoResidencia: {
+    required: "El departamento de residencia es requerido",
+  },
+
+  // Código DANE municipio residencia
+  codigoDaneMunicipioResidencia: {
+    required: "El municipio de residencia es requerido",
+  },
+
+  // Código departamento donde labora
+  codigoDepartamentoDondeLabora: {
+    required: "El departamento donde labora es requerido",
+  },
+
+  // Código ciudad donde labora
+  codigoCiudadDondeLabora: {
+    required: "La ciudad donde labora es requerida",
+  },
+
+  // Código sub empresa (opcional)
+  codigoSubEmpresa: {
+    maxLength: { value: 50, message: "Máximo 50 caracteres" },
+    validate: (value: string) => {
+      if (!value) return true // Campo opcional
+      if (hasDangerousContent(value)) {
+        return "Este campo contiene caracteres no permitidos"
+      }
+      return true
+    },
   },
 }
 

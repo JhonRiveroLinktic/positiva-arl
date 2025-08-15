@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import type { Registro } from "@/lib/components/afiliaciones-arl/types/arl-registration"
+import type { Registro } from "@/lib/components/seguimiento-afiliaciones-arl/types/seguimiento-arl-registration"
 
 interface RegistroState {
   registros: Registro[]
