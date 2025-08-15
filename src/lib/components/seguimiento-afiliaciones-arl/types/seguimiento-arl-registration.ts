@@ -10,7 +10,8 @@ export interface Registro {
   nombre2: string
   fechaNacimiento: string
   sexo: string
-  codigoMuniResidencia: string
+  codigoDaneDepartamentoResidencia: string
+  codigoDaneMunicipioResidencia: string
   direccion: string
   telefono: string
   codigoEPS: string
@@ -19,8 +20,11 @@ export interface Registro {
   codigoOcupacion: string
   salario: string
   codigoActividadEconomica: string
+  codigoDepartamentoDondeLabora: string
+  codigoCiudadDondeLabora: string
   tipoDocEmp: string
   numeDocEmp: string
+  codigoSubEmpresa?: string
   modoTrabajo: string
   metodoSubida?: string
   nombreCreadorRegistro?: string,
@@ -38,7 +42,8 @@ export interface SeguimientoRegistroARL {
   nombre2?: string
   fecha_nacimiento: string
   sexo: string
-  codigo_muni_residencia: string
+  codigo_dane_departamento_residencia: string
+  codigo_dane_municipio_residencia: string
   direccion: string
   telefono?: string
   codigo_eps: string
@@ -47,9 +52,12 @@ export interface SeguimientoRegistroARL {
   codigo_ocupacion: string
   salario: string
   codigo_actividad_economica: string
-  modo_trabajo: string
+  codigo_departamento_donde_labora: string
+  codigo_ciudad_donde_labora: string
   tipo_doc_emp?: string
   nume_doc_emp?: string
+  codigo_sub_empresa?: string
+  modo_trabajo: string
   metodo_subida?: string
   created_at?: string
   updated_at?: string
@@ -70,7 +78,8 @@ export interface SeguimientoARLFormData {
   nombre2: string
   fechaNacimiento: string
   sexo: string
-  codigoMuniResidencia: string
+  codigoDaneDepartamentoResidencia: string
+  codigoDaneMunicipioResidencia: string
   direccion: string
   telefono: string
   codigoEPS: string
@@ -79,8 +88,11 @@ export interface SeguimientoARLFormData {
   codigoOcupacion: string
   salario: string
   codigoActividadEconomica: string
+  codigoDepartamentoDondeLabora: string
+  codigoCiudadDondeLabora: string
   tipoDocEmp: string
   numeDocEmp: string
+  codigoSubEmpresa: string
   modoTrabajo: string
 }
 
@@ -110,7 +122,8 @@ export function convertToSupabaseFormat(formData: Partial<Registro>): Seguimient
     nombre2: trimmedData.nombre2 || undefined,
     fecha_nacimiento: trimmedData.fechaNacimiento || "",
     sexo: trimmedData.sexo || "",
-    codigo_muni_residencia: trimmedData.codigoMuniResidencia || "",
+    codigo_dane_departamento_residencia: trimmedData.codigoDaneDepartamentoResidencia || "",
+    codigo_dane_municipio_residencia: trimmedData.codigoDaneMunicipioResidencia || "",
     direccion: trimmedData.direccion || "",
     telefono: trimmedData.telefono || undefined,
     codigo_eps: trimmedData.codigoEPS || "",
@@ -119,12 +132,15 @@ export function convertToSupabaseFormat(formData: Partial<Registro>): Seguimient
     codigo_ocupacion: trimmedData.codigoOcupacion || "",
     salario: validateAndAssignSalary(trimmedData.salario || ""),
     codigo_actividad_economica: trimmedData.codigoActividadEconomica || "",
-    modo_trabajo: trimmedData.modoTrabajo || "",
+    codigo_departamento_donde_labora: trimmedData.codigoDepartamentoDondeLabora || "",
+    codigo_ciudad_donde_labora: trimmedData.codigoCiudadDondeLabora || "",
     tipo_doc_emp: trimmedData.tipoDocEmp || undefined,
     nume_doc_emp: trimmedData.numeDocEmp || undefined,
-    metodo_subida: trimmedData.metodoSubida || undefined,
+    codigo_sub_empresa: trimmedData.codigoSubEmpresa || undefined,
+    modo_trabajo: trimmedData.modoTrabajo || "",
     nombre_contacto: trimmedData.nombreCreadorRegistro || undefined,
     correo_contacto: trimmedData.emailCreadorRegistro || undefined,
     telefono_contacto: trimmedData.telefonoCreadorRegistro || undefined,
+    metodo_subida: trimmedData.metodoSubida || undefined,
   }
 }

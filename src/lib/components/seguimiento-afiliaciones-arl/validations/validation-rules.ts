@@ -187,10 +187,7 @@ export const arlValidationRules = {
     required: "El sexo es requerido",
   },
 
-  // Municipio de residencia
-  codigoMuniResidencia: {
-    required: "El municipio de residencia es requerido",
-  },
+
 
   // Dirección
   direccion: {
@@ -313,6 +310,29 @@ export const arlValidationRules = {
   modoTrabajo: {
     required: "El modo de trabajo es requerido",
   },
+
+  // Código DANE departamento residencia
+  codigoDaneDepartamentoResidencia: {
+    required: "El departamento de residencia es requerido",
+  },
+
+  // Código DANE municipio residencia
+  codigoDaneMunicipioResidencia: {
+    required: "El municipio de residencia es requerido",
+  },
+
+  // Código departamento donde labora
+  codigoDepartamentoDondeLabora: {
+    required: "El departamento donde labora es requerido",
+  },
+
+  // Código ciudad donde labora
+  codigoCiudadDondeLabora: {
+    required: "La ciudad donde labora es requerida",
+  },
+
+  // Código sub empresa (opcional)
+  codigoSubEmpresa: {},
 }
 
 // Función helper para sanitizar datos antes del envío

@@ -42,7 +42,8 @@ export function ListaRegistros() {
       ),
     },
     { key: "fechaNacimiento", label: "Fecha Nacimiento" },
-    { key: "codigoMuniResidencia", label: "Municipio" },
+    { key: "codigoDaneDepartamentoResidencia", label: "Depto. Residencia" },
+    { key: "codigoDaneMunicipioResidencia", label: "Municipio Residencia" },
     { key: "codigoEPS", label: "EPS" },
     { key: "codigoOcupacion", label: "Ocupación" },
     {
