@@ -16,26 +16,30 @@ import { Upload } from "lucide-react"
 import { Button } from "@/lib/components/ui/button"
 
 const EXCEL_COLUMN_MAPPING = {
-  'Tipo Doc Persona': 'tipoDocPersona',
-  'Nume Doc Persona': 'numeDocPersona',
-  'Apellido1': 'apellido1',
-  'Apellido2': 'apellido2',
-  'Nombre1': 'nombre1',
-  'Nombre2': 'nombre2',
-  'Fecha Nacimiento  (DD/MM/AAA)': 'fechaNacimiento',
-  'Sexo': 'sexo',
-  'Código Muni Residencia': 'codigoMuniResidencia',
-  'Dirección': 'direccion',
-  'Teléfono': 'telefono',
-  'Código Eps': 'codigoEPS',
-  'Código Afp': 'codigoAFP',
-  'Fecha Inicio Cobertura (DD/MM/AAA)': 'fechaInicioCobertura',
-  'Código Ocupación': 'codigoOcupacion',
-  'Salario (IBC)': 'salario',
-  'Código Act Económica': 'codigoActividadEconomica',
-  'Tipo Doc Emp': 'tipoDocEmp',
-  'Nume Doc Emp': 'numeDocEmp',
-  'Modo Trabajo': 'modoTrabajo'
+  'TIPO_DOCUMENTO_PERSONA': 'tipoDocPersona',
+  'NUMERO_ DOCUMENTO_PERSONA': 'numeDocPersona',
+  'PRIMER_APELLIDO': 'apellido1',
+  'SEGUNDO_APELLIDO': 'apellido2',
+  'PRIMER_NOMBRE': 'nombre1',
+  'SEGUNDO_NOMBRE': 'nombre2',
+  'FECHA_NACIMIENTO_(AAAA/MM/DD)': 'fechaNacimiento',
+  'SEXO': 'sexo',
+  'CODIGO_DANE_DEPARTAMENTO_RESIDENCIA': 'codigoDaneDepartamentoResidencia',
+  'CODIGO_DANE_MUNICIPIO_DE_RESIDENCIA': 'codigoDaneMunicipioResidencia',
+  'DIRECCION': 'direccion',
+  'TELEFONO': 'telefono',
+  'CODIGO_EPS': 'codigoEPS',
+  'CODIGO_AFP': 'codigoAFP',
+  'FECHA_INICIO_COBERTURA_(AAAA/MM/DD)': 'fechaInicioCobertura',
+  'CODIGO_OCUPACION': 'codigoOcupacion',
+  'SALARIO_(IBC)': 'salario',
+  'CODIGO_ACTIVIDAD_ECONOMICA': 'codigoActividadEconomica',
+  'CODIGO_DEPARTAMENTO_DONDE_LABORA': 'codigoDepartamentoDondeLabora',
+  'CODIGO_CIUDAD_DONDE_LABORA': 'codigoCiudadDondeLabora',
+  'TIPO_DOCUMENTO_EMPLEADOR': 'tipoDocEmp',
+  'NUMERO_DOCUMENTO_EMPLEADOR': 'numeDocEmp',
+  'CODIGO_SUB_EMPRESA (UNICAMENTE NIT 899999061)': 'codigoSubEmpresa',
+  'MODO_TRABAJO': 'modoTrabajo'
 }
 
 interface ARLMassiveUploadProps {
@@ -64,12 +68,13 @@ export function ARLMassiveUpload({ trigger, onSuccess, onError }: ARLMassiveUplo
         if (trimmed.includes("/")) {
           const parts = trimmed.split("/")
           if (parts.length === 3) {
-            const [day, month, year] = parts
-            const dayNum = Number.parseInt(day, 10)
-            const monthNum = Number.parseInt(month, 10)
+            // Nuevo formato: AAAA/MM/DD
+            const [year, month, day] = parts
             const yearNum = Number.parseInt(year, 10)
+            const monthNum = Number.parseInt(month, 10)
+            const dayNum = Number.parseInt(day, 10)
 
-            if (dayNum >= 1 && dayNum <= 31 && monthNum >= 1 && monthNum <= 12 && yearNum >= 1900 && yearNum <= 2100) {
+            if (yearNum >= 1900 && yearNum <= 2100 && monthNum >= 1 && monthNum <= 12 && dayNum >= 1 && dayNum <= 31) {
               return `${yearNum}-${String(monthNum).padStart(2, "0")}-${String(dayNum).padStart(2, "0")}`
             }
           }
@@ -111,7 +116,14 @@ export function ARLMassiveUpload({ trigger, onSuccess, onError }: ARLMassiveUplo
         setProgress(((i + 1) / data.length) * 50)
 
         try {
-          const formData: Partial<SeguimientoARLFormData> = {}
+          const formData: Partial<SeguimientoARLFormData> = {
+            // Inicializar todos los campos nuevos con valores por defecto
+            codigoDaneDepartamentoResidencia: "",
+            codigoDaneMunicipioResidencia: "",
+            codigoDepartamentoDondeLabora: "",
+            codigoCiudadDondeLabora: "",
+            codigoSubEmpresa: ""
+          }
           const originalFormData: Partial<SeguimientoARLFormData> = {}
 
           Object.entries(EXCEL_COLUMN_MAPPING).forEach(([excelColumn, formField]) => {
@@ -135,6 +147,23 @@ export function ARLMassiveUpload({ trigger, onSuccess, onError }: ARLMassiveUplo
               value = value !== undefined && value !== null ? String(value).trim() : ""
             }
 
+            // Inicializar campos DANE si no están presentes
+            if (formField === "codigoDaneDepartamentoResidencia" && !formData.codigoDaneDepartamentoResidencia) {
+              formData.codigoDaneDepartamentoResidencia = ""
+            }
+            if (formField === "codigoDaneMunicipioResidencia" && !formData.codigoDaneMunicipioResidencia) {
+              formData.codigoDaneMunicipioResidencia = ""
+            }
+            if (formField === "codigoDepartamentoDondeLabora" && !formData.codigoDepartamentoDondeLabora) {
+              formData.codigoDepartamentoDondeLabora = ""
+            }
+            if (formField === "codigoCiudadDondeLabora" && !formData.codigoCiudadDondeLabora) {
+              formData.codigoCiudadDondeLabora = ""
+            }
+            if (formField === "codigoSubEmpresa" && !formData.codigoSubEmpresa) {
+              formData.codigoSubEmpresa = ""
+            }
+
             formData[formField as keyof SeguimientoARLFormData] = value ? String(value).trim() : ""
           })
 
@@ -145,34 +174,47 @@ export function ARLMassiveUpload({ trigger, onSuccess, onError }: ARLMassiveUplo
           }
 
           const normalizedColumnMapping: Record<string, string> = {
-            'tipo doc persona': 'tipoDocPersona',
-            'nume doc persona': 'numeDocPersona',
-            'apellido1': 'apellido1',
-            'apellido2': 'apellido2',
-            'nombre1': 'nombre1',
-            'nombre2': 'nombre2',
-            'fecha nacimiento': 'fechaNacimiento',
-            'fecha nacimiento (dd/mm/aaa)': 'fechaNacimiento',
+            'tipo_documento_persona': 'tipoDocPersona',
+            'numero_ documento_persona': 'numeDocPersona',
+            'primer_apellido': 'apellido1',
+            'segundo_apellido': 'apellido2',
+            'primer_nombre': 'nombre1',
+            'segundo_nombre': 'nombre2',
+            'fecha_nacimiento_(aaaa/mm/dd)': 'fechaNacimiento',
             'sexo': 'sexo',
-            'código muni residencia': 'codigoMuniResidencia',
-            'dirección': 'direccion',
-            'teléfono': 'telefono',
-            'código eps': 'codigoEPS',
-            'código afp': 'codigoAFP',
-            'fecha inicio cobertura': 'fechaInicioCobertura',
-            'fecha inicio cobertura (dd/mm/aaa)': 'fechaInicioCobertura',
-            'código ocupación': 'codigoOcupacion',
-            'salario': 'salario',
-            'salario (ibc)': 'salario',
-            'código act económica': 'codigoActividadEconomica',
-            'tipo doc emp': 'tipoDocEmp',
-            'nume doc emp': 'numeDocEmp',
-            'modo trabajo': 'modoTrabajo'
+            'codigo_dane_departamento_residencia': 'codigoDaneDepartamentoResidencia',
+            'codigo_dane_municipio_de_residencia': 'codigoDaneMunicipioResidencia',
+            'direccion': 'direccion',
+            'telefono': 'telefono',
+            'codigo_eps': 'codigoEPS',
+            'codigo_afp': 'codigoAFP',
+            'fecha_inicio_cobertura_(aaaa/mm/dd)': 'fechaInicioCobertura',
+            'codigo_ocupacion': 'codigoOcupacion',
+            'salario_(ibc)': 'salario',
+            'codigo_actividad_economica': 'codigoActividadEconomica',
+            'codigo_departamento_donde_labora': 'codigoDepartamentoDondeLabora',
+            'codigo_ciudad_donde_labora': 'codigoCiudadDondeLabora',
+            'tipo_documento_empleador': 'tipoDocEmp',
+            'numero_documento_empleador': 'numeDocEmp',
+            'codigo_sub_empresa (unicamente nit 899999061)': 'codigoSubEmpresa',
+            'codigo_sub_empresa': 'codigoSubEmpresa',
+            'modo_trabajo': 'modoTrabajo'
           }
 
           Object.keys(row).forEach(columnName => {
             const normalizedName = columnName.toLowerCase().trim()
-            const formField = normalizedColumnMapping[normalizedName]
+            let formField = normalizedColumnMapping[normalizedName]
+            
+            // Mapeo más flexible para columnas que pueden tener variaciones
+            if (!formField) {
+              // Buscar coincidencias parciales
+              for (const [key, value] of Object.entries(normalizedColumnMapping)) {
+                if (normalizedName.includes(key) || key.includes(normalizedName)) {
+                  formField = value
+                  break
+                }
+              }
+            }
             
             if (formField && !formData[formField as keyof SeguimientoARLFormData]) {
               let value = row[columnName]
@@ -193,6 +235,23 @@ export function ARLMassiveUpload({ trigger, onSuccess, onError }: ARLMassiveUplo
 
               if (formField === "codigoAFP" || formField === "modoTrabajo") {
                 value = value !== undefined && value !== null ? String(value).trim() : ""
+              }
+
+              // Inicializar campos DANE si no están presentes
+              if (formField === "codigoDaneDepartamentoResidencia" && !formData.codigoDaneDepartamentoResidencia) {
+                formData.codigoDaneDepartamentoResidencia = ""
+              }
+              if (formField === "codigoDaneMunicipioResidencia" && !formData.codigoDaneMunicipioResidencia) {
+                formData.codigoDaneMunicipioResidencia = ""
+              }
+              if (formField === "codigoDepartamentoDondeLabora" && !formData.codigoDepartamentoDondeLabora) {
+                formData.codigoDepartamentoDondeLabora = ""
+              }
+              if (formField === "codigoCiudadDondeLabora" && !formData.codigoCiudadDondeLabora) {
+                formData.codigoCiudadDondeLabora = ""
+              }
+              if (formField === "codigoSubEmpresa" && !formData.codigoSubEmpresa) {
+                formData.codigoSubEmpresa = ""
               }
 
               formData[formField as keyof SeguimientoARLFormData] = value ? String(value).trim() : ""
@@ -318,8 +377,33 @@ export function ARLMassiveUpload({ trigger, onSuccess, onError }: ARLMassiveUplo
 
   const validateFileStructure = useCallback((headers: string[]) => {
     const expectedColumns = Object.keys(EXCEL_COLUMN_MAPPING)
-    const missingColumns = expectedColumns.filter((col) => !headers.includes(col))
-    const extraColumns = headers.filter((col) => !expectedColumns.includes(col))
+    
+    // Normalizar los headers para comparación más flexible
+    const normalizedHeaders = headers.map(h => h.trim())
+    const normalizedExpectedColumns = expectedColumns.map(col => col.trim())
+    
+    // Buscar columnas faltantes con comparación más flexible
+    const missingColumns = normalizedExpectedColumns.filter(expectedCol => {
+      return !normalizedHeaders.some(header => 
+        header.toLowerCase() === expectedCol.toLowerCase() ||
+        header.toLowerCase().includes(expectedCol.toLowerCase()) ||
+        expectedCol.toLowerCase().includes(header.toLowerCase())
+      )
+    })
+    
+    // Buscar columnas adicionales (excluyendo las que ya están mapeadas)
+    const extraColumns = normalizedHeaders.filter(header => {
+      return !normalizedExpectedColumns.some(expectedCol => 
+        header.toLowerCase() === expectedCol.toLowerCase() ||
+        header.toLowerCase().includes(expectedCol.toLowerCase()) ||
+        expectedCol.toLowerCase().includes(header.toLowerCase())
+      )
+    })
+
+    console.log("Headers recibidos:", headers)
+    console.log("Columnas esperadas:", expectedColumns)
+    console.log("Columnas faltantes:", missingColumns)
+    console.log("Columnas adicionales:", extraColumns)
 
     return {
       isValid: missingColumns.length === 0,

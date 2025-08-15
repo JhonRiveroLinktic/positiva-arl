@@ -24,6 +24,7 @@ import {
   departamentosDaneOptions,
   getMunicipiosDaneOptionsByDepartamento,
 } from "@/lib/components/independiente-con-contrato/options"
+import { SubEmpresaOptions } from "@/lib/options/codigo-subempresa"
 
 const initialDefaultValues: SeguimientoARLFormData = {
   tipoDocPersona: "",
@@ -638,7 +639,7 @@ export function SeguimientoARLRegistrationForm() {
             rules={arlValidationRules.tipoDocEmp}
             render={({ field, fieldState }) => (
               <FormSelect
-                label="Tipo Doc Empleador"
+                label="Tipo Documento Empleador"
                 placeholder={loading.documentTypes ? "Cargando..." : "Seleccionar tipo"}
                 options={documentTypeOptions}
                 value={field.value}
@@ -658,7 +659,7 @@ export function SeguimientoARLRegistrationForm() {
             rules={arlValidationRules.numeDocEmp}
             render={({ field, fieldState }) => (
               <FormInput
-                label="Número Doc Empleador"
+                label="Número Documento Empleador"
                 placeholder="Número documento empleador"
                 value={field.value}
                 onChange={field.onChange}
@@ -746,12 +747,12 @@ export function SeguimientoARLRegistrationForm() {
              control={control}
              rules={arlValidationRules.codigoSubEmpresa}
              render={({ field, fieldState }) => (
-               <FormInput
+               <FormSelect
                  label="Código Sub Empresa (Opcional)"
                  placeholder="Código de sub empresa"
+                 options={SubEmpresaOptions}
                  value={field.value}
                  onChange={field.onChange}
-                 maxLength={50}
                  onBlur={field.onBlur}
                  error={!!fieldState.error}
                  errorMessage={fieldState.error?.message}

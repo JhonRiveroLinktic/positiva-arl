@@ -332,16 +332,7 @@ export const arlValidationRules = {
   },
 
   // Código sub empresa (opcional)
-  codigoSubEmpresa: {
-    maxLength: { value: 50, message: "Máximo 50 caracteres" },
-    validate: (value: string) => {
-      if (!value) return true // Campo opcional
-      if (hasDangerousContent(value)) {
-        return "Este campo contiene caracteres no permitidos"
-      }
-      return true
-    },
-  },
+  codigoSubEmpresa: {},
 }
 
 // Función helper para sanitizar datos antes del envío

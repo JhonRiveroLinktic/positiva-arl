@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/components/core/auth/auth-context"
 
 const items = [
   {
-    title: "01. Seguimiento",
+    title: "01. Formulario de Afiliación ARL - Seguimiento",
     description: "Formulario de seguimiento de casos",
     path: "/forms/seguimiento-afiliaciones-arl"
   },
@@ -78,16 +78,16 @@ const items = [
     description: "Formulario para notificación de desplazamiento de trabajadores",
     path: "/forms/notificacion-desplazamiento-trabajador"
   },
-  {
-    title: "Cambio de Riesgo",
-    description: "Formulario para cambio de riesgo",
-    path: "/forms/cambio-riesgo"
-  },
-  {
-    title: "Fecha de Cambios",
-    description: "Formulario para reportar fecha de cambios",
-    path: "/forms/fecha-cambios"
-  },
+  // {
+  //   title: "Cambio de Riesgo",
+  //   description: "Formulario para cambio de riesgo",
+  //   path: "/forms/cambio-riesgo"
+  // },
+  // {
+  //   title: "Fecha de Cambios",
+  //   description: "Formulario para reportar fecha de cambios",
+  //   path: "/forms/fecha-cambios"
+  // },
 ] as const
 
 type HomeItem = typeof items[number]
@@ -103,8 +103,8 @@ export default function HomePage() {
   let visibleNovedades: HomeItem[] = []
 
   if (user?.user_type === "tipo1") {
-    visibleFormularios = [formularios[0]]
-    visibleNovedades = []
+    visibleFormularios = [...formularios]
+    visibleNovedades = [...novedades]
   } else if (user?.user_type === "tipo2") {
     visibleFormularios = [...formularios]
     visibleNovedades = [...novedades]
