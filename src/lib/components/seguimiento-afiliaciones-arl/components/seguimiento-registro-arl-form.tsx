@@ -25,6 +25,15 @@ import {
   getMunicipiosDaneOptionsByDepartamento,
 } from "@/lib/components/independiente-con-contrato/options"
 import { SubEmpresaOptions } from "@/lib/options/codigo-subempresa"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/lib/components/ui/alert-dialog"
+import { Download, Info } from "lucide-react"
 
 const initialDefaultValues: SeguimientoARLFormData = {
   tipoDocPersona: "",
@@ -54,6 +63,8 @@ const initialDefaultValues: SeguimientoARLFormData = {
 }
 
 export function SeguimientoARLRegistrationForm() {
+  const [showTemplateModal, setShowTemplateModal] = useState(false)
+  
   const {
     documentTypes,
     genderCodes,
@@ -118,6 +129,14 @@ export function SeguimientoARLRegistrationForm() {
     loadEconomicActivities,
     loadWorkModes,
   ])
+
+  // Verificar si ya se mostró el modal de plantilla
+  useEffect(() => {
+    const hasSeenTemplateModal = localStorage.getItem('arl-seguimiento-template-modal-shown')
+    if (!hasSeenTemplateModal) {
+      setShowTemplateModal(true)
+    }
+  }, [])
 
   useEffect(() => {
     if (registroEditando) {
@@ -236,6 +255,11 @@ export function SeguimientoARLRegistrationForm() {
       title: "Formulario limpiado",
       description: "Todos los campos han sido limpiados.",
     })
+  }
+
+  const handleCloseTemplateModal = () => {
+    setShowTemplateModal(false)
+    localStorage.setItem('arl-seguimiento-template-modal-shown', 'true')
   }
 
   return (
@@ -763,6 +787,57 @@ export function SeguimientoARLRegistrationForm() {
       </FormWrapper>
 
       <ListaRegistros />
+
+      <AlertDialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
+        <AlertDialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center text-left gap-2">
+              <Info className="h-5 w-5" />
+              Nueva Plantilla de Carga Masiva Disponible
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+          <div className="space-y-4">
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <div className="font-medium text-sm mb-2">
+                Se han actualizado los campos requeridos para las afiliaciones ARL:
+              </div>
+              <ul className="list-disc pl-5 space-y-1 text-sm">
+                <li><strong>Campos DANE de Residencia:</strong> Departamento y Municipio de residencia</li>
+                <li><strong>Campos DANE de Labor:</strong> Departamento y Ciudad donde labora</li>
+                <li><strong>Código Sub Empresa:</strong> Campo opcional para identificación</li>
+              </ul>
+            </div>
+            
+            <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+              <div className="text-orange-800 font-medium text-sm mb-2">
+                Importante:
+              </div>
+              <div className="text-orange-700 text-sm">
+                Para realizar cargas masivas, debes descargar la nueva plantilla que incluye todos los campos actualizados. 
+                La plantilla anterior ya no es compatible con el nuevo formato.
+              </div>
+            </div>
+
+            <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+              <a 
+                href="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets/01-PLANTILLA%20MASIVA%20TRABAJADOR%20DEPENDIENTE.xlsx"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex text-sm items-center gap-2 text-green-700 hover:text-green-900 underline font-medium"
+                onClick={handleCloseTemplateModal}
+              >
+                <Download className="h-4 w-4" />
+                Descargar Nueva Plantilla de Carga Masiva
+              </a>
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogAction className="bg-orange-500 hover:bg-orange-600" onClick={handleCloseTemplateModal}>
+              Entendido
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
