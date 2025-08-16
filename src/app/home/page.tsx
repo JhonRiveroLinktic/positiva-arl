@@ -9,8 +9,8 @@ import { useAuth } from "@/lib/components/core/auth/auth-context"
 
 const items = [
   {
-    title: "01. Formulario de Afiliación ARL - Seguimiento",
-    description: "Formulario de seguimiento de casos",
+    title: "01. Plantilla masiva Trabajador Dependiente - Seguimiento",
+    description: "Formulario para cargar trabajadores dependientes",
     path: "/forms/seguimiento-afiliaciones-arl"
   },
   {

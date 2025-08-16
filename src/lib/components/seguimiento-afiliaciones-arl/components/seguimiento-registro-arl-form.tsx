@@ -10,7 +10,7 @@ import { useCatalogStore } from "@/lib/components/core/stores/catalog-store"
 import { useRegistroStore } from "../stores/registro-store"
 import { ListaRegistros } from "./lista-registros"
 import { 
-  arlValidationRules, 
+  arlValidationRules,
   sanitizeFormData, 
   MIN_DATE_AFILIATION, 
   MINIMUM_WAGE, 
@@ -265,7 +265,7 @@ export function SeguimientoARLRegistrationForm() {
   return (
     <div className="space-y-8 w-full">
       <FormWrapper
-        title="Formulario de Afiliación ARL - Seguimiento"
+        title="Plantilla masiva Trabajador Dependiente - Seguimiento"
         onSubmit={handleSubmit(onValidSubmit, onInvalidSubmit)}
         onClear={handleClear}
         isSubmitting={isSubmitting}

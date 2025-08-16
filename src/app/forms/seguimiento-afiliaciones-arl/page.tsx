@@ -21,7 +21,7 @@ export default function SeguimientoAfiliacionesARL() {
       <Header />
       <div className="w-full flex flex-col items-center justify-items-center gap-6 px-4 py-8 bg-gray-50 min-h-screen">
         <Banner 
-          title="Formulario de Afiliación ARL - Seguimiento" 
+          title="Plantilla masiva Trabajador Dependiente - Seguimiento" 
           description="Complete todos los campos requeridos para procesar su afiliación a la ARL." 
         /> 
         <CardDownloadExcel
