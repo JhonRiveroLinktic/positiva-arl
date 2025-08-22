@@ -11,7 +11,7 @@ export const VALIDATION_PATTERNS = {
 
 // Caracteres peligrosos para SQL injection y XSS
 const DANGEROUS_PATTERNS = {
-  sqlInjection: /('|(--)|(\b(ALTER|CREATE|DELETE|DROP|EXEC(UTE)?|INSERT|MERGE|SELECT|UPDATE|UNION|USE)\b))/gi,
+  sqlInjection: /('|(--)|(\b(ALTER|CREATE|DELETE|DROP|EXEC(UTE)?|INSERT|MERGE|SELECT|UPDATE|USE)\b))/gi,
   xssScript: /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
   xssEvents: /on\w+\s*=/gi,
   htmlTags: /<[^>]*>/g,
