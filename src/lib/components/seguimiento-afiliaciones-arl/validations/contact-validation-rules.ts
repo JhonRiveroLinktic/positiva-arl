@@ -25,7 +25,7 @@ export const contactValidationRules = {
   correo: {
     required: "El correo electrónico es requerido",
     minLength: { value: 2, message: "Mínimo 2 caracteres" },
-    maxLength: { value: 50, message: "Máximo 50 caracteres" },
+    maxLength: { value: 100, message: "Máximo 100 caracteres" },
     pattern: {
       value: VALIDATION_PATTERNS.email,
       message: "Ingrese un correo electrónico válido",
