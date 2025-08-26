@@ -162,6 +162,30 @@ export default function HomePage() {
                   </div>
                 </section>
               )}
+
+              <section>
+                <h2 className="text-2xl font-bold text-gray-800">Consultas</h2>
+                <div className="h-1 w-16 bg-orange-400 rounded-full mt-2 mb-6" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                 
+                <Card
+                  onClick={() => router.push("/forms/consultas")}
+                  key="/forms/consultas"
+                  className="group relative overflow-hidden rounded-2xl border border-orange-100 bg-white hover:border-orange-400 hover:bg-orange-50/40 hover:shadow-lg transition-all duration-200 cursor-pointer"
+              >
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold text-gray-800 group-hover:text-orange-600">
+                      Consultas
+                    </CardTitle>
+                    <div className="mt-2 h-1 w-12 rounded-full bg-orange-400/80 group-hover:bg-orange-500" />
+                  </CardHeader>
+                  <CardContent className="flex items-start justify-between">
+                    <p className="text-sm text-gray-600 pr-4">Consulta registros en todas las tablas del sistema por tipo y número de documento</p>
+                    <ArrowRight className="h-5 w-5 text-orange-500 group-hover:text-orange-600 group-hover:translate-x-1 transition-transform" />
+                  </CardContent>
+                </Card>
+                </div>
+              </section>
             </div>
           )}
         </main>
