@@ -245,9 +245,11 @@ const tiposDocumento = [
 
 function ConsultaFormFields() {
   const { control, watch } = useFormContext()
-  const formularioSeleccionado = watch("formulario")
+  const [formularioSeleccionado, setFormularioSeleccionado] = useState("")
   
   const formulario = formularios.find(f => f.value === formularioSeleccionado)
+
+  const mostrarCampos = Boolean(formularioSeleccionado && formulario)
 
   return (
     <div className="space-y-4">
@@ -260,7 +262,13 @@ function ConsultaFormFields() {
             <label className="text-sm font-medium text-gray-700">
               Formulario a consultar *
             </label>
-            <Select value={field.value} onValueChange={field.onChange}>
+            <Select 
+              value={field.value} 
+              onValueChange={(value) => {
+                field.onChange(value)
+                setFormularioSeleccionado(value)
+              }}
+            >
               <SelectTrigger className="border-orange-300 focus:border-orange-500 focus:ring-orange-500">
                 <SelectValue placeholder="Seleccione un formulario" />
               </SelectTrigger>
@@ -279,7 +287,7 @@ function ConsultaFormFields() {
         )}
       />
 
-      {formulario && (
+      {mostrarCampos && (
         <>
           <Controller
             name="tipoDocumento"
@@ -290,7 +298,7 @@ function ConsultaFormFields() {
                 <label className="text-sm font-medium text-gray-700">
                   Tipo de Documento *
                 </label>
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select value={field.value} onValueChange={field.onChange}>      
                   <SelectTrigger className="border-orange-300 focus:border-orange-500 focus:ring-orange-500">
                     <SelectValue placeholder="Seleccione el tipo de documento" />
                   </SelectTrigger>
