@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/lib/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/lib/components/ui/card"
 import { FormProvider, useFormContext } from "@/lib/components/core/form/form-provider"
@@ -243,6 +243,59 @@ const tiposDocumento = [
   { value: "DE", label: "Documento de Extranjería", alternativos: ["DE"] }
 ]
 
+// Función para obtener email usando RPC
+const obtenerEmailUsuario = async (userId: string): Promise<string> => {
+  if (!userId) return 'N/A'
+  
+  try {
+    // Usar la función RPC para obtener el email
+    const { data, error } = await supabase
+      .rpc('get_user_email', { user_id: userId })
+    
+    if (!error && data && data !== 'Usuario no encontrado') {
+      return data
+    }
+    
+    // Si no funciona la RPC, intentar desde profiles directamente
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('id', userId)
+      .single()
+    
+    if (!profileError && profile?.email) {
+      return profile.email
+    }
+    
+    // Si no se encuentra, devolver el UUID truncado
+    return `${userId.substring(0, 8)}...`
+  } catch (error) {
+    console.error('Error obteniendo email del usuario:', error)
+    return `${userId.substring(0, 8)}...`
+  }
+}
+
+// Cache para emails ya consultados
+const emailCache = new Map<string, string>()
+
+// Función para obtener email con cache
+const obtenerEmailConCache = async (userId: string): Promise<string> => {
+  if (!userId) return 'N/A'
+  
+  // Verificar cache
+  if (emailCache.has(userId)) {
+    return emailCache.get(userId)!
+  }
+  
+  // Obtener email
+  const email = await obtenerEmailUsuario(userId)
+  
+  // Guardar en cache
+  emailCache.set(userId, email)
+  
+  return email
+}
+
 function ConsultaFormFields() {
   const { control, watch } = useFormContext()
   const [formularioSeleccionado, setFormularioSeleccionado] = useState("")
@@ -344,6 +397,8 @@ function ConsultaFormFields() {
 }
 
 function ResultadosConsulta({ registros, isLoading }: { registros: Registro[], isLoading: boolean }) {
+  const [emailMap, setEmailMap] = useState<Map<string, string>>(new Map())
+
   // Función para formatear fechas UTC a horario de Colombia
   const formatearFechaColombia = (fechaUTC: string) => {
     try {
@@ -364,8 +419,43 @@ function ResultadosConsulta({ registros, isLoading }: { registros: Registro[], i
   }
 
   // Función para formatear el valor según su tipo
-  const formatearValor = (key: string, value: any) => {
+  const formatearValor = async (key: string, value: any): Promise<string> => {
     if (value === null || value === undefined) return 'N/A'
+    
+    // Formatear created_at
+    if (key === 'created_at') {
+      return formatearFechaColombia(value)
+    }
+    
+    // Formatear created_by
+    if (key === 'created_by' && typeof value === 'string') {
+      // Verificar si ya tenemos el email en el cache local
+      if (emailMap.has(value)) {
+        return emailMap.get(value)!
+      }
+      
+      // Obtener email y actualizar cache
+      const email = await obtenerEmailConCache(value)
+      setEmailMap(prev => new Map(prev).set(value, email))
+      return email
+    }
+    
+    // Formatear otras fechas que puedan estar en formato ISO
+    if (typeof value === 'string' && value.includes('T') && value.includes('Z')) {
+      return formatearFechaColombia(value)
+    }
+    
+    return String(value)
+  }
+
+  // Función para renderizar valor de forma síncrona (para campos que no son created_by)
+  const renderizarValor = (key: string, value: any): string => {
+    if (value === null || value === undefined) return 'N/A'
+    
+    // Para created_by, usar el cache local
+    if (key === 'created_by' && typeof value === 'string') {
+      return emailMap.get(value) || `${value.substring(0, 8)}...`
+    }
     
     // Formatear created_at
     if (key === 'created_at') {
@@ -379,6 +469,26 @@ function ResultadosConsulta({ registros, isLoading }: { registros: Registro[], i
     
     return String(value)
   }
+
+  // Cargar emails para todos los created_by al montar el componente
+  useEffect(() => {
+    const cargarEmails = async () => {
+      const nuevosEmails = new Map<string, string>()
+      
+      for (const registro of registros) {
+        if (registro.created_by && typeof registro.created_by === 'string') {
+          const email = await obtenerEmailConCache(registro.created_by)
+          nuevosEmails.set(registro.created_by, email)
+        }
+      }
+      
+      setEmailMap(nuevosEmails)
+    }
+    
+    if (registros.length > 0) {
+      cargarEmails()
+    }
+  }, [registros])
 
   if (isLoading) {
     return (
@@ -424,10 +534,12 @@ function ResultadosConsulta({ registros, isLoading }: { registros: Registro[], i
                   return (
                     <div key={key} className="space-y-1 p-3 bg-gray-50 rounded-lg">
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                        {key === 'created_at' ? 'Fecha de Creación' : key.replace(/_/g, ' ')}
+                        {key === 'created_at' ? 'Fecha de Creación' : 
+                         key === 'created_by' ? 'Creado por' : 
+                         key.replace(/_/g, ' ')}
                       </label>
                       <p className="text-sm text-gray-800 break-words">
-                        {formatearValor(key, value)}
+                        {renderizarValor(key, value)}
                       </p>
                     </div>
                   )
