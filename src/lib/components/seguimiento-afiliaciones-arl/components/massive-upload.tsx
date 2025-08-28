@@ -10,7 +10,7 @@ import {
   type MassiveUploadConfig,
 } from "@/lib/components/core/form/massive-upload-modal"
 import { useRegistroStore } from "../stores/registro-store"
-import { arlValidationRules, sanitizeFormData } from "../validations/validation-rules"
+import { arlValidationRules, sanitizeFormData, convertSalaryToNumber } from "../validations/validation-rules"
 import type { Registro, SeguimientoARLFormData } from "../types/seguimiento-arl-registration"
 import { Upload } from "lucide-react"
 import { Button } from "@/lib/components/ui/button"
@@ -267,11 +267,15 @@ export function ARLMassiveUpload({ trigger, onSuccess, onError }: ARLMassiveUplo
 
           const sanitizedData = sanitizeFormData(formData as SeguimientoARLFormData)
 
-                      const tempRegistro: Registro = {
-              id: `temp-${i}`,
-              ...(sanitizedData as Omit<Registro, "id">),
-              metodoSubida: "cargue masivo",
-            }
+          // Convertir el salario a número antes de crear el registro
+          const salarioNumerico = convertSalaryToNumber(sanitizedData.salario || "")
+
+          const tempRegistro: Registro = {
+            id: `temp-${i}`,
+            ...(sanitizedData as Omit<Registro, "id" | "salario">),
+            salario: salarioNumerico,
+            metodoSubida: "cargue masivo",
+          }
 
           const fieldErrors: string[] = []
 

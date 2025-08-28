@@ -14,7 +14,8 @@ import {
   sanitizeFormData, 
   MIN_DATE_AFILIATION, 
   MINIMUM_WAGE, 
-  getMaxDateCoverage 
+  getMaxDateCoverage,
+  convertSalaryToNumber
 } from "../validations/validation-rules"
 import { toast } from "@/lib/utils/toast"
 import { useDebouncedCallback } from "@/lib/components/core/hooks/use-debounced-callback"
@@ -140,7 +141,12 @@ export function SeguimientoARLRegistrationForm() {
 
   useEffect(() => {
     if (registroEditando) {
-      form.reset(registroEditando)
+      // Convertir el registro de vuelta al formato del formulario
+      const formData = {
+        ...registroEditando,
+        salario: registroEditando.salario.toString()
+      }
+      form.reset(formData)
     } else {
       form.reset(initialDefaultValues)
     }
@@ -202,11 +208,15 @@ export function SeguimientoARLRegistrationForm() {
   const onValidSubmit = async (data: SeguimientoARLFormData) => {
     try {
       const sanitizedData = sanitizeFormData(data);
+      
+      // Convertir el salario a número
+      const salarioNumerico = convertSalaryToNumber(sanitizedData.salario || "");
 
       if (isEditMode && registroEditando) {
         const registroActualizado: Registro = {
           ...registroEditando,
-          ...(sanitizedData as Omit<Registro, "id">),
+          ...(sanitizedData as Omit<Registro, "id" | "salario">),
+          salario: salarioNumerico,
         };
         actualizarRegistro(registroActualizado);
         setRegistroEditando(null);
@@ -217,7 +227,8 @@ export function SeguimientoARLRegistrationForm() {
       } else {
         const nuevoRegistro: Registro = {
           id: Date.now().toString(),
-          ...(sanitizedData as Omit<Registro, "id">),
+          ...(sanitizedData as Omit<Registro, "id" | "salario">),
+          salario: salarioNumerico,
           metodoSubida: undefined,
         };
         agregarRegistro(nuevoRegistro);

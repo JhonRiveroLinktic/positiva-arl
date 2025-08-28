@@ -1,4 +1,4 @@
-import { validateAndAssignSalary } from "../validations/validation-rules"
+import { validateAndAssignSalary, convertSalaryToNumber } from "../validations/validation-rules"
 
 export interface Registro {
   id: string
@@ -18,7 +18,7 @@ export interface Registro {
   codigoAFP: string
   fechaInicioCobertura: string
   codigoOcupacion: string
-  salario: string
+  salario: number
   codigoActividadEconomica: string
   codigoDepartamentoDondeLabora: string
   codigoCiudadDondeLabora: string
@@ -50,7 +50,7 @@ export interface SeguimientoRegistroARL {
   codigo_afp: string
   fecha_inicio_cobertura: string
   codigo_ocupacion: string
-  salario: string
+  salario: number
   codigo_actividad_economica: string
   codigo_departamento_donde_labora: string
   codigo_ciudad_donde_labora: string
@@ -130,7 +130,7 @@ export function convertToSupabaseFormat(formData: Partial<Registro>): Seguimient
     codigo_afp: trimmedData.codigoAFP || "",
     fecha_inicio_cobertura: trimmedData.fechaInicioCobertura || "",
     codigo_ocupacion: trimmedData.codigoOcupacion || "",
-    salario: validateAndAssignSalary(trimmedData.salario || ""),
+    salario: convertSalaryToNumber(trimmedData.salario || 0),
     codigo_actividad_economica: trimmedData.codigoActividadEconomica || "",
     codigo_departamento_donde_labora: trimmedData.codigoDepartamentoDondeLabora || "",
     codigo_ciudad_donde_labora: trimmedData.codigoCiudadDondeLabora || "",

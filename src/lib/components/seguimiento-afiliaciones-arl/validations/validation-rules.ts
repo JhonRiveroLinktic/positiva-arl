@@ -39,6 +39,27 @@ export function validateAndAssignSalary(salary: string): string {
   return salary
 }
 
+export function convertSalaryToNumber(value: string | number): number {
+  // Si ya es un número, devolverlo directamente
+  if (typeof value === 'number') {
+    return value
+  }
+  
+  // Si es string, procesarlo
+  if (typeof value === 'string') {
+    const cleanSalary = value.replace(/[^\d.]/g, "")
+    const numericSalary = parseFloat(cleanSalary)
+    
+    if (isNaN(numericSalary)) {
+      throw new Error("El salario debe ser un número válido")
+    }
+    
+    return numericSalary
+  }
+  
+  throw new Error("El salario debe ser un string o número válido")
+}
+
 export function validateGender(gender: string): boolean {
   const validGenders = ["M", "F", "T", "N", "O"]
   return validGenders.includes(gender)
@@ -258,6 +279,11 @@ export const arlValidationRules = {
 
       if (!/^[0-9]+$/.test(value)) {
         return "El salario debe ser un número entero sin puntos, comas, espacios ni símbolos"
+      }
+
+      const numericSalary = parseInt(value)
+      if (numericSalary < MINIMUM_WAGE) {
+        return `El salario debe ser al menos ${MINIMUM_WAGE.toLocaleString()}`
       }
 
       return true
