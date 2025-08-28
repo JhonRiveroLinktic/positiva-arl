@@ -13,7 +13,8 @@ import {
   getMaxDateCoverage,
   IndependienteConContratoValidationRules, 
   MINIMUM_WAGE, 
-  sanitizeFormData
+  sanitizeFormData,
+  convertSalaryToNumber
 } from "../validations/validation-rules"
 import { toast } from "@/lib/utils/toast"
 import type { Registro, IndependienteConContratoFormData } from "../types/independiente-types"
@@ -102,7 +103,12 @@ export function IndependienteConContratoForm() {
 
   useEffect(() => {
     if (registroEditando) {
-      reset(registroEditando); 
+      // Convertir el registro de vuelta al formato del formulario
+      const formData = {
+        ...registroEditando,
+        valorTotalContrato: registroEditando.valorTotalContrato.toString()
+      }
+      reset(formData); 
     } else {
       reset(initialDefaultValues); 
     }
@@ -175,11 +181,15 @@ export function IndependienteConContratoForm() {
   const onValidSubmit = async (data: IndependienteConContratoFormData) => {
     try {
       const sanitizedData = sanitizeFormData(data);
+      
+      // Convertir el valor total del contrato a número
+      const valorTotalNumerico = convertSalaryToNumber(sanitizedData.valorTotalContrato || "");
 
       if (isEditMode && registroEditando) {
         const registroActualizado: Registro = {
           ...registroEditando,
-          ...(sanitizedData as Omit<Registro, "id">),
+          ...(sanitizedData as Omit<Registro, "id" | "valorTotalContrato">),
+          valorTotalContrato: valorTotalNumerico,
         };
         actualizarRegistro(registroActualizado);
         setRegistroEditando(null);
@@ -190,7 +200,8 @@ export function IndependienteConContratoForm() {
       } else {
         const nuevoRegistro: Registro = {
           id: Date.now().toString(),
-          ...(sanitizedData as Omit<Registro, "id">),
+          ...(sanitizedData as Omit<Registro, "id" | "valorTotalContrato">),
+          valorTotalContrato: valorTotalNumerico,
           metodoSubida: undefined,
         };
         agregarRegistro(nuevoRegistro);

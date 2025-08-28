@@ -10,7 +10,7 @@ import {
   type MassiveUploadConfig,
 } from "@/lib/components/core/form/massive-upload-modal";
 import { useRegistroStore } from "../stores/registro-store";
-import { IndependienteConContratoValidationRules, sanitizeFormData } from "../validations/validation-rules";
+import { IndependienteConContratoValidationRules, sanitizeFormData, convertSalaryToNumber } from "../validations/validation-rules";
 import type { Registro, IndependienteConContratoFormData } from '../types/independiente-types';
 import { Upload } from "lucide-react";
 import { Button } from "@/lib/components/ui/button";
@@ -221,9 +221,14 @@ export function IndependienteConContratoMassiveUpload({ trigger, onSuccess, onEr
           }
 
           const sanitizedData = sanitizeFormData(formData as IndependienteConContratoFormData);
+          
+          // Convertir el valor total del contrato a número antes de crear el registro
+          const valorTotalNumerico = convertSalaryToNumber(sanitizedData.valorTotalContrato || "");
+          
           const tempRegistro: Registro = {
             id: `temp-${i}`,
-            ...(sanitizedData as Omit<Registro, "id" | "metodoSubida">),
+            ...(sanitizedData as Omit<Registro, "id" | "metodoSubida" | "valorTotalContrato">),
+            valorTotalContrato: valorTotalNumerico,
             metodoSubida: "cargue masivo",
           };
 

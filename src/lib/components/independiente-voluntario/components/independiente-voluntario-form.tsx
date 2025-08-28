@@ -13,7 +13,8 @@ import {
   getMaxDateCoverage,
   IndependienteVoluntarioValidationRules, 
   MINIMUM_WAGE, 
-  sanitizeFormData
+  sanitizeFormData,
+  convertSalaryToNumber
 } from "../validations/validation-rules"
 import { toast } from "@/lib/utils/toast"
 import type { Registro, IndependienteVoluntarioFormData } from "../types/independiente-types"
@@ -109,7 +110,12 @@ export function IndependienteVoluntarioForm() {
 
   useEffect(() => {
     if (registroEditando) {
-      reset(registroEditando); 
+      // Convertir el registro de vuelta al formato del formulario
+      const formData = {
+        ...registroEditando,
+        ingresoBaseCotizacion: registroEditando.ingresoBaseCotizacion.toString()
+      }
+      reset(formData); 
     } else {
       reset(initialDefaultValues); 
     }
@@ -161,11 +167,15 @@ export function IndependienteVoluntarioForm() {
   const onValidSubmit = async (data: IndependienteVoluntarioFormData) => {
     try {
       const sanitizedData = sanitizeFormData(data);
+      
+      // Convertir el ingreso base de cotización a número
+      const ingresoBaseNumerico = convertSalaryToNumber(sanitizedData.ingresoBaseCotizacion || "");
 
       if (isEditMode && registroEditando) {
         const registroActualizado: Registro = {
           ...registroEditando,
-          ...(sanitizedData as Omit<Registro, "id">),
+          ...(sanitizedData as Omit<Registro, "id" | "ingresoBaseCotizacion">),
+          ingresoBaseCotizacion: ingresoBaseNumerico,
         };
         actualizarRegistro(registroActualizado);
         setRegistroEditando(null);
@@ -176,7 +186,8 @@ export function IndependienteVoluntarioForm() {
       } else {
         const nuevoRegistro: Registro = {
           id: Date.now().toString(),
-          ...(sanitizedData as Omit<Registro, "id">),
+          ...(sanitizedData as Omit<Registro, "id" | "ingresoBaseCotizacion">),
+          ingresoBaseCotizacion: ingresoBaseNumerico,
           metodoSubida: undefined,
         };
         agregarRegistro(nuevoRegistro);

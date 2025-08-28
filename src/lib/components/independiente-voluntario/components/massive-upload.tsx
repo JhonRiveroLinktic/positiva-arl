@@ -10,7 +10,7 @@ import {
   type MassiveUploadConfig,
 } from "@/lib/components/core/form/massive-upload-modal";
 import { useRegistroStore } from "../stores/registro-store";
-import { IndependienteVoluntarioValidationRules, sanitizeFormData } from "../validations/validation-rules";
+import { IndependienteVoluntarioValidationRules, sanitizeFormData, convertSalaryToNumber } from "../validations/validation-rules";
 import type { Registro, IndependienteVoluntarioFormData } from '../types/independiente-types';
 import { Upload } from "lucide-react";
 import { Button } from "@/lib/components/ui/button";
@@ -203,9 +203,14 @@ export function IndependienteVoluntarioMassiveUpload({ trigger, onSuccess, onErr
           }
 
           const sanitizedData = sanitizeFormData(formData as IndependienteVoluntarioFormData);
+          
+          // Convertir el ingreso base de cotización a número antes de crear el registro
+          const ingresoBaseNumerico = convertSalaryToNumber(sanitizedData.ingresoBaseCotizacion || "");
+          
           const tempRegistro: Registro = {
             id: `temp-${i}`,
-            ...(sanitizedData as Omit<Registro, "id" | "metodoSubida">),
+            ...(sanitizedData as Omit<Registro, "id" | "metodoSubida" | "ingresoBaseCotizacion">),
+            ingresoBaseCotizacion: ingresoBaseNumerico,
             metodoSubida: "cargue masivo",
           };
 

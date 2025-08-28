@@ -1,3 +1,5 @@
+import { convertSalaryToNumber } from "../validations/validation-rules"
+
 export interface Registro {
     id: string
     tipoDocTrabajador: string
@@ -21,7 +23,7 @@ export interface Registro {
     suministraTransporte: string
     fechaInicioContrato: string
     fechaFinContrato: string
-    valorTotalContrato: string
+    valorTotalContrato: number
     codigoActividadEjecutar: string
     departamentoLabor: string
     ciudadLabor: string
@@ -58,7 +60,7 @@ export interface IndependienteConContrato {
     suministra_transporte: string
     fecha_inicio_contrato: string
     fecha_fin_contrato: string
-    valor_total_contrato: string
+    valor_total_contrato: number
     codigo_actividad_ejecutar: string
     departamento_labor: string
     ciudad_labor: string
@@ -144,7 +146,7 @@ export function convertToSupabaseFormat(formData: Partial<Registro>): Independie
       suministra_transporte: trimmedData.suministraTransporte || "",
       fecha_inicio_contrato: trimmedData.fechaInicioContrato || "",
       fecha_fin_contrato: trimmedData.fechaFinContrato || "",
-      valor_total_contrato: trimmedData.valorTotalContrato || "",
+      valor_total_contrato: convertSalaryToNumber(trimmedData.valorTotalContrato || 0),
       codigo_actividad_ejecutar: trimmedData.codigoActividadEjecutar || "",
       departamento_labor: trimmedData.departamentoLabor || "",
       ciudad_labor: trimmedData.ciudadLabor || "",

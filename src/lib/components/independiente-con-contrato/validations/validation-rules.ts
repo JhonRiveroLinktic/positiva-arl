@@ -26,6 +26,27 @@ export function validatePersonDocumentType(documentType: string): boolean {
   return !nitTypes.includes(documentType)
 }
 
+export function convertSalaryToNumber(value: string | number): number {
+  // Si ya es un número, devolverlo directamente
+  if (typeof value === 'number') {
+    return value
+  }
+  
+  // Si es string, procesarlo
+  if (typeof value === 'string') {
+    const cleanSalary = value.replace(/[^\d.]/g, "")
+    const numericSalary = parseFloat(cleanSalary)
+    
+    if (isNaN(numericSalary)) {
+      throw new Error("El valor debe ser un número válido")
+    }
+    
+    return numericSalary
+  }
+  
+  throw new Error("El valor debe ser un string o número válido")
+}
+
 export function validateGender(gender: string): boolean {
   const validGenders = ["M", "F", "T", "N", "O"]
   return validGenders.includes(gender)
@@ -293,12 +314,13 @@ export const IndependienteConContratoValidationRules = {
     validate: (value: string) => {
       if (!value) return "El valor total del contrato es requerido"
 
-      if (Number(value) < MINIMUM_WAGE) {
-        return `El valor total del contrato debe ser mayor o igual a ${MINIMUM_WAGE.toLocaleString('es-CO')}`
+      if (!/^[0-9]+$/.test(value)) {
+        return "El valor total del contrato debe ser un número entero sin puntos, comas, espacios ni símbolos"
       }
 
-      if (!/^[0-9]+$/.test(value)) {
-        return "El salario debe ser un número entero sin puntos, comas, espacios ni símbolos"
+      const numericValue = parseInt(value)
+      if (numericValue < MINIMUM_WAGE) {
+        return `El valor total del contrato debe ser al menos ${MINIMUM_WAGE.toLocaleString()}`
       }
 
       return true

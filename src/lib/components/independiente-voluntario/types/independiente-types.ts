@@ -1,3 +1,5 @@
+import { convertSalaryToNumber } from "../validations/validation-rules"
+
 export interface Registro {
   id: string
   tipoDocTrabajador: string
@@ -15,7 +17,7 @@ export interface Registro {
   telefonoTrabajador: string
   codigoEPS: string
   codigoAFP: string
-  ingresoBaseCotizacion: string
+  ingresoBaseCotizacion: number
   codigoOcupacion: string
   fechaCobertura: string
   tipoDocConyugeResponsable: string
@@ -48,7 +50,7 @@ export interface IndependienteVoluntario {
   telefono_trabajador?: string
   codigo_eps: string
   codigo_afp: string
-  ingreso_base_cotizacion: string
+  ingreso_base_cotizacion: number
   codigo_ocupacion: string
   fecha_cobertura: string
   tipo_doc_conyuge_responsable?: string
@@ -126,7 +128,7 @@ export function convertToSupabaseFormat(formData: Partial<Registro>): Independie
     telefono_trabajador: trimmedData.telefonoTrabajador || undefined,
     codigo_eps: trimmedData.codigoEPS || "",
     codigo_afp: trimmedData.codigoAFP || "",
-    ingreso_base_cotizacion: trimmedData.ingresoBaseCotizacion || "",
+    ingreso_base_cotizacion: convertSalaryToNumber(trimmedData.ingresoBaseCotizacion || 0),
     codigo_ocupacion: trimmedData.codigoOcupacion || "",
     fecha_cobertura: trimmedData.fechaCobertura || "",
     tipo_doc_conyuge_responsable: trimmedData.tipoDocConyugeResponsable || undefined,
