@@ -94,6 +94,8 @@ function ContactFormFields() {
 }
 
 function SubmitButton({ isSubmitting, registrosCount }: { isSubmitting: boolean, registrosCount: number }) {
+  const totalLotes = Math.ceil(registrosCount / 20)
+  
   return (
     <Button
       type="submit"
@@ -103,12 +105,12 @@ function SubmitButton({ isSubmitting, registrosCount }: { isSubmitting: boolean,
       {isSubmitting ? (
         <>
           <Loader2 className="h-4 w-4 animate-spin" />
-          Enviando...
+          Enviando por lotes...
         </>
       ) : (
         <>
           <Send className="h-4 w-4" />
-          Sí, Enviar {registrosCount} Registro(s)
+          Sí, Enviar {registrosCount} Registro(s) en {totalLotes} Lote(s)
         </>
       )}
     </Button>
@@ -138,35 +140,97 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
         telefono_contacto: data.telefono || undefined,
       }))
 
-      const { data: insertedData, error } = await supabase
-        .from("registros_arl_seguimiento")
-        .insert(registrosParaEnviar)
-        .select()
+      // Implementar carga por lotes (batching) - máximo 20 registros por lote
+      const BATCH_SIZE = 20
+      const totalRegistros = registrosParaEnviar.length
+      const totalLotes = Math.ceil(totalRegistros / BATCH_SIZE)
+      let registrosEnviados = 0
+      let registrosFallidos = 0
+      const errores: string[] = []
 
-      if (error) {
-        console.error("Error al insertar registros:", error)
+             toast.info({
+         title: "Iniciando envío por lotes",
+         description: `Enviando ${totalRegistros} registros en ${totalLotes} lote(s) de máximo ${BATCH_SIZE} registros cada uno.`,
+       })
 
-        const msg = error.code === "23505"
-          ? "Algunos registros ya existen en la base de datos."
-          : error.code === "23502"
-          ? "Faltan campos requeridos en algunos registros."
-          : error.message
+      // Procesar registros por lotes
+      for (let i = 0; i < totalLotes; i++) {
+        const inicio = i * BATCH_SIZE
+        const fin = Math.min(inicio + BATCH_SIZE, totalRegistros)
+        const loteActual = registrosParaEnviar.slice(inicio, fin)
+        const numeroLote = i + 1
 
-        toast.error({
-          title: "Error al enviar registros",
-          description: msg,
-        })
+        try {
+          console.log(`Enviando lote ${numeroLote}/${totalLotes} con ${loteActual.length} registros`)
 
-        return
+          const { data: insertedData, error } = await supabase
+            .from("registros_arl_seguimiento")
+            .insert(loteActual)
+            .select()
+
+          if (error) {
+            console.error(`Error en lote ${numeroLote}:`, error)
+            
+            const msg = error.code === "23505"
+              ? `Lote ${numeroLote}: Algunos registros ya existen en la base de datos.`
+              : error.code === "23502"
+              ? `Lote ${numeroLote}: Faltan campos requeridos en algunos registros.`
+              : `Lote ${numeroLote}: ${error.message}`
+
+            errores.push(msg)
+            registrosFallidos += loteActual.length
+
+            // Continuar con el siguiente lote en lugar de detener todo el proceso
+            continue
+          }
+
+          registrosEnviados += insertedData?.length || loteActual.length
+
+                     // Mostrar progreso del lote actual
+           if (totalLotes > 1) {
+             toast.info({
+               title: `Lote ${numeroLote}/${totalLotes} completado`,
+               description: `${registrosEnviados} registros enviados exitosamente.`,
+             })
+           }
+
+           // Pausa entre lotes (sin notificación)
+           if (i < totalLotes - 1) {
+             await new Promise(resolve => setTimeout(resolve, 2000)) // 2 segundos de pausa
+           }
+
+        } catch (error) {
+          console.error(`Error inesperado en lote ${numeroLote}:`, error)
+          errores.push(`Lote ${numeroLote}: Error inesperado`)
+          registrosFallidos += loteActual.length
+        }
       }
 
-      limpiarTodosLosRegistros()
-      toast.success({
-        title: "¡Registros enviados exitosamente!",
-        description: `Se enviaron ${insertedData?.length || registros.length} registros correctamente.`,
-      })
+      // Mostrar resultado final
+      if (registrosFallidos === 0) {
+        // Todos los registros se enviaron exitosamente
+        limpiarTodosLosRegistros()
+        toast.success({
+          title: "¡Registros enviados exitosamente!",
+          description: `Se enviaron ${registrosEnviados} registros correctamente en ${totalLotes} lote(s).`,
+        })
+        onClose()
+      } else if (registrosEnviados > 0) {
+        // Algunos registros se enviaron, otros fallaron
+        toast.warning({
+          title: "Envío parcial",
+          description: `${registrosEnviados} registros enviados exitosamente, ${registrosFallidos} fallaron. Revisa los errores en la consola.`,
+        })
+        console.error("Errores durante el envío por lotes:", errores)
+      } else {
+        // Todos los registros fallaron
+        toast.error({
+          title: "Error en el envío",
+          description: `Ningún registro se pudo enviar. Revisa los errores en la consola.`,
+        })
+        console.error("Errores durante el envío por lotes:", errores)
+      }
 
-      onClose()
     } catch (error) {
       console.error("Error inesperado:", error)
       toast.error({
@@ -244,9 +308,16 @@ export function EnvioRegistro({ registros, open, onClose }: EnvioRegistroProps) 
 
               <Alert variant="destructive" className="bg-green-50">
                 <AlertDescription>
-                  <p className="text-sm text-black">
-                    <strong>Resumen:</strong> Se enviarán {registros.length} registro(s) para procesamiento.
-                  </p>
+                  <div className="space-y-2">
+                    <p className="text-sm text-black">
+                      <strong>Resumen:</strong> Se enviarán {registros.length} registro(s) para procesamiento.
+                    </p>
+                    {registros.length > 25 && (
+                      <p className="text-sm text-blue-700">
+                        <strong>Proceso por lotes:</strong> Los datos se enviarán en lotes de 20 registros.
+                      </p>
+                    )}
+                  </div>
                 </AlertDescription>
               </Alert>
 
