@@ -18,11 +18,11 @@ const items = [
     description: "Formulario para cargar trabajadores independientes con contrato",
     path: "/forms/independiente-con-contrato"
   },
-  {
-    title: "03. Formulario Afiliación Empleador (Empresas, Sedes - Sucursales - Centro de trabajo Y RL)",
-    description: "Formulario para registrar empleadores",
-    path: "/forms/afiliacion-empleador"
-  },
+  // {
+  //   title: "03. Formulario Afiliación Empleador (Empresas, Sedes - Sucursales - Centro de trabajo Y RL)",
+  //   description: "Formulario para registrar empleadores",
+  //   path: "/forms/afiliacion-empleador"
+  // },
   {
     title: "04. Plantilla masiva Trabajador Independiente Voluntario",
     description: "Formulario para cargar trabajadores independientes voluntarios",
@@ -48,11 +48,11 @@ const items = [
     description: "Formulario para actualización de datos de trabajador",
     path: "/forms/novedad-actualizacion-datos-trabajador"
   },
-  {
-    title: "09. Novedad Retiro Empleador",
-    description: "Formulario para retiro de empleadores",
-    path: "/forms/novedad-retiro-empleador"
-  },
+  // {
+  //   title: "09. Novedad Retiro Empleador",
+  //   description: "Formulario para retiro de empleadores",
+  //   path: "/forms/novedad-retiro-empleador"
+  // },
   {
     title: "10. Retiro de Trabajador",
     description: "Formulario para retiro de trabajadores",

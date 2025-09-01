@@ -31,7 +31,8 @@ export default function NovedadRetiroEmpleador() {
           file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets/09-PLANTILLA%20NOVEDAD%20RETIRO%20EMPLEADOR.xlsx"
         />
         <Suspense fallback={<FormularioNovedadRetiroEmpleadorFallback />}>
-          <NovedadRetiroEmpleadorForm />
+          {/* <NovedadRetiroEmpleadorForm /> */}
+          <p className="text-3xl mt-10">Formulario no disponible</p>
         </Suspense>
       </div>
     </main>

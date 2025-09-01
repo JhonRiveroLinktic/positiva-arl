@@ -31,7 +31,8 @@ export default function AfiliacionEmpleadorPage() {
           file="https://agjsaigtrimzgwxqldfx.supabase.co/storage/v1/object/public/assets//02-PLANTILLA%20MASIVA%20TRABAJADOR%20INDEPENDIENTE%20CON%20CONTRATO.xlsx"
         /> */}
         <Suspense fallback={<FormularioAfiliacionEmpleadorFallback />}>
-          <AfiliacionEmpleadorFormIntegrado />
+          {/* <AfiliacionEmpleadorFormIntegrado /> */}
+          <p className="text-3xl mt-10">Formulario no disponible</p>
         </Suspense>
       </div>
     </main>
