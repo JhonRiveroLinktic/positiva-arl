@@ -230,17 +230,17 @@ const formularios = [
 
 // Tipos de documento que manejan las inconsistencias en la BD
 const tiposDocumento = [
-  { value: "CC", label: "Cédula de Ciudadanía", alternativos: ["C"] },
-  { value: "CE", label: "Cédula de Extranjería", alternativos: ["E"] },
-  { value: "TI", label: "Tarjeta de Identidad", alternativos: ["T"] },
-  { value: "NIT", label: "NIT", alternativos: ["N", "NI"] },
-  { value: "CD", label: "Carnet Diplomático", alternativos: ["D"] },
-  { value: "RC", label: "Registro Civil", alternativos: ["R"] },
-  { value: "NUIP", label: "NUIP", alternativos: ["U"] },
-  { value: "PPT", label: "Permiso Protección Temporal", alternativos: ["L", "PT"] },
-  { value: "SC", label: "Salvoconducto", alternativos: ["SC"] },
-  { value: "PP", label: "Pasaporte", alternativos: ["PP"] },
-  { value: "DE", label: "Documento de Extranjería", alternativos: ["DE"] }
+  { value: "CC", label: "Cédula de Ciudadanía", alternativos: ["C", "c", "cc"] },
+  { value: "CE", label: "Cédula de Extranjería", alternativos: ["E", "e", "ce"] },
+  { value: "TI", label: "Tarjeta de Identidad", alternativos: ["T", "t", "ti"] },
+  { value: "NIT", label: "NIT", alternativos: ["N", "NI", "n", "ni", "nit"] },
+  { value: "CD", label: "Carnet Diplomático", alternativos: ["D", "d", "cd"] },
+  { value: "RC", label: "Registro Civil", alternativos: ["R", "r", "rc"] },
+  { value: "NUIP", label: "NUIP", alternativos: ["U", "u", "nuip"] },
+  { value: "PPT", label: "Permiso Protección Temporal", alternativos: ["L", "PT", "l", "pt", "ppt"] },
+  { value: "SC", label: "Salvoconducto", alternativos: ["SC", "sc"] },
+  { value: "PP", label: "Pasaporte", alternativos: ["PP", "pp"] },
+  { value: "DE", label: "Documento de Extranjería", alternativos: ["DE", "de"] }
 ]
 
 // Función para obtener email usando RPC
