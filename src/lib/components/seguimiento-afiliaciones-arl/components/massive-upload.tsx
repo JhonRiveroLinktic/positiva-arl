@@ -15,7 +15,7 @@ import type { Registro, SeguimientoARLFormData } from "../types/seguimiento-arl-
 import { Upload } from "lucide-react"
 import { Button } from "@/lib/components/ui/button"
 
-const EXCEL_COLUMN_MAPPING = {
+const EXCEL_COLUMN_MAPPING: Record<string, string> = {
   'TIPO_DOCUMENTO_PERSONA': 'tipoDocPersona',
   'NUMERO_ DOCUMENTO_PERSONA': 'numeDocPersona',
   'PRIMER_APELLIDO': 'apellido1',
@@ -33,12 +33,14 @@ const EXCEL_COLUMN_MAPPING = {
   'FECHA_INICIO_COBERTURA_(AAAA/MM/DD)': 'fechaInicioCobertura',
   'CODIGO_OCUPACION': 'codigoOcupacion',
   'SALARIO_(IBC)': 'salario',
+  'SALARIO': 'salario',
   'CODIGO_ACTIVIDAD_ECONOMICA': 'codigoActividadEconomica',
   'CODIGO_DEPARTAMENTO_DONDE_LABORA': 'codigoDepartamentoDondeLabora',
   'CODIGO_CIUDAD_DONDE_LABORA': 'codigoCiudadDondeLabora',
   'TIPO_DOCUMENTO_EMPLEADOR': 'tipoDocEmp',
   'NUMERO_DOCUMENTO_EMPLEADOR': 'numeDocEmp',
   'CODIGO_SUB_EMPRESA (UNICAMENTE NIT 899999061)': 'codigoSubEmpresa',
+  'CODIGO_SUB_EMPRESA (UNICAMENTE DILIENGIAR SI SU NIT 899999061) DE LO CONTRARIO ESCRIBA 0': 'codigoSubEmpresa',
   'MODO_TRABAJO': 'modoTrabajo'
 }
 
@@ -191,12 +193,14 @@ export function ARLMassiveUpload({ trigger, onSuccess, onError }: ARLMassiveUplo
             'fecha_inicio_cobertura_(aaaa/mm/dd)': 'fechaInicioCobertura',
             'codigo_ocupacion': 'codigoOcupacion',
             'salario_(ibc)': 'salario',
+            'salario': 'salario',
             'codigo_actividad_economica': 'codigoActividadEconomica',
             'codigo_departamento_donde_labora': 'codigoDepartamentoDondeLabora',
             'codigo_ciudad_donde_labora': 'codigoCiudadDondeLabora',
             'tipo_documento_empleador': 'tipoDocEmp',
             'numero_documento_empleador': 'numeDocEmp',
             'codigo_sub_empresa (unicamente nit 899999061)': 'codigoSubEmpresa',
+            'codigo_sub_empresa (unicamente dilengiar si su nit 899999061) de lo contrario escriba 0': 'codigoSubEmpresa',
             'codigo_sub_empresa': 'codigoSubEmpresa',
             'modo_trabajo': 'modoTrabajo'
           }
@@ -386,13 +390,30 @@ export function ARLMassiveUpload({ trigger, onSuccess, onError }: ARLMassiveUplo
     const normalizedHeaders = headers.map(h => h.trim())
     const normalizedExpectedColumns = expectedColumns.map(col => col.trim())
     
-    // Buscar columnas faltantes con comparación más flexible
-    const missingColumns = normalizedExpectedColumns.filter(expectedCol => {
-      return !normalizedHeaders.some(header => 
-        header.toLowerCase() === expectedCol.toLowerCase() ||
-        header.toLowerCase().includes(expectedCol.toLowerCase()) ||
-        expectedCol.toLowerCase().includes(header.toLowerCase())
-      )
+    // Agrupar columnas por su campo de destino para verificar que al menos una variante esté presente
+    const fieldGroups: Record<string, string[]> = {}
+    expectedColumns.forEach(col => {
+      const fieldName = EXCEL_COLUMN_MAPPING[col]
+      if (!fieldGroups[fieldName]) {
+        fieldGroups[fieldName] = []
+      }
+      fieldGroups[fieldName].push(col)
+    })
+    
+    // Verificar que cada campo tenga al menos una variante presente
+    const missingFields: string[] = []
+    Object.entries(fieldGroups).forEach(([fieldName, variants]) => {
+      const hasVariant = variants.some(variant => {
+        return normalizedHeaders.some(header => 
+          header.toLowerCase() === variant.toLowerCase() ||
+          header.toLowerCase().includes(variant.toLowerCase()) ||
+          variant.toLowerCase().includes(header.toLowerCase())
+        )
+      })
+      
+      if (!hasVariant) {
+        missingFields.push(`${fieldName} (variantes: ${variants.join(', ')})`)
+      }
     })
     
     // Buscar columnas adicionales (excluyendo las que ya están mapeadas)
@@ -406,12 +427,12 @@ export function ARLMassiveUpload({ trigger, onSuccess, onError }: ARLMassiveUplo
 
     console.log("Headers recibidos:", headers)
     console.log("Columnas esperadas:", expectedColumns)
-    console.log("Columnas faltantes:", missingColumns)
+    console.log("Campos faltantes:", missingFields)
     console.log("Columnas adicionales:", extraColumns)
 
     return {
-      isValid: missingColumns.length === 0,
-      missingColumns,
+      isValid: missingFields.length === 0,
+      missingColumns: missingFields,
       extraColumns,
     }
   }, [])
