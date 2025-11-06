@@ -90,7 +90,21 @@ const items = [
   // },
 ] as const
 
+const itemsActualizaciones = [
+  // {
+  //   title: "Actualización Razón Social - Dependientes / Independientes",
+  //   description: "Formulario para actualizar la razón social de trabajadores dependientes e independientes",
+  //   path: "/forms/actualizacion-razon-social-dependientes-independientes"
+  // },
+  {
+    title: "Actualización Valor Contrato - Dependientes / Independientes",
+    description: "Formulario para actualizar el valor del contrato de trabajadores dependientes e independientes",
+    path: "/forms/actualizacion-valor-contrato-dependientes-independientes"
+  }
+]
+
 type HomeItem = typeof items[number]
+type HomeItemActualizaciones = typeof itemsActualizaciones[number]
 
 export default function HomePage() {
   const router = useRouter()
@@ -98,9 +112,11 @@ export default function HomePage() {
 
   const formularios = items.slice(0, 4)
   const novedades = items.slice(4)
+  const actualizaciones = itemsActualizaciones
 
   let visibleFormularios: HomeItem[] = []
   let visibleNovedades: HomeItem[] = []
+  let visibleActualizaciones: HomeItemActualizaciones[] = []
 
   if (user?.user_type === "tipo1") {
     visibleFormularios = [...formularios]
@@ -108,9 +124,13 @@ export default function HomePage() {
   } else if (user?.user_type === "tipo2") {
     visibleFormularios = [...formularios]
     visibleNovedades = [...novedades]
+  } else if (user?.user_type === "tipo3") {
+    visibleFormularios = [...formularios]
+    visibleNovedades = [...novedades]
+    visibleActualizaciones = [...actualizaciones]
   }
 
-  const renderItemCard = (item: HomeItem) => (
+  const renderItemCard = (item: HomeItem | HomeItemActualizaciones) => (
     <Card
       onClick={() => router.push(item.path)}
       key={item.path}
@@ -134,7 +154,7 @@ export default function HomePage() {
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <Header />
         <main className="flex-1 flex flex-col items-center py-12">
-          {user?.user_type !== "tipo1" && user?.user_type !== "tipo2" ? (
+          {user?.user_type !== "tipo1" && user?.user_type !== "tipo2" && user?.user_type !== "tipo3" ? (
             <div className="bg-red-100 border border-red-300 text-red-700 rounded-lg p-6 text-center max-w-lg mx-auto">
               <h2 className="text-xl font-bold mb-2">Acceso denegado</h2>
               <p>
@@ -185,7 +205,19 @@ export default function HomePage() {
                   </CardContent>
                 </Card>
                 </div>
-              </section>
+                </section>
+                
+                <section>
+                  {visibleActualizaciones.length > 0 && (
+                    <section>
+                    <h2 className="text-2xl font-bold text-gray-800">Actualizaciones directas en Balú</h2>
+                    <div className="h-1 w-16 bg-orange-400 rounded-full mt-2 mb-6" />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {visibleActualizaciones.map(renderItemCard)}
+                      </div>
+                    </section>
+                  )}
+                </section>
             </div>
           )}
         </main>
