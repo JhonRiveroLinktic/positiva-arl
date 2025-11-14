@@ -413,13 +413,6 @@ export function ActualizacionValorContratoForm() {
 
       if (fechaFinNueva) {
         const fechaFinDate = new Date(fechaFinNueva)
-        if (fechaFinDate >= hoy) {
-          toast.error({
-            title: "Fecha de fin inválida",
-            description: "La fecha seleccionada para el contrato inactivo debe ser anterior a la fecha actual.",
-          })
-          return
-        }
 
         const diffMs = fechaFinDate.getTime() - fechaInicioDate.getTime()
         const diffDias = diffMs / (1000 * 60 * 60 * 24)
