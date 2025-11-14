@@ -25,6 +25,21 @@ export function ModalDatosActualizados({
     c => c.numContract === contratoActualizadoNum
   )
 
+  const formatearFecha = (fecha?: string | null) => {
+    if (!fecha) return "-"
+    const parsed = new Date(fecha)
+    if (Number.isNaN(parsed.getTime())) {
+      return "-"
+    }
+
+    // Evitar mostrar fechas inválidas provenientes de null/epoch
+    if (parsed.getFullYear() <= 1970) {
+      return "-"
+    }
+
+    return parsed.toLocaleDateString("es-CO")
+  }
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl w-full max-h-[80vh] overflow-y-auto">
@@ -115,14 +130,14 @@ export function ModalDatosActualizados({
                   <div>
                     <span className="font-semibold">Fecha Inicio:</span>
                     <p className="text-gray-700">
-                      {new Date(contratoActualizado.contractStartDate).toLocaleDateString('es-CO')}
+                      {formatearFecha(contratoActualizado.contractStartDate)}
                     </p>
                   </div>
                   <div>
                     <span className="font-semibold">Fecha Fin:</span>
                     <p className="text-gray-700">
                       {contratoActualizado.contractEndDate 
-                        ? new Date(contratoActualizado.contractEndDate).toLocaleDateString('es-CO')
+                        ? formatearFecha(contratoActualizado.contractEndDate)
                         : "-"}
                     </p>
                   </div>

@@ -222,7 +222,16 @@ export function ActualizacionValorContratoForm() {
   const formatearFecha = (fecha?: string | null) => {
     if (!fecha) return "-"
     const parsed = new Date(fecha)
-    return Number.isNaN(parsed.getTime()) ? "-" : parsed.toLocaleDateString("es-CO")
+    if (Number.isNaN(parsed.getTime())) {
+      return "-"
+    }
+
+    // Evitar mostrar fechas inválidas provenientes de null/epoch
+    if (parsed.getFullYear() <= 1970) {
+      return "-"
+    }
+
+    return parsed.toLocaleDateString("es-CO")
   }
 
   const manejarSeleccionContrato = (contrato: Contrato) => {
