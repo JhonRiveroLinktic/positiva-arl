@@ -7,28 +7,177 @@ import { Input } from "@/lib/components/ui/input"
 import { Label } from "@/lib/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/lib/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/lib/components/ui/card"
-import { Alert, AlertDescription } from "@/lib/components/ui/alert"
+import { Alert, AlertDescription, AlertTitle } from "@/lib/components/ui/alert"
 import { RadioGroup, RadioGroupItem } from "@/lib/components/ui/radio-group"
 import { DatePicker } from "@/lib/components/ui/date-picker"
+import { Badge } from "@/lib/components/ui/badge"
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow, 
+  TableCaption 
+} from "@/lib/components/ui/table"
 import { useActualizacionValorContratoStore } from "../stores/actualizacion-store"
 import { ModalDatosActualizados } from "./modal-datos-actualizados"
 import { documentTypesValorContrato } from "../options/document-types"
 import { MINIMUM_WAGE } from "../validations/validation-rules"
 import { toast } from "@/lib/utils/toast"
-import { Search, Loader2, UserCheck, Save, X, Info } from "lucide-react"
+import { Search, Loader2, UserCheck, Save, X, Info, PencilLine, Eye } from "lucide-react"
+import { supabase } from "@/lib/utils/supabase"
+import { useAuth } from "@/lib/components/core/auth/auth-context"
 import type { 
   BusquedaAfiliadoFormData, 
   ActualizacionValorContratoFormData,
   ActualizacionValorContratoPayload,
   DatosAfiliado,
-  ApiResponseAfiliado
+  ApiResponseAfiliado,
+  Contrato,
+  RegistroTrazabilidadCambioContrato
 } from "../types/actualizacion-valor-contrato-types"
+
+const normalizarTexto = (valor?: string | null) => {
+  if (!valor) return ""
+  return valor
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+}
+
+const esTipoContratoIndependiente = (tipo?: string | null) => {
+  const normalizado = normalizarTexto(tipo)
+  return normalizado.includes("independ")
+}
+
+const esContratoInactivo = (estado?: string | null) => {
+  const normalizado = normalizarTexto(estado)
+  return normalizado === "inactiva" || normalizado === "inactivo"
+}
+
+const esContratoEditable = (contrato: Contrato) =>
+  esTipoContratoIndependiente(contrato.typeContractUser) && esContratoInactivo(contrato.contractStatus)
+
+const obtenerPrioridadEstado = (contrato: Contrato) => {
+  if (esContratoInactivo(contrato.contractStatus)) return 0
+  return 1
+}
+
+const ordenarContratos = (contratos: Contrato[]) => {
+  return [...contratos].sort((a, b) => {
+    const prioridadA = obtenerPrioridadEstado(a)
+    const prioridadB = obtenerPrioridadEstado(b)
+
+    if (prioridadA !== prioridadB) {
+      return prioridadA - prioridadB
+    }
+
+    const dateA = a.contractEndDate ? new Date(a.contractEndDate).getTime() : Number.POSITIVE_INFINITY
+    const dateB = b.contractEndDate ? new Date(b.contractEndDate).getTime() : Number.POSITIVE_INFINITY
+
+    return dateA - dateB
+  })
+}
+
+const integerNumberFormatter = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 0 })
+const decimalNumberFormatter = new Intl.NumberFormat("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+const formatCurrencyDisplay = (value?: number | null) => {
+  if (value === undefined || value === null || Number.isNaN(value)) return ""
+  return decimalNumberFormatter.format(value)
+}
+
+type CurrencyFormatResult = {
+  formatted: string
+  formattedWithDecimals: string
+  numericString: string
+  numericValue: number
+  exceedsLimit: boolean
+}
+
+const formatCurrencyInputValue = (rawValue: string): CurrencyFormatResult => {
+  const trimmed = rawValue.trim()
+  if (!trimmed) {
+    return {
+      formatted: "",
+      formattedWithDecimals: "",
+      numericString: "",
+      numericValue: NaN,
+      exceedsLimit: false,
+    }
+  }
+
+  let sanitized = trimmed.replace(/\s/g, "")
+  sanitized = sanitized.replace(/\./g, "")
+  sanitized = sanitized.replace(/[^\d,]/g, "")
+
+  if (!sanitized) {
+    return {
+      formatted: "",
+      formattedWithDecimals: "",
+      numericString: "",
+      numericValue: NaN,
+      exceedsLimit: false,
+    }
+  }
+
+  const parts = sanitized.split(",")
+  let integerPart = parts.shift() ?? ""
+  const decimalPartRaw = parts.join("")
+  const decimalPart = decimalPartRaw.replace(/[^\d]/g, "").slice(0, 2)
+
+  integerPart = integerPart.replace(/^0+(?=\d)/, "")
+  if (!integerPart) integerPart = "0"
+
+  if (integerPart.length > 17) {
+    return {
+      formatted: "",
+      formattedWithDecimals: "",
+      numericString: "",
+      numericValue: NaN,
+      exceedsLimit: true,
+    }
+  }
+
+  const typedSeparator = sanitized.includes(",")
+
+  const integerNumber = parseInt(integerPart, 10)
+  const formattedInteger = integerNumberFormatter.format(integerNumber)
+
+  let formatted = formattedInteger
+  if (decimalPart.length > 0) {
+    formatted = `${formattedInteger},${decimalPart}`
+  } else if (typedSeparator) {
+    formatted = `${formattedInteger},`
+  }
+
+  const numericString =
+    decimalPart.length > 0 ? `${integerPart}.${decimalPart}` : integerPart
+  const numericValue = Number(numericString)
+
+  const formattedWithDecimals =
+    decimalPart.length > 0
+      ? `${formattedInteger},${decimalPart.padEnd(2, "0")}`
+      : `${formattedInteger},00`
+
+  return {
+    formatted,
+    formattedWithDecimals,
+    numericString,
+    numericValue: Number.isNaN(numericValue) ? NaN : numericValue,
+    exceedsLimit: false,
+  }
+}
 
 export function ActualizacionValorContratoForm() {
   const [tipoValor, setTipoValor] = useState<"total" | "mensual">("total")
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [datosActualizados, setDatosActualizados] = useState<ApiResponseAfiliado | null>(null)
   const [contratoActualizadoNum, setContratoActualizadoNum] = useState<string>("")
+  const [mostrarFormulario, setMostrarFormulario] = useState(false)
+  const [valorContratoDisplay, setValorContratoDisplay] = useState("")
   
   const { 
     afiliadoEncontrado, 
@@ -40,6 +189,8 @@ export function ActualizacionValorContratoForm() {
     setIsUpdating,
     limpiarDatos 
   } = useActualizacionValorContratoStore()
+
+  const { user } = useAuth()
 
 
   // Formulario de búsqueda
@@ -59,8 +210,41 @@ export function ActualizacionValorContratoForm() {
       valorContrato: "",
       fechaInicio: "",
       fechaFin: "",
+      ticketId: "",
     },
   })
+
+  const contratos = afiliadoEncontrado?.contratos ?? []
+  const contratoSeleccionado = afiliadoEncontrado?.contratoSeleccionado
+  const puedeEditarContrato = contratoSeleccionado ? esContratoEditable(contratoSeleccionado) : false
+  const hayContratosEditables = contratos.some(esContratoEditable)
+
+  const formatearFecha = (fecha?: string | null) => {
+    if (!fecha) return "-"
+    const parsed = new Date(fecha)
+    return Number.isNaN(parsed.getTime()) ? "-" : parsed.toLocaleDateString("es-CO")
+  }
+
+  const manejarSeleccionContrato = (contrato: Contrato) => {
+    setContratoSeleccionado(contrato)
+    setMostrarFormulario(false)
+  }
+
+  const handleActivarEdicion = () => {
+    if (!contratoSeleccionado || !esContratoEditable(contratoSeleccionado)) {
+      return
+    }
+
+    setMostrarFormulario(true)
+    setTipoValor("total")
+    updateForm.setValue("tipoValor", "total")
+    updateForm.setValue("ticketId", "")
+    updateForm.clearErrors(["valorContrato", "ticketId"])
+
+    const baseValue = contratoSeleccionado.contractTotalValue
+    updateForm.setValue("valorContrato", baseValue.toFixed(2), { shouldDirty: false })
+    setValorContratoDisplay(formatCurrencyDisplay(baseValue))
+  }
 
   // Buscar afiliado en el endpoint real
   const buscarAfiliado = async (data: BusquedaAfiliadoFormData) => {
@@ -94,10 +278,38 @@ export function ActualizacionValorContratoForm() {
         if (response.status === 404) {
           throw new Error("No se encontró el afiliado con los datos proporcionados")
         }
-        throw new Error(`Error ${response.status}: ${response.statusText}`)
+
+        const errorData = await response.json().catch(() => null)
+        const errorMessage =
+          errorData?.detail ||
+          errorData?.message ||
+          errorData?.error?.message
+
+        if (errorMessage && errorMessage.toLowerCase().includes("no se pudo obtener el usuario de bbdd")) {
+          throw new Error("No se encontró información para el afiliado consultado.")
+        }
+
+        throw new Error(
+          `Error ${response.status}: ${
+            errorMessage || response.statusText || "No se pudo completar la búsqueda"
+          }`
+        )
       }
 
       const apiData: ApiResponseAfiliado = await response.json()
+
+      const contratosNormalizados = (apiData.contracts || []).map((contrato) => ({
+        ...contrato,
+        contractStatus: contrato.contractStatus ?? "Desconocido",
+        contractTypeVinculation: contrato.contractTypeVinculation ?? null,
+        typeContractUser: contrato.typeContractUser ?? "",
+        contractorName: contrato.contractorName ?? null,
+        subCompany: contrato.subCompany ?? null,
+      }))
+
+      const contratosOrdenados = ordenarContratos(contratosNormalizados)
+      const primerContratoEditable = contratosOrdenados.find(esContratoEditable)
+      const contratoPredeterminado = primerContratoEditable ?? contratosOrdenados[0] ?? undefined
 
       // Transformar los datos del API al formato interno
       const afiliadoData: DatosAfiliado = {
@@ -111,11 +323,19 @@ export function ActualizacionValorContratoForm() {
         sexo: apiData.sex,
         telefono: apiData.phoneNumber,
         email: apiData.email,
-        contratos: apiData.contracts,
-        contratoSeleccionado: apiData.contracts.length === 1 ? apiData.contracts[0] : undefined,
+        contratos: contratosOrdenados,
+        contratoSeleccionado: contratoPredeterminado,
+      }
+
+      if (!primerContratoEditable) {
+        toast.info({
+          title: "Contratos sin opción de edición",
+          description: "Este afiliado no tiene contratos independientes inactivos para actualizar. Puedes revisar el listado para más detalles.",
+        })
       }
 
       setAfiliadoEncontrado(afiliadoData)
+      setMostrarFormulario(false)
       
       toast.success({
         title: "Afiliado encontrado",
@@ -135,10 +355,14 @@ export function ActualizacionValorContratoForm() {
 
   // Actualización de valor de contrato (reemplazar con llamada real al endpoint cuando esté disponible)
   const actualizarValorContrato = async (data: ActualizacionValorContratoFormData) => {
-    if (!afiliadoEncontrado || !afiliadoEncontrado.contratoSeleccionado) {
+    if (
+      !afiliadoEncontrado || 
+      !afiliadoEncontrado.contratoSeleccionado || 
+      !esContratoEditable(afiliadoEncontrado.contratoSeleccionado)
+    ) {
       toast.error({
         title: "Error",
-        description: "Debe seleccionar un contrato para actualizar.",
+        description: "Debe seleccionar un contrato independiente con estado inactivo para actualizar.",
       })
       return
     }
@@ -147,51 +371,193 @@ export function ActualizacionValorContratoForm() {
     
     try {
       const valorNumerico = parseFloat(data.valorContrato)
+      if (Number.isNaN(valorNumerico)) {
+        toast.error({
+          title: "Valor inválido",
+          description: "El valor del contrato debe ser numérico.",
+        })
+        return
+      }
+      const ticketId = data.ticketId.trim()
+      if (!ticketId) {
+        throw new Error("El ticket asociado es obligatorio.")
+      }
       const contratoSeleccionado = afiliadoEncontrado.contratoSeleccionado
-      
-      // Payload para el endpoint de actualización
+
+      const fechaInicioOriginal = contratoSeleccionado.contractStartDate
+      const fechaFinOriginal = contratoSeleccionado.contractEndDate ?? ""
+      const fechaInicioNueva = data.fechaInicio
+      const fechaFinNueva = data.fechaFin || ""
+
+      const valorReferencia =
+        data.tipoValor === "total"
+          ? contratoSeleccionado.contractTotalValue
+          : contratoSeleccionado.contractMonthlyValue
+
+      const noCambioEnValor = Math.abs(valorReferencia - valorNumerico) < 0.01
+      const noCambioEnFechas =
+        fechaInicioOriginal === fechaInicioNueva &&
+        (fechaFinOriginal || "") === (fechaFinNueva || "")
+
+      if (noCambioEnValor && noCambioEnFechas) {
+        toast.error({
+          title: "Sin cambios detectados",
+          description: "Debes ajustar la fecha o el valor del contrato para poder guardar la actualización.",
+        })
+        return
+      }
+
+      const fechaInicioDate = new Date(fechaInicioNueva)
+      const hoy = new Date()
+      hoy.setHours(0, 0, 0, 0)
+
+      if (fechaFinNueva) {
+        const fechaFinDate = new Date(fechaFinNueva)
+        if (fechaFinDate >= hoy) {
+          toast.error({
+            title: "Fecha de fin inválida",
+            description: "La fecha seleccionada para el contrato inactivo debe ser anterior a la fecha actual.",
+          })
+          return
+        }
+
+        const diffMs = fechaFinDate.getTime() - fechaInicioDate.getTime()
+        const diffDias = diffMs / (1000 * 60 * 60 * 24)
+
+        if (diffDias < 30) {
+          toast.error({
+            title: "Duración insuficiente",
+            description: "La duración entre la fecha de inicio y la fecha de terminación no puede ser inferior a un mes.",
+          })
+          return
+        }
+      }
+
       const payload: ActualizacionValorContratoPayload = {
         numContract: contratoSeleccionado.numContract,
         contractStartDate: data.fechaInicio,
-        contractEndDate: data.fechaFin || null, // Si está vacío, enviar null
+        contractEndDate: data.fechaFin || null,
         typeContractUser: contratoSeleccionado.typeContractUser,
       }
 
-      // Agregar valor según el tipo seleccionado
       if (data.tipoValor === "total") {
         payload.contractTotalValue = valorNumerico
       } else {
         payload.contractMonthlyValue = valorNumerico
       }
 
-      console.log("Payload de actualización:", payload)
-
       const apiUrl = process.env.NEXT_PUBLIC_API_BALU
+      if (!apiUrl) {
+        throw new Error("NEXT_PUBLIC_API_BALU no está configurado")
+      }
 
-      const response = await fetch(`${apiUrl}/afiliaciones/value-contract`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
+      const correoUsuario = user?.email ?? "sin-correo@positiva.com"
+      const valorAnterior = valorReferencia
+
+      const trazabilidadPayload: RegistroTrazabilidadCambioContrato = {
+        tipo_documento: afiliadoEncontrado.tipoDocumento,
+        numero_documento: afiliadoEncontrado.numeroDocumento,
+        num_contrato: contratoSeleccionado.numContract,
+        fecha_inicial_anterior: contratoSeleccionado.contractStartDate ?? null,
+        fecha_final_anterior: contratoSeleccionado.contractEndDate ?? null,
+        valor_anterior: valorAnterior ?? null,
+        nueva_fecha_inicial: data.fechaInicio,
+        nueva_fecha_final: data.fechaFin ? data.fechaFin : null,
+        nuevo_valor: valorNumerico,
+        tipo_valor: data.tipoValor,
+        correo_modifico: correoUsuario,
+        ticket_id: ticketId,
+      }
+
+      const responsePromise = fetch(`${apiUrl}/afiliaciones/value-contract`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       })
+
+      let trazabilidadRecordId: string | null = null
+
+      const trazabilidadPromise = supabase
+        .from("trazabilidad_cambios_valor_contrato")
+        .insert([trazabilidadPayload])
+        .select()
+        .single()
+
+      const [response, trazabilidadResult] = await Promise.all([
+        responsePromise,
+        trazabilidadPromise,
+      ])
+
+      if (trazabilidadResult.error) {
+        const errorCode = (trazabilidadResult.error as { code?: string })?.code
+        if (errorCode === "PGRST204") {
+          console.warn("No se encontró columna en tabla de trazabilidad. Detalle:", trazabilidadResult.error)
+          toast.warning({
+            title: "Trazabilidad no disponible",
+            description: "No se pudo registrar la trazabilidad en Supabase. Ejecuta el script de actualización de la tabla cuando sea posible.",
+          })
+        } else {
+          console.error("Error al guardar trazabilidad:", trazabilidadResult.error)
+          throw new Error("No fue posible registrar la trazabilidad del cambio. Intente nuevamente.")
+        }
+      } else {
+        trazabilidadRecordId = (trazabilidadResult.data as { id?: string } | null)?.id ?? null
+      }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null)
-        
-        // Manejar error específico de validación de salario mínimo
-        if (response.status === 400 && errorData?.detail) {
-          if (errorData.detail.includes("valor mensual del contrato no puede ser menor al salario mínimo")) {
-            throw new Error("El valor mensual del contrato no puede ser menor al salario mínimo. Verifique que el valor ingresado sea correcto según las fechas del contrato.")
-          }
-          throw new Error(errorData.detail)
+
+        if (trazabilidadRecordId) {
+          await supabase
+            .from("trazabilidad_cambios_valor_contrato")
+            .delete()
+            .eq("id", trazabilidadRecordId)
         }
-        
-        throw new Error(`Error ${response.status}: ${errorData?.detail || response.statusText}`)
+
+        const errorMessage =
+          errorData?.detail ||
+          errorData?.message ||
+          errorData?.error?.message ||
+          response.statusText ||
+          "No se pudo actualizar el contrato"
+
+        throw new Error(`Error ${response.status}: ${errorMessage}`)
       }
 
-      // Capturar la respuesta con los datos actualizados
       const responseData: ApiResponseAfiliado = await response.json()
+
+      const contratosNormalizados = ordenarContratos(
+        (responseData.contracts || []).map((contrato) => ({
+          ...contrato,
+          contractStatus: contrato.contractStatus ?? "Desconocido",
+          contractTypeVinculation: contrato.contractTypeVinculation ?? null,
+          typeContractUser: contrato.typeContractUser ?? "",
+          contractorName: contrato.contractorName ?? null,
+          subCompany: contrato.subCompany ?? null,
+        }))
+      )
+
+      const contratoActualizadoNormalizado =
+        contratosNormalizados.find((contrato) => contrato.numContract === contratoSeleccionado.numContract) ??
+        contratosNormalizados.find(esContratoEditable)
+
+      setAfiliadoEncontrado({
+        tipoDocumento: afiliadoEncontrado.tipoDocumento,
+        numeroDocumento: afiliadoEncontrado.numeroDocumento,
+        primerNombre: afiliadoEncontrado.primerNombre,
+        segundoNombre: afiliadoEncontrado.segundoNombre,
+        primerApellido: afiliadoEncontrado.primerApellido,
+        segundoApellido: afiliadoEncontrado.segundoApellido,
+        edad: afiliadoEncontrado.edad,
+        sexo: afiliadoEncontrado.sexo,
+        telefono: afiliadoEncontrado.telefono,
+        email: afiliadoEncontrado.email,
+        contratos: contratosNormalizados,
+        contratoSeleccionado: contratoActualizadoNormalizado,
+      })
+      setMostrarFormulario(true)
       
       // Guardar el número del contrato actualizado para filtrarlo en el modal
       setContratoActualizadoNum(contratoSeleccionado.numContract)
@@ -199,6 +565,7 @@ export function ActualizacionValorContratoForm() {
       // Mostrar modal con los datos actualizados
       setDatosActualizados(responseData)
       setShowSuccessModal(true)
+      setValorContratoDisplay("")
       
       toast.success({
         title: "Valor de contrato actualizado",
@@ -225,18 +592,16 @@ export function ActualizacionValorContratoForm() {
 
   const handleLimpiar = () => {
     searchForm.reset()
-    updateForm.reset()
-    limpiarDatos()
-  }
-
-  const handleLimpiarForm = () => {
     updateForm.reset({
       tipoValor: "total",
       valorContrato: "",
       fechaInicio: "",
       fechaFin: "",
+      ticketId: "",
     })
-    setTipoValor("total")
+    limpiarDatos()
+    setMostrarFormulario(false)
+    setValorContratoDisplay("")
   }
 
   const handleCloseSuccessModal = () => {
@@ -247,16 +612,26 @@ export function ActualizacionValorContratoForm() {
   }
 
   useEffect(() => {
-    if (afiliadoEncontrado?.contratoSeleccionado) {
-      const contrato = afiliadoEncontrado.contratoSeleccionado
-      updateForm.setValue("fechaInicio", contrato.contractStartDate)
-      if (contrato.contractEndDate) {
-        updateForm.setValue("fechaFin", contrato.contractEndDate)
-      } else {
-        updateForm.setValue("fechaFin", "")
-      }
+    if (contratoSeleccionado && esContratoEditable(contratoSeleccionado)) {
+      updateForm.setValue("fechaInicio", contratoSeleccionado.contractStartDate)
+      updateForm.setValue("fechaFin", contratoSeleccionado.contractEndDate ?? "")
+      updateForm.setValue("tipoValor", "total")
+      updateForm.setValue("valorContrato", "")
+      setTipoValor("total")
+      setValorContratoDisplay("")
+    } else {
+      updateForm.reset({
+        tipoValor: "total",
+        valorContrato: "",
+        fechaInicio: "",
+        fechaFin: "",
+        ticketId: "",
+      })
+      setTipoValor("total")
+      setMostrarFormulario(false)
+      setValorContratoDisplay("")
     }
-  }, [afiliadoEncontrado?.contratoSeleccionado, updateForm])
+  }, [contratoSeleccionado, updateForm])
 
   return (
     <div className="space-y-6 w-full">
@@ -426,90 +801,216 @@ export function ActualizacionValorContratoForm() {
                 </div>
               </div>
 
-              {/* Selección de contrato si hay más de uno */}
-              {afiliadoEncontrado.contratos.length > 1 && (
-                <div className="space-y-2 mb-4">
-                  <Label>Seleccione el contrato a actualizar <span className="text-red-500">*</span></Label>
-                  <Select
-                    value={afiliadoEncontrado.contratoSeleccionado?.numContract || ""}
-                    onValueChange={(value) => {
-                      const contrato = afiliadoEncontrado.contratos.find(c => c.numContract === value)
-                      if (contrato) {
-                        setContratoSeleccionado(contrato)
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="bg-white">
-                      <SelectValue placeholder="Seleccione un contrato" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {afiliadoEncontrado.contratos.map((contrato) => (
-                        <SelectItem key={contrato.numContract} value={contrato.numContract}>
-                          {contrato.numContract} - ${contrato.contractTotalValue.toLocaleString('es-CO')} ({contrato.typeContractUser})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {/* Información del contrato seleccionado */}
-              {afiliadoEncontrado.contratoSeleccionado && (
-                <div className="border-t pt-4 mt-4">
-                  <h4 className="font-semibold text-green-800 mb-3">Contrato Seleccionado:</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <span className="font-semibold">Número:</span>
-                      <p className="text-gray-700">{afiliadoEncontrado.contratoSeleccionado.numContract}</p>
-                    </div>
-                    <div>
-                      <span className="font-semibold">Tipo:</span>
-                      <p className="text-gray-700">{afiliadoEncontrado.contratoSeleccionado.typeContractUser}</p>
-                    </div>
-                    <div>
-                      <span className="font-semibold">Valor Total:</span>
-                      <p className="font-semibold text-green-700">
-                        ${afiliadoEncontrado.contratoSeleccionado.contractTotalValue.toLocaleString('es-CO')}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="font-semibold">Valor Mensual:</span>
-                      <p className="text-gray-700">
-                        ${afiliadoEncontrado.contratoSeleccionado.contractMonthlyValue.toLocaleString('es-CO')}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="font-semibold">Valor IBC:</span>
-                      <p className="text-gray-700">
-                        ${afiliadoEncontrado.contratoSeleccionado.contractIbcValue.toLocaleString('es-CO')}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="font-semibold">Duración:</span>
-                      <p className="text-gray-700">{afiliadoEncontrado.contratoSeleccionado.contractDuration}</p>
-                    </div>
-                    <div>
-                      <span className="font-semibold">Fecha Inicio:</span>
-                      <p className="text-gray-700">
-                        {new Date(afiliadoEncontrado.contratoSeleccionado.contractStartDate).toLocaleDateString('es-CO')}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="font-semibold">Fecha Fin:</span>
-                      <p className="text-gray-700">
-                        {afiliadoEncontrado.contratoSeleccionado.contractEndDate 
-                          ? new Date(afiliadoEncontrado.contratoSeleccionado.contractEndDate).toLocaleDateString('es-CO')
-                          : "-"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
 
-          {/* Formulario de actualización - Solo si hay contratos */}
-          {afiliadoEncontrado.contratos.length > 0 && (
+        {/* Listado de contratos */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              Listado de contratos del afiliado
+              <Badge variant="outline" className="text-xs font-medium">
+                Total: {contratos.length}
+              </Badge>
+            </CardTitle>
+            <CardDescription>
+              Los contratos se ordenan priorizando los estados inactivos y luego los activos, aplicando orden cronológico ascendente por fecha de fin.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {contratos.length === 0 ? (
+              <Alert>
+                <AlertTitle>No se encontraron contratos</AlertTitle>
+                <AlertDescription>
+                  El afiliado consultado no tiene contratos disponibles para mostrar.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Contratante / Estado</TableHead>
+                      <TableHead>Sub empresa</TableHead>
+                      <TableHead>Tipo de vinculación</TableHead>
+                      <TableHead>Fecha inicio</TableHead>
+                      <TableHead>Fecha fin</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {contratos.map((contrato) => {
+                      const seleccionado = contratoSeleccionado?.numContract === contrato.numContract
+                      const contratoEsEditable = esContratoEditable(contrato)
+
+                      return (
+                        <TableRow
+                          key={contrato.numContract}
+                          className={seleccionado ? "bg-orange-50" : undefined}
+                        >
+                          <TableCell className="space-y-1">
+                            <div className="font-medium">{contrato.contractorName || "-"}</div>
+                            <div className="text-xs text-muted-foreground">
+                              Contrato: {contrato.numContract}
+                            </div>
+                          </TableCell>
+                          <TableCell>{contrato.subCompany || "-"}</TableCell>
+                          <TableCell>{contrato.contractTypeVinculation || "-"}</TableCell>
+                          <TableCell>{formatearFecha(contrato.contractStartDate)}</TableCell>
+                          <TableCell>{formatearFecha(contrato.contractEndDate)}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={esContratoInactivo(contrato.contractStatus) ? "secondary" : "default"}
+                              className={
+                                esContratoInactivo(contrato.contractStatus)
+                                  ? "bg-slate-200 text-slate-800"
+                                  : "bg-emerald-100 text-emerald-800"
+                              }
+                            >
+                              {contrato.contractStatus || "Sin estado"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className={`flex items-center gap-2 ${contratoEsEditable ? "border-orange-300 text-orange-700 hover:bg-orange-50" : "text-slate-600 hover:bg-slate-100"}`}
+                                onClick={() => manejarSeleccionContrato(contrato)}
+                                title="Ver detalle del contrato"
+                              >
+                                <Eye className="h-4 w-4" />
+                                Ver contrato ({esContratoInactivo(contrato.contractStatus) ? "Inactivo" : "Activo"})
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                  <TableCaption>
+                    Selecciona un contrato para ver los detalles y, si está inactivo, habilitar la actualización del valor.
+                  </TableCaption>
+                </Table>
+                {!hayContratosEditables && (
+                  <Alert variant="destructive">
+                    <AlertTitle>Sin contratos editables</AlertTitle>
+                    <AlertDescription>
+                      No hay contratos independientes inactivos para actualizar.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {contratoSeleccionado && (
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <CardTitle className="text-lg">Detalle del contrato seleccionado</CardTitle>
+                  <CardDescription>
+                    Consulta la información completa del contrato y decide si requiere modificación.
+                  </CardDescription>
+                </div>
+                <Badge
+                  variant={esContratoInactivo(contratoSeleccionado.contractStatus) ? "secondary" : "default"}
+                  className={
+                    esContratoInactivo(contratoSeleccionado.contractStatus)
+                      ? "bg-slate-200 text-slate-800"
+                      : "bg-emerald-100 text-emerald-800"
+                  }
+                >
+                  {contratoSeleccionado.contractStatus || "Sin estado"}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <span className="font-semibold text-gray-700">Número de contrato</span>
+                  <p className="text-gray-900">{contratoSeleccionado.numContract}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Tipo de contrato</span>
+                  <p className="text-gray-900">{contratoSeleccionado.contractType || "-"}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Tipo de vinculación</span>
+                  <p className="text-gray-900">{contratoSeleccionado.contractTypeVinculation || "-"}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Modalidad</span>
+                  <p className="text-gray-900">{contratoSeleccionado.typeContractUser || "-"}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Valor total</span>
+                  <p className="text-gray-900">
+                    {typeof contratoSeleccionado.contractTotalValue === "number"
+                      ? `$${contratoSeleccionado.contractTotalValue.toLocaleString("es-CO")}`
+                      : "Sin información"}
+                  </p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Valor mensual</span>
+                  <p className="text-gray-900">
+                    {typeof contratoSeleccionado.contractMonthlyValue === "number"
+                      ? `$${contratoSeleccionado.contractMonthlyValue.toLocaleString("es-CO")}`
+                      : "Sin información"}
+                  </p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Valor IBC</span>
+                  <p className="text-gray-900">
+                    {typeof contratoSeleccionado.contractIbcValue === "number"
+                      ? `$${contratoSeleccionado.contractIbcValue.toLocaleString("es-CO")}`
+                      : "Sin información"}
+                  </p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Duración</span>
+                  <p className="text-gray-900">{contratoSeleccionado.contractDuration || "Sin información"}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Fecha de inicio</span>
+                  <p className="text-gray-900">{formatearFecha(contratoSeleccionado.contractStartDate)}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Fecha de terminación</span>
+                  <p className="text-gray-900">{formatearFecha(contratoSeleccionado.contractEndDate)}</p>
+                </div>
+              </div>
+
+              {esContratoEditable(contratoSeleccionado) ? (
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    className="bg-orange-600 hover:bg-orange-700"
+                    onClick={handleActivarEdicion}
+                    disabled={isUpdating}
+                  >
+                    <PencilLine className="h-4 w-4 mr-2" />
+                    Modificar contrato
+                  </Button>
+                </div>
+              ) : (
+                <Alert variant="destructive">
+                  <AlertTitle>Contrato activo</AlertTitle>
+                  <AlertDescription>
+                    Este contrato se encuentra activo y no puede modificarse desde la contingencia. Escala la solicitud a nivel 2 por GLPI
+                    si requiere ajustes.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Formulario de actualización - Solo después de activar modificación */}
+        {mostrarFormulario && puedeEditarContrato && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -520,8 +1021,40 @@ export function ActualizacionValorContratoForm() {
                   Ingrese el tipo de valor, el nuevo valor del contrato y las fechas de vigencia
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-6">
                 <form onSubmit={handleActualizacion} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="ticketId">
+                        Ticket asociado <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="ticketId"
+                        placeholder="Ej: INC-123456 o número de ticket"
+                        {...updateForm.register("ticketId", {
+                          required: "El ticket asociado es obligatorio",
+                          minLength: {
+                            value: 3,
+                            message: "El ticket debe tener al menos 3 caracteres",
+                          },
+                          maxLength: {
+                            value: 50,
+                            message: "El ticket no puede superar los 50 caracteres",
+                          },
+                          pattern: {
+                            value: /^[a-zA-Z0-9\-_.]+$/,
+                            message: "El ticket solo puede contener letras, números, guiones, puntos o guion bajo",
+                          },
+                        })}
+                        disabled={isUpdating}
+                      />
+                      {updateForm.formState.errors.ticketId && (
+                        <p className="text-sm text-red-500">
+                          {updateForm.formState.errors.ticketId.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                   {/* Tipo de Valor */}
                   <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
                     <Label className="text-base font-semibold">
@@ -533,7 +1066,17 @@ export function ActualizacionValorContratoForm() {
                         const tipoValorSeleccionado = value as "total" | "mensual"
                         setTipoValor(tipoValorSeleccionado)
                         updateForm.setValue("tipoValor", tipoValorSeleccionado)
-                        updateForm.setValue("valorContrato", "")
+                        const contrato = contratoSeleccionado
+                        if (contrato) {
+                          const baseValue = tipoValorSeleccionado === "total"
+                            ? contrato.contractTotalValue
+                            : contrato.contractMonthlyValue
+                          updateForm.setValue("valorContrato", baseValue.toFixed(2), { shouldDirty: false })
+                          setValorContratoDisplay(formatCurrencyDisplay(baseValue))
+                        } else {
+                          updateForm.setValue("valorContrato", "")
+                          setValorContratoDisplay("")
+                        }
                       }}
                       disabled={isUpdating}
                       className="flex gap-4"
@@ -563,27 +1106,69 @@ export function ActualizacionValorContratoForm() {
                       <Label htmlFor="valorContrato">
                         {tipoValor === "total" ? "Valor Total" : "Valor Mensual"} <span className="text-red-500">*</span>
                       </Label>
-                      <Input
-                        id="valorContrato"
-                        type="text"
-                        placeholder={`Mínimo ${MINIMUM_WAGE.toLocaleString('es-CO')}`}
-                        {...updateForm.register("valorContrato", {
-                          required: "El valor del contrato es obligatorio",
-                          validate: (value: string) => {
-                            if (!value || value.trim() === "") {
+                      <Controller
+                        name="valorContrato"
+                        control={updateForm.control}
+                        rules={{
+                          validate: (value) => {
+                            if (!value) {
                               return "El valor del contrato es obligatorio"
                             }
-                            if (!/^[0-9]+$/.test(value)) {
-                              return "El valor del contrato debe ser un número entero sin puntos, comas, espacios ni símbolos"
+
+                            const numericValue = parseFloat(value)
+                            if (Number.isNaN(numericValue)) {
+                              return "El valor del contrato debe ser un número válido"
                             }
-                            const numericValue = parseInt(value)
-                            if (numericValue < MINIMUM_WAGE) {
-                              return `El valor del contrato debe ser igual o superior al salario mínimo ($${MINIMUM_WAGE.toLocaleString('es-CO')})`
-                            }
+
                             return true
                           },
-                        })}
-                        disabled={isUpdating}
+                        }}
+                        render={({ field }) => (
+                          <Input
+                            id="valorContrato"
+                            ref={field.ref}
+                            value={valorContratoDisplay}
+                            placeholder={`Ej: ${formatCurrencyDisplay(MINIMUM_WAGE)}`}
+                            inputMode="decimal"
+                            onChange={(event) => {
+                              const raw = event.target.value
+                              if (!raw.trim()) {
+                                setValorContratoDisplay("")
+                                field.onChange("")
+                                return
+                              }
+
+                              const result = formatCurrencyInputValue(raw)
+                              if (result.exceedsLimit) {
+                                return
+                              }
+
+                              setValorContratoDisplay(result.formatted)
+                              if (Number.isNaN(result.numericValue)) {
+                                field.onChange("")
+                              } else {
+                                field.onChange(result.numericString)
+                              }
+                            }}
+                            onBlur={(event) => {
+                              field.onBlur()
+
+                              const result = formatCurrencyInputValue(event.target.value)
+                              if (result.exceedsLimit) {
+                                return
+                              }
+
+                              setValorContratoDisplay(result.formattedWithDecimals)
+
+                              if (!Number.isNaN(result.numericValue)) {
+                                field.onChange(result.numericValue.toFixed(2))
+                              } else {
+                                field.onChange("")
+                              }
+                            }}
+                            disabled={isUpdating}
+                          />
+                        )}
                       />
                       {updateForm.formState.errors.valorContrato && (
                         <p className="text-sm text-red-500">
@@ -658,27 +1243,16 @@ export function ActualizacionValorContratoForm() {
                     />
                   </div>
 
-                <Alert className="bg-blue-50 border-blue-200">
-                  <Info className="h-4 w-4 text-blue-800" />
-                  <AlertDescription className="text-blue-800 text-sm">
-                    <strong>Importante:</strong> El valor del contrato debe ser igual o superior al salario mínimo 
-                    vigente (${MINIMUM_WAGE.toLocaleString('es-CO')}). Ingrese el valor como número entero sin puntos, comas o símbolos.
-                    <br />
-                    <br />
-                    <strong>Nota:</strong> Si ingresa el valor total del contrato, el sistema validará que el valor mensual 
-                    calculado según el rango de fechas no sea inferior al salario mínimo.
-                  </AlertDescription>
-                </Alert>
 
                 <div className="flex gap-2 justify-end">
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={handleLimpiarForm}
+                    onClick={handleLimpiar}
                     disabled={isUpdating}
                   >
                     <X className="h-4 w-4 mr-2" />
-                    Limpiar
+                    Cancelar
                   </Button>
                   <Button
                     type="submit"

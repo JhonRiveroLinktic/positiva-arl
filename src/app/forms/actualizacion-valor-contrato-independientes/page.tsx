@@ -23,7 +23,7 @@ export default function ActualizacionValorContratoPage() {
         <div className="w-full flex flex-col items-center justify-items-center gap-6 px-4 py-8 bg-gray-50 min-h-screen">
             <Banner 
                 title="Actualización de Valor de Contrato" 
-                description="Actualice el valor del contrato de trabajadores dependientes e independientes" 
+                description="Actualice el valor del contrato de trabajadores independientes" 
             /> 
             <Suspense fallback={<FormularioActualizacionValorContratoFallback />}>
               <ActualizacionValorContratoForm />

@@ -18,7 +18,11 @@ export interface Contrato {
   contractTotalValue: number
   contractMonthlyValue: number
   contractIbcValue: number
-  typeContractUser: "INDEPENDENT" | "DEPENDENT"
+  contractStatus: string
+  contractTypeVinculation: string | null
+  typeContractUser: string
+  contractorName?: string | null
+  subCompany?: string | null
 }
 
 export interface ApiResponseAfiliado {
@@ -60,6 +64,7 @@ export interface ActualizacionValorContratoFormData {
   valorContrato: string
   fechaInicio: string
   fechaFin: string
+  ticketId: string
 }
 
 export interface ActualizacionValorContratoPayload {
@@ -68,7 +73,25 @@ export interface ActualizacionValorContratoPayload {
   contractEndDate: string | null
   contractTotalValue?: number
   contractMonthlyValue?: number
-  typeContractUser: "INDEPENDENT" | "DEPENDENT"
+  typeContractUser: string
+}
+
+export interface RegistroTrazabilidadCambioContrato {
+  id?: string
+  created_at?: string
+  fecha_registro_modificacion?: string
+  tipo_documento: string
+  numero_documento: string
+  num_contrato: string
+  fecha_inicial_anterior: string | null
+  fecha_final_anterior: string | null
+  valor_anterior: number | null
+  nueva_fecha_inicial: string
+  nueva_fecha_final: string | null
+  nuevo_valor: number
+  tipo_valor: "total" | "mensual"
+  correo_modifico: string
+  ticket_id: string
 }
 
 export interface ActualizacionValorContratoState {

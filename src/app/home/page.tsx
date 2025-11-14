@@ -97,9 +97,9 @@ const itemsActualizaciones = [
   //   path: "/forms/actualizacion-razon-social-dependientes-independientes"
   // },
   {
-    title: "Actualización Valor Contrato - Dependientes / Independientes",
-    description: "Formulario para actualizar el valor del contrato de trabajadores dependientes e independientes",
-    path: "/forms/actualizacion-valor-contrato-dependientes-independientes"
+    title: "Actualización Valor Contrato - Independientes",
+    description: "Formulario para actualizar el valor del contrato de trabajadores independientes",
+    path: "/forms/actualizacion-valor-contrato-independientes"
   }
 ]
 

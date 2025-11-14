@@ -31,22 +31,38 @@ export const busquedaAfiliadoValidationRules = {
  * Reglas de validación para actualización de valor de contrato
  */
 export const actualizacionValorContratoValidationRules = {
+  ticketId: {
+    required: "El ticket asociado es obligatorio",
+    minLength: {
+      value: 3,
+      message: "El ticket debe tener al menos 3 caracteres",
+    },
+    maxLength: {
+      value: 50,
+      message: "El ticket no puede superar los 50 caracteres",
+    },
+    pattern: {
+      value: /^[a-zA-Z0-9\-_.]+$/,
+      message: "El ticket solo puede contener letras, números, guiones, puntos o guion bajo",
+    },
+  } as RegisterOptions,
+
   valorContrato: {
     required: "El valor del contrato es obligatorio",
     validate: (value: string) => {
       if (!value || value.trim() === "") {
         return "El valor del contrato es obligatorio"
       }
-      
-      if (!/^[0-9]+$/.test(value)) {
-        return "El valor del contrato debe ser un número entero sin puntos, comas, espacios ni símbolos"
+
+      if (!/^\d+(\.\d{1,2})?$/.test(value)) {
+        return "El valor del contrato debe ser numérico y puede incluir hasta dos decimales"
       }
-      
-      const numericValue = parseInt(value)
-      if (numericValue < MINIMUM_WAGE) {
-        return `El valor del contrato debe ser igual o superior al salario mínimo ($${MINIMUM_WAGE.toLocaleString('es-CO')})`
+
+      const numericValue = parseFloat(value)
+      if (Number.isNaN(numericValue) || numericValue <= 0) {
+        return "El valor del contrato debe ser mayor a 0"
       }
-      
+
       return true
     },
   } as RegisterOptions,
