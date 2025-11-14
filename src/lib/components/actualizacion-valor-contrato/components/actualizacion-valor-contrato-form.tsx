@@ -417,28 +417,25 @@ export function ActualizacionValorContratoForm() {
       }
 
       const fechaInicioDate = new Date(fechaInicioNueva)
+      const fechaFinDate = new Date(fechaFinNueva)
       const hoy = new Date()
       hoy.setHours(0, 0, 0, 0)
 
-      if (fechaFinNueva) {
-        const fechaFinDate = new Date(fechaFinNueva)
+      const diffMs = fechaFinDate.getTime() - fechaInicioDate.getTime()
+      const diffDias = diffMs / (1000 * 60 * 60 * 24)
 
-        const diffMs = fechaFinDate.getTime() - fechaInicioDate.getTime()
-        const diffDias = diffMs / (1000 * 60 * 60 * 24)
-
-        if (diffDias < 30) {
-          toast.error({
-            title: "Duración insuficiente",
-            description: "La duración entre la fecha de inicio y la fecha de terminación no puede ser inferior a un mes.",
-          })
-          return
-        }
+      if (diffDias < 30) {
+        toast.error({
+          title: "Duración insuficiente",
+          description: "La duración entre la fecha de inicio y la fecha de terminación no puede ser inferior a un mes.",
+        })
+        return
       }
 
       const payload: ActualizacionValorContratoPayload = {
         numContract: contratoSeleccionado.numContract,
         contractStartDate: data.fechaInicio,
-        contractEndDate: data.fechaFin || null,
+        contractEndDate: data.fechaFin,
         typeContractUser: contratoSeleccionado.typeContractUser,
       }
 
@@ -464,7 +461,7 @@ export function ActualizacionValorContratoForm() {
         fecha_final_anterior: contratoSeleccionado.contractEndDate ?? null,
         valor_anterior: valorAnterior ?? null,
         nueva_fecha_inicial: data.fechaInicio,
-        nueva_fecha_final: data.fechaFin ? data.fechaFin : null,
+        nueva_fecha_final: data.fechaFin,
         nuevo_valor: valorNumerico,
         tipo_valor: data.tipoValor,
         correo_modifico: correoUsuario,
@@ -1208,25 +1205,26 @@ export function ActualizacionValorContratoForm() {
                       name="fechaFin"
                       control={updateForm.control}
                       rules={{
+                        required: "La fecha de fin es obligatoria",
                         validate: (value) => {
-                          // Solo validar si hay valor (opcional)
-                          if (value) {
-                            const fechaInicio = updateForm.getValues("fechaInicio")
-                            if (fechaInicio) {
-                              const fechaInicioDate = new Date(fechaInicio)
-                              const fechaFinDate = new Date(value)
-                              if (fechaFinDate <= fechaInicioDate) {
-                                return "La fecha de fin debe ser posterior a la fecha de inicio"
-                              }
+                          if (!value) return "La fecha de fin es obligatoria"
+                          
+                          const fechaInicio = updateForm.getValues("fechaInicio")
+                          if (fechaInicio) {
+                            const fechaInicioDate = new Date(fechaInicio)
+                            const fechaFinDate = new Date(value)
+                            if (fechaFinDate <= fechaInicioDate) {
+                              return "La fecha de fin debe ser posterior a la fecha de inicio"
                             }
                           }
+                          
                           return true
-                        }
+                        },
                       }}
                       render={({ field }) => (
                         <DatePicker
                           label="Fecha de Fin"
-                          placeholder="Opcional - Selecciona fecha de fin"
+                          placeholder="Selecciona fecha de fin"
                           value={field.value ? new Date(field.value + 'T00:00:00') : undefined}
                           onChange={(date) => {
                             if (date) {
@@ -1239,7 +1237,7 @@ export function ActualizacionValorContratoForm() {
                           error={!!updateForm.formState.errors.fechaFin}
                           errorMessage={updateForm.formState.errors.fechaFin?.message}
                           disabled={isUpdating}
-                          required={false}
+                          required={true}
                         />
                       )}
                     />

@@ -70,7 +70,7 @@ export interface ActualizacionValorContratoFormData {
 export interface ActualizacionValorContratoPayload {
   numContract: string
   contractStartDate: string
-  contractEndDate: string | null
+  contractEndDate: string
   contractTotalValue?: number
   contractMonthlyValue?: number
   typeContractUser: string
