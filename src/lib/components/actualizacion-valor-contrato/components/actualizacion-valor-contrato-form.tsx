@@ -65,6 +65,31 @@ const obtenerPrioridadEstado = (contrato: Contrato) => {
   return 1
 }
 
+// Helper para parsear fechas en formato YYYY-MM-DD como fecha local (no UTC)
+// Esto evita el desfase de 1 día causado por la conversión de zona horaria
+const parsearFechaLocal = (fecha?: string | null): Date | null => {
+  if (!fecha) return null
+  
+  const partes = fecha.split("-")
+  if (partes.length !== 3) {
+    // Si no es formato YYYY-MM-DD, intentar parsear normalmente
+    const parsed = new Date(fecha)
+    return Number.isNaN(parsed.getTime()) ? null : parsed
+  }
+
+  const year = parseInt(partes[0], 10)
+  const month = parseInt(partes[1], 10) - 1 // Los meses en JS son 0-indexados
+  const day = parseInt(partes[2], 10)
+
+  if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) {
+    return null
+  }
+
+  // Crear fecha en zona horaria local
+  const parsed = new Date(year, month, day)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
 const ordenarContratos = (contratos: Contrato[]) => {
   return [...contratos].sort((a, b) => {
     const prioridadA = obtenerPrioridadEstado(a)
@@ -74,8 +99,8 @@ const ordenarContratos = (contratos: Contrato[]) => {
       return prioridadA - prioridadB
     }
 
-    const dateA = a.contractEndDate ? new Date(a.contractEndDate).getTime() : Number.POSITIVE_INFINITY
-    const dateB = b.contractEndDate ? new Date(b.contractEndDate).getTime() : Number.POSITIVE_INFINITY
+    const dateA = a.contractEndDate ? (parsearFechaLocal(a.contractEndDate)?.getTime() ?? Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY
+    const dateB = b.contractEndDate ? (parsearFechaLocal(b.contractEndDate)?.getTime() ?? Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY
 
     return dateA - dateB
   })
@@ -221,8 +246,9 @@ export function ActualizacionValorContratoForm() {
 
   const formatearFecha = (fecha?: string | null) => {
     if (!fecha) return "-"
-    const parsed = new Date(fecha)
-    if (Number.isNaN(parsed.getTime())) {
+    
+    const parsed = parsearFechaLocal(fecha)
+    if (!parsed) {
       return "-"
     }
 
@@ -416,8 +442,17 @@ export function ActualizacionValorContratoForm() {
         return
       }
 
-      const fechaInicioDate = new Date(fechaInicioNueva)
-      const fechaFinDate = new Date(fechaFinNueva)
+      const fechaInicioDate = parsearFechaLocal(fechaInicioNueva)
+      const fechaFinDate = parsearFechaLocal(fechaFinNueva)
+      
+      if (!fechaInicioDate || !fechaFinDate) {
+        toast.error({
+          title: "Error en fechas",
+          description: "Las fechas proporcionadas no son válidas.",
+        })
+        return
+      }
+
       const hoy = new Date()
       hoy.setHours(0, 0, 0, 0)
 
@@ -638,7 +673,7 @@ export function ActualizacionValorContratoForm() {
       <Alert className="border-orange-200 bg-orange-50">
         <Info className="h-4 w-4 !text-orange-800" />
         <AlertDescription className="text-orange-800">
-          <strong>Nota:</strong> Este formulario permite actualizar el valor del contrato de trabajadores dependientes e independientes.
+          <strong>Nota:</strong> Este formulario permite actualizar el valor del contrato de trabajadores independientes.
           Primero busque al afiliado por su ID de radicado, luego ingrese la nueva información.
         </AlertDescription>
       </Alert>
@@ -1184,7 +1219,7 @@ export function ActualizacionValorContratoForm() {
                         <DatePicker
                           label="Fecha de Inicio"
                           placeholder="Selecciona fecha de inicio"
-                          value={field.value ? new Date(field.value + 'T00:00:00') : undefined}
+                          value={field.value ? parsearFechaLocal(field.value) || undefined : undefined}
                           onChange={(date) => {
                             if (date) {
                               const formatted = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -1211,9 +1246,9 @@ export function ActualizacionValorContratoForm() {
                           
                           const fechaInicio = updateForm.getValues("fechaInicio")
                           if (fechaInicio) {
-                            const fechaInicioDate = new Date(fechaInicio)
-                            const fechaFinDate = new Date(value)
-                            if (fechaFinDate <= fechaInicioDate) {
+                            const fechaInicioDate = parsearFechaLocal(fechaInicio)
+                            const fechaFinDate = parsearFechaLocal(value)
+                            if (fechaInicioDate && fechaFinDate && fechaFinDate <= fechaInicioDate) {
                               return "La fecha de fin debe ser posterior a la fecha de inicio"
                             }
                           }
@@ -1225,7 +1260,7 @@ export function ActualizacionValorContratoForm() {
                         <DatePicker
                           label="Fecha de Fin"
                           placeholder="Selecciona fecha de fin"
-                          value={field.value ? new Date(field.value + 'T00:00:00') : undefined}
+                          value={field.value ? parsearFechaLocal(field.value) || undefined : undefined}
                           onChange={(date) => {
                             if (date) {
                               const formatted = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
