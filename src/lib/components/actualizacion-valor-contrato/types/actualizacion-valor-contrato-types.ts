@@ -23,6 +23,8 @@ export interface Contrato {
   typeContractUser: string
   contractorName?: string | null
   subCompany?: string | null
+  companyNameContract?: string | null
+  nitCompanyContract?: string | null
 }
 
 export interface ApiResponseAfiliado {

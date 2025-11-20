@@ -25,10 +25,32 @@ export function ModalDatosActualizados({
     c => c.numContract === contratoActualizadoNum
   )
 
+  const parsearFechaLocal = (fecha?: string | null): Date | null => {
+    if (!fecha) return null
+    
+    const partes = fecha.split("-")
+    if (partes.length === 3) {
+      const year = parseInt(partes[0], 10)
+      const month = parseInt(partes[1], 10) - 1
+      const day = parseInt(partes[2], 10)
+
+      if (!Number.isNaN(year) && !Number.isNaN(month) && !Number.isNaN(day)) {
+        const parsed = new Date(year, month, day)
+        if (!Number.isNaN(parsed.getTime())) {
+          return parsed
+        }
+      }
+    }
+    
+    const parsed = new Date(fecha)
+    return Number.isNaN(parsed.getTime()) ? null : parsed
+  }
+
   const formatearFecha = (fecha?: string | null) => {
     if (!fecha) return "-"
-    const parsed = new Date(fecha)
-    if (Number.isNaN(parsed.getTime())) {
+    
+    const parsed = parsearFechaLocal(fecha)
+    if (!parsed) {
       return "-"
     }
 
@@ -141,6 +163,18 @@ export function ModalDatosActualizados({
                         : "-"}
                     </p>
                   </div>
+                  {contratoActualizado.companyNameContract && (
+                    <div>
+                      <span className="font-semibold">Nombre de la empresa contratante:</span>
+                      <p className="text-gray-700">{contratoActualizado.companyNameContract}</p>
+                    </div>
+                  )}
+                  {contratoActualizado.nitCompanyContract && (
+                    <div>
+                      <span className="font-semibold">NIT de la empresa contratante:</span>
+                      <p className="text-gray-700">{contratoActualizado.nitCompanyContract}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

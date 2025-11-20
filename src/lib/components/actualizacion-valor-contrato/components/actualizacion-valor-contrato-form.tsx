@@ -342,6 +342,8 @@ export function ActualizacionValorContratoForm() {
         typeContractUser: contrato.typeContractUser ?? "",
         contractorName: contrato.contractorName ?? null,
         subCompany: contrato.subCompany ?? null,
+        companyNameContract: contrato.companyNameContract ?? null,
+        nitCompanyContract: contrato.nitCompanyContract ?? null,
       }))
 
       const contratosOrdenados = ordenarContratos(contratosNormalizados)
@@ -572,6 +574,8 @@ export function ActualizacionValorContratoForm() {
           typeContractUser: contrato.typeContractUser ?? "",
           contractorName: contrato.contractorName ?? null,
           subCompany: contrato.subCompany ?? null,
+          companyNameContract: contrato.companyNameContract ?? null,
+          nitCompanyContract: contrato.nitCompanyContract ?? null,
         }))
       )
 
@@ -867,7 +871,6 @@ export function ActualizacionValorContratoForm() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Contratante / Estado</TableHead>
-                      <TableHead>Sub empresa</TableHead>
                       <TableHead>Tipo de vinculación</TableHead>
                       <TableHead>Fecha inicio</TableHead>
                       <TableHead>Fecha fin</TableHead>
@@ -1018,6 +1021,18 @@ export function ActualizacionValorContratoForm() {
                   <span className="font-semibold text-gray-700">Fecha de terminación</span>
                   <p className="text-gray-900">{formatearFecha(contratoSeleccionado.contractEndDate)}</p>
                 </div>
+                {contratoSeleccionado.companyNameContract && (
+                  <div>
+                    <span className="font-semibold text-gray-700">Nombre de la empresa contratante</span>
+                    <p className="text-gray-900">{contratoSeleccionado.companyNameContract}</p>
+                  </div>
+                )}
+                {contratoSeleccionado.nitCompanyContract && (
+                  <div>
+                    <span className="font-semibold text-gray-700">NIT de la empresa contratante</span>
+                    <p className="text-gray-900">{contratoSeleccionado.nitCompanyContract}</p>
+                  </div>
+                )}
               </div>
 
               {esContratoEditable(contratoSeleccionado) ? (
