@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { Button } from "@/lib/components/ui/button"
 import { Input } from "@/lib/components/ui/input"
@@ -205,6 +205,7 @@ export function ActualizacionValorContratoForm() {
   const [contratoActualizadoNum, setContratoActualizadoNum] = useState<string>("")
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [valorContratoDisplay, setValorContratoDisplay] = useState("")
+  const formularioRef = useRef<HTMLDivElement>(null)
   
   const { 
     afiliadoEncontrado, 
@@ -281,6 +282,11 @@ export function ActualizacionValorContratoForm() {
     const baseValue = contratoSeleccionado.contractTotalValue
     updateForm.setValue("valorContrato", baseValue.toFixed(2), { shouldDirty: false })
     setValorContratoDisplay(formatCurrencyDisplay(baseValue))
+
+    // Scroll suave al formulario después de que se renderice
+    setTimeout(() => {
+      formularioRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }, 100)
   }
 
   // Buscar afiliado en el endpoint real
@@ -731,7 +737,7 @@ export function ActualizacionValorContratoForm() {
                 </Label>
                 <Input
                   id="numeroDocumento"
-                  placeholder="Ej: 1063727580"
+                  placeholder="Ingresa el número de documento"
                   {...searchForm.register("numeroDocumento", {
                     required: "El número de documento es obligatorio",
                     minLength: {
@@ -1062,7 +1068,7 @@ export function ActualizacionValorContratoForm() {
 
         {/* Formulario de actualización - Solo después de activar modificación */}
         {mostrarFormulario && puedeEditarContrato && (
-            <Card>
+            <Card ref={formularioRef}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Save className="h-5 w-5" />

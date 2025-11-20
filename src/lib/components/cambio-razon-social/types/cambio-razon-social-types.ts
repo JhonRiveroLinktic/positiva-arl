@@ -26,6 +26,7 @@ export interface RegistroRazonSocial {
   coverage_start_date: string
   affiliation_status: string
   filed_number: string
+  contractTypeVinculation?: string | null
 }
 
 export interface ApiResponseRegistros {

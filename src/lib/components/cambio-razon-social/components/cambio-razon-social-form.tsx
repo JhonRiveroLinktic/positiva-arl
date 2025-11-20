@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { Button } from "@/lib/components/ui/button"
 import { Input } from "@/lib/components/ui/input"
@@ -67,6 +67,11 @@ const esTrabajadorDependiente = (affiliationType?: string | null): boolean => {
   return affiliationType.trim() === "Trabajador Dependiente"
 }
 
+const esVoluntario = (contractTypeVinculation?: string | null): boolean => {
+  if (!contractTypeVinculation) return false
+  return contractTypeVinculation.trim() === "Voluntario"
+}
+
 
 export function CambioRazonSocialForm() {
   const { user } = useAuth()
@@ -86,6 +91,7 @@ export function CambioRazonSocialForm() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [datosActualizados, setDatosActualizados] = useState<ApiResponseActualizacion | null>(null)
+  const formularioRef = useRef<HTMLDivElement>(null)
 
   const searchForm = useForm<BusquedaRegistroFormData>({
     mode: "onChange",
@@ -131,6 +137,10 @@ export function CambioRazonSocialForm() {
       nuevaNaturaleza: (registroSeleccionado.person_type as "N" | "J" | "") || "",
       ticketId: "",
     })
+
+    setTimeout(() => {
+      formularioRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }, 100)
   }
 
   // Buscar registros
@@ -703,6 +713,10 @@ export function CambioRazonSocialForm() {
                   <p className="text-gray-900">{registroSeleccionado.affiliation_type}</p>
                 </div>
                 <div>
+                  <span className="font-semibold text-gray-700">Tipo de Vinculación</span>
+                  <p className="text-gray-900">{registroSeleccionado.contractTypeVinculation}</p>
+                </div>
+                <div>
                   <span className="font-semibold text-gray-700">Razón Social</span>
                   <p className="text-gray-900">{registroSeleccionado.company}</p>
                 </div>
@@ -733,6 +747,14 @@ export function CambioRazonSocialForm() {
                   El empleador debe actualizar directamente desde Balú.
                 </AlertDescription>
               </Alert>
+            ) : esVoluntario(registroSeleccionado.contractTypeVinculation) ? (
+              <Alert variant="destructive">
+                <AlertTitle>Registro de Afiliación Voluntaria</AlertTitle>
+                <AlertDescription>
+                  Este registro corresponde a una afiliación voluntaria (Decreto 1563) y no puede modificarse desde la contingencia. 
+                  Los voluntarios tienen una razón social y NIT específicos que no pueden ser alterados.
+                </AlertDescription>
+              </Alert>
             ) : (
               <div className="flex justify-end">
                 <Button
@@ -752,7 +774,7 @@ export function CambioRazonSocialForm() {
 
       {/* Formulario de actualización */}
       {mostrarFormulario && registroSeleccionado && (
-        <Card>
+        <Card ref={formularioRef}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Save className="h-5 w-5" />
