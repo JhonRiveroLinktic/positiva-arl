@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/lib/components/ui/card"
 import { Checkbox } from "@/lib/components/ui/checkbox"
 import { Badge } from "@/lib/components/ui/badge"
+import { Alert, AlertDescription, AlertTitle } from "@/lib/components/ui/alert"
 import { 
   Table, 
   TableBody, 
@@ -44,82 +45,28 @@ const formatearFecha = (fecha?: string | null) => {
   }
 }
 
-// Mock del GET - Reemplazar cuando el endpoint esté desplegado
-const mockGetRegistros = async (tipoDocumento: string, numeroDocumento: string): Promise<RegistroRazonSocial[]> => {
-  // Simular delay de red
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  
-  // Mock data basado en la documentación
-  return [
-    {
-      document_type: tipoDocumento,
-      documentNumber: numeroDocumento,
-      person_type: "N",
-      first_name: "Martha",
-      second_name: "Patricia",
-      surname: "Martinez",
-      second_surname: "De la rosa",
-      date_of_birth: "1978-11-11",
-      age: "46",
-      phone_1: null,
-      company: "ASADERO POLLITO PIO",
-      nit: "33220523",
-      dv: "4",
-      affiliation_type: "Empleador",
-      affiliation_date: "2025-08-19T00:00",
-      coverage_start_date: "2025-08-20",
-      affiliation_status: "Activa",
-      filed_number: "SOL_AFI_2025028893578"
-    },
-    {
-      document_type: tipoDocumento,
-      documentNumber: numeroDocumento,
-      person_type: null,
-      first_name: "Jefferson",
-      second_name: "Alexis",
-      surname: "Cadavid",
-      second_surname: "Cabrera",
-      date_of_birth: "1999-02-13",
-      age: "26",
-      phone_1: null,
-      company: "Empresa Contratante 723 - HOGARES SI A LA VIDA.",
-      nit: "9001753745",
-      dv: "9",
-      affiliation_type: "Trabajador Independiente",
-      affiliation_date: "2025-07-17T00:00",
-      coverage_start_date: "",
-      affiliation_status: "Activa",
-      filed_number: "SOL_AFI_2025000335878"
-    }
-  ]
+const formatearNombreCompleto = (registro: RegistroRazonSocial): string => {
+  const partes = [
+    registro.first_name,
+    registro.second_name,
+    registro.surname,
+    registro.second_surname,
+  ].filter(Boolean)
+  return partes.join(" ") || "-"
 }
 
-// Mock del PUT - Reemplazar cuando el endpoint esté desplegado
-const mockPutActualizacion = async (payload: CambioRazonSocialPayload): Promise<ApiResponseActualizacion> => {
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  
-  return {
-    message: "El Radicado se ha actualizado correctamente",
-    document_type: "CC",
-    documentNumber: payload.nit || "33220523",
-    person_type: "N",
-    first_name: "Martha",
-    second_name: "Patricia",
-    surname: "Martinez",
-    second_surname: "De la rosa",
-    date_of_birth: "1978-11-11",
-    age: "46",
-    phone_1: null,
-    company: payload.company || "ASADERO POLLITO PIO",
-    nit: payload.nit || "33220523",
-    dv: payload.dv || "4",
-    affiliation_type: "Empleador",
-    affiliation_date: "2025-08-19T00:00",
-    coverage_start_date: "2025-08-20",
-    affiliation_status: "Activa",
-    filedNumber: payload.filedNumber
-  }
+const formatearNaturaleza = (personType?: string | null): string => {
+  if (!personType || personType === "N/A") return "-"
+  if (personType === "J") return "Jurídica"
+  if (personType === "N") return "Natural"
+  return personType
 }
+
+const esTrabajadorDependiente = (affiliationType?: string | null): boolean => {
+  if (!affiliationType) return false
+  return affiliationType.trim() === "Trabajador Dependiente"
+}
+
 
 export function CambioRazonSocialForm() {
   const { user } = useAuth()
@@ -203,13 +150,34 @@ export function CambioRazonSocialForm() {
         throw new Error("La URL de la API no está configurada")
       }
 
-      // TODO: Reemplazar con endpoint real cuando esté desplegado
-      // const response = await fetch(`${apiUrl}/afiliaciones/legal-name/obtenerRadicado/${data.tipoDocumento}/${data.numeroDocumento}`)
-      // if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`)
-      // const registrosData: RegistroRazonSocial[] = await response.json()
+      const response = await fetch(`${apiUrl}/afiliaciones/legal-name/obtenerRadicado/${data.tipoDocumento}/${data.numeroDocumento}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
 
-      // Mock por ahora
-      const registrosData = await mockGetRegistros(data.tipoDocumento, data.numeroDocumento)
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("No se encontraron registros para el documento ingresado")
+        }
+
+        const errorData = await response.json().catch(() => null)
+        const errorMessage =
+          errorData?.detail ||
+          errorData?.message ||
+          errorData?.error?.message ||
+          response.statusText ||
+          "No se pudo completar la búsqueda"
+
+        if (errorMessage && errorMessage.toLowerCase().includes("no se pudo obtener el usuario de bbdd")) {
+          throw new Error("No se encontró información para el documento consultado.")
+        }
+
+        throw new Error(`Error ${response.status}: ${errorMessage}`)
+      }
+
+      const registrosData: RegistroRazonSocial[] = await response.json()
 
       if (!registrosData || registrosData.length === 0) {
         toast.error({
@@ -316,47 +284,44 @@ export function CambioRazonSocialForm() {
         throw new Error("La URL de la API no está configurada")
       }
 
+      // El backend requiere todos los campos siempre, incluso si no se modifican
+      // Si se modifica, enviamos el nuevo valor; si no, enviamos el original
       const payload: CambioRazonSocialPayload = {
         filedNumber: registroSeleccionado.filed_number,
+        company: data.modificarRazonSocial 
+          ? data.nuevaRazonSocial.trim() 
+          : registroSeleccionado.company,
+        nit: data.modificarNit 
+          ? data.nuevoNit.trim() 
+          : registroSeleccionado.nit,
+        dv: data.modificarNit 
+          ? data.nuevoDv.trim() 
+          : registroSeleccionado.dv,
+        type_person: data.modificarNaturaleza 
+          ? (data.nuevaNaturaleza as "N" | "J")
+          : (registroSeleccionado.person_type as "N" | "J" | undefined) || "N",
       }
 
-      if (data.modificarRazonSocial) {
-        payload.company = data.nuevaRazonSocial.trim()
+      const response = await fetch(`${apiUrl}/afiliaciones/legal-name`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null)
+        const errorMessage =
+          errorData?.detail ||
+          errorData?.message ||
+          errorData?.error?.message ||
+          response.statusText ||
+          "No se pudo actualizar el registro"
+        throw new Error(`Error ${response.status}: ${errorMessage}`)
       }
 
-      if (data.modificarNit) {
-        payload.nit = data.nuevoNit.trim()
-        payload.dv = data.nuevoDv.trim()
-      }
-
-      if (data.modificarNaturaleza) {
-        payload.person_type = data.nuevaNaturaleza as "N" | "J"
-      }
-
-      // TODO: Reemplazar con endpoint real cuando esté desplegado
-      // const response = await fetch(`${apiUrl}/afiliaciones/legal-name`, {
-      //   method: "PUT",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(payload),
-      // })
-
-      // if (!response.ok) {
-      //   const errorData = await response.json().catch(() => null)
-      //   const errorMessage =
-      //     errorData?.detail ||
-      //     errorData?.message ||
-      //     errorData?.error?.message ||
-      //     response.statusText ||
-      //     "No se pudo actualizar el registro"
-      //   throw new Error(`Error ${response.status}: ${errorMessage}`)
-      // }
-
-      // const responseData: ApiResponseActualizacion = await response.json()
-
-      // Mock por ahora
-      const responseData = await mockPutActualizacion(payload)
+      const responseData: ApiResponseActualizacion = await response.json()
 
       // Determinar tipo de cambio - texto descriptivo
       const cambios: string[] = []
@@ -426,6 +391,7 @@ export function CambioRazonSocialForm() {
                 company: responseData.company,
                 nit: responseData.nit,
                 dv: responseData.dv,
+                person_type: responseData.person_type,
               }
             : r
         )
@@ -437,6 +403,7 @@ export function CambioRazonSocialForm() {
             company: responseData.company,
             nit: responseData.nit,
             dv: responseData.dv,
+            person_type: responseData.person_type,
           },
         })
       }
@@ -501,7 +468,7 @@ export function CambioRazonSocialForm() {
   }, [registroSeleccionado, mostrarFormulario, updateForm])
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6">
+    <div className="w-full mx-auto space-y-6">
       {/* Formulario de búsqueda */}
       <Card>
         <CardHeader>
@@ -688,44 +655,97 @@ export function CambioRazonSocialForm() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <span className="font-semibold text-gray-700">Filed Number</span>
-                <p className="text-gray-900 font-mono">{registroSeleccionado.filed_number}</p>
-              </div>
-              <div>
-                <span className="font-semibold text-gray-700">Tipo de Afiliación</span>
-                <p className="text-gray-900">{registroSeleccionado.affiliation_type}</p>
-              </div>
-              <div>
-                <span className="font-semibold text-gray-700">Razón Social</span>
-                <p className="text-gray-900">{registroSeleccionado.company}</p>
-              </div>
-              <div>
-                <span className="font-semibold text-gray-700">NIT</span>
-                <p className="text-gray-900 font-mono">{registroSeleccionado.nit}-{registroSeleccionado.dv}</p>
-              </div>
-              <div>
-                <span className="font-semibold text-gray-700">Estado</span>
-                <p className="text-gray-900">{registroSeleccionado.affiliation_status}</p>
-              </div>
-              <div>
-                <span className="font-semibold text-gray-700">Fecha de Afiliación</span>
-                <p className="text-gray-900">{formatearFecha(registroSeleccionado.affiliation_date)}</p>
+            {/* Información de la Persona */}
+            <div className="mb-6 pb-4 border-b">
+              <h3 className="font-semibold text-lg mb-3 text-gray-800">Información de la Persona</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div>
+                  <span className="font-semibold text-gray-700">Nombre Completo</span>
+                  <p className="text-gray-900">{formatearNombreCompleto(registroSeleccionado)}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Tipo de Documento</span>
+                  <p className="text-gray-900">{registroSeleccionado.document_type}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Número de Documento</span>
+                  <p className="text-gray-900 font-mono">{registroSeleccionado.documentNumber}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Fecha de Nacimiento</span>
+                  <p className="text-gray-900">{formatearFecha(registroSeleccionado.date_of_birth)}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Edad</span>
+                  <p className="text-gray-900">{registroSeleccionado.age} años</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Teléfono</span>
+                  <p className="text-gray-900">{registroSeleccionado.phone_1 || "-"}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Naturaleza</span>
+                  <p className="text-gray-900">{formatearNaturaleza(registroSeleccionado.person_type)}</p>
+                </div>
               </div>
             </div>
 
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                className="bg-orange-600 hover:bg-orange-700"
-                onClick={handleActivarEdicion}
-                disabled={isUpdating}
-              >
-                <PencilLine className="h-4 w-4 mr-2" />
-                Modificar
-              </Button>
+            {/* Información de la Empresa/Afiliación */}
+            <div className="mb-4">
+              <h3 className="font-semibold text-lg mb-3 text-gray-800">Información de la Afiliación</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div>
+                  <span className="font-semibold text-gray-700">Filed Number</span>
+                  <p className="text-gray-900 font-mono">{registroSeleccionado.filed_number}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Tipo de Afiliación</span>
+                  <p className="text-gray-900">{registroSeleccionado.affiliation_type}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Razón Social</span>
+                  <p className="text-gray-900">{registroSeleccionado.company}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">NIT</span>
+                  <p className="text-gray-900 font-mono">{registroSeleccionado.nit}-{registroSeleccionado.dv}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Estado</span>
+                  <p className="text-gray-900">{registroSeleccionado.affiliation_status}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Fecha de Afiliación</span>
+                  <p className="text-gray-900">{formatearFecha(registroSeleccionado.affiliation_date)}</p>
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700">Fecha de Inicio de Cobertura</span>
+                  <p className="text-gray-900">{formatearFecha(registroSeleccionado.coverage_start_date)}</p>
+                </div>
+              </div>
             </div>
+
+            {esTrabajadorDependiente(registroSeleccionado.affiliation_type) ? (
+              <Alert variant="destructive">
+                <AlertTitle>Registro de Trabajador Dependiente</AlertTitle>
+                <AlertDescription>
+                  Este registro corresponde a un trabajador dependiente y no puede modificarse desde la contingencia. 
+                  El empleador debe actualizar directamente desde Balú.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  className="bg-orange-600 hover:bg-orange-700"
+                  onClick={handleActivarEdicion}
+                  disabled={isUpdating}
+                >
+                  <PencilLine className="h-4 w-4 mr-2" />
+                  Modificar
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -810,8 +830,9 @@ export function CambioRazonSocialForm() {
                   </Label>
                 </div>
 
-                {/* Checkbox de naturaleza - Solo para Empleadores */}
-                {registroSeleccionado?.affiliation_type?.toLowerCase().includes("empleador") && (
+                {/* Checkbox de naturaleza - Solo para Empleadores con person_type "N" */}
+                {registroSeleccionado?.affiliation_type?.toLowerCase().includes("empleador") && 
+                 registroSeleccionado?.person_type === "N" && (
                   <div className="flex items-center space-x-2">
                     <Controller
                       name="modificarNaturaleza"
@@ -978,8 +999,9 @@ export function CambioRazonSocialForm() {
                   </div>
                 </div>
 
-                {/* Campo de Naturaleza - Solo para Empleadores */}
-                {registroSeleccionado?.affiliation_type?.toLowerCase().includes("empleador") && (
+                {/* Campo de Naturaleza - Solo para Empleadores con person_type "N" */}
+                {registroSeleccionado?.affiliation_type?.toLowerCase().includes("empleador") && 
+                 registroSeleccionado?.person_type === "N" && (
                   <div className="space-y-2">
                     <Label htmlFor="nuevaNaturaleza">
                       Naturaleza {updateForm.watch("modificarNaturaleza") && "*"}
@@ -1014,14 +1036,8 @@ export function CambioRazonSocialForm() {
                             <SelectValue placeholder="Selecciona la naturaleza" />
                           </SelectTrigger>
                           <SelectContent>
-                            {updateForm.watch("modificarNaturaleza") && registroSeleccionado?.person_type !== "J" ? (
-                              <SelectItem value="J">Jurídica (J)</SelectItem>
-                            ) : (
-                              <>
-                                <SelectItem value="N">Natural (N)</SelectItem>
-                                <SelectItem value="J">Jurídica (J)</SelectItem>
-                              </>
-                            )}
+                            {/* Solo mostrar Jurídica ya que solo se puede cambiar de N a J */}
+                            <SelectItem value="J">Jurídica (J)</SelectItem>
                           </SelectContent>
                         </Select>
                       )}

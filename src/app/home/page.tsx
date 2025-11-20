@@ -101,11 +101,11 @@ const itemsActualizaciones = [
     description: "Formulario para actualizar el valor del contrato de trabajadores independientes",
     path: "/forms/actualizacion-valor-contrato-independientes"
   },
-  // {
-  //   title: "Actualización Razón Social - Empleadores / Independientes",
-  //   description: "Formulario para actualizar la razón social de empleadores y trabajadores independientes",
-  //   path: "/forms/cambio-razon-social"
-  // }
+  {
+    title: "Actualización Razón Social - Empleadores / Independientes",
+    description: "Formulario para actualizar la razón social de empleadores y trabajadores independientes",
+    path: "/forms/cambio-razon-social"
+  }
 ]
 
 type HomeItem = typeof items[number]

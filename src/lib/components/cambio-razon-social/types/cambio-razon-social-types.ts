@@ -51,10 +51,10 @@ export interface CambioRazonSocialFormData {
 }
 
 export interface CambioRazonSocialPayload {
-  company?: string
-  nit?: string
-  dv?: string
-  person_type?: "N" | "J"
+  company: string
+  nit: string
+  dv: string
+  type_person: "N" | "J"
   filedNumber: string
 }
 
