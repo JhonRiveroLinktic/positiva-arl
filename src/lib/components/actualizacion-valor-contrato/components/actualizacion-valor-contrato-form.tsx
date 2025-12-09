@@ -1057,7 +1057,7 @@ export function ActualizacionValorContratoForm() {
                 <Alert variant="destructive">
                   <AlertTitle>Contrato activo</AlertTitle>
                   <AlertDescription>
-                    Este contrato se encuentra activo y no puede modificarse desde la contingencia. Escala la solicitud a nivel 2 por GLPI
+                    Este contrato se encuentra activo y no puede modificarse desde la contingencia. Escala la solicitud a nivel 3 por GLPI
                     si requiere ajustes.
                   </AlertDescription>
                 </Alert>
