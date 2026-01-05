@@ -1,5 +1,4 @@
 import {
-  sanitizeInput,
   hasDangerousContent,
   validatePhoneNumber,
   validateFaxNumber,
@@ -9,8 +8,6 @@ import {
   VALIDATION_PATTERNS,
   removeNitVerificationDigit
 } from "@/lib/utils/validations"
-
-export const MINIMUM_WAGE = 1423500
 
 export const MIN_DATE_AFILIATION = new Date("1901-01-01")
 

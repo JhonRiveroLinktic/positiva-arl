@@ -14,9 +14,9 @@ import {
   arlValidationRules, 
   sanitizeFormData, 
   MIN_DATE_AFILIATION, 
-  MINIMUM_WAGE, 
   getMaxDateCoverage 
 } from "../validations/validation-rules"
+import { MINIMUM_WAGE } from "@/lib/utils/validations"
 import { toast } from "@/lib/utils/toast"
 import { useDebouncedCallback } from "@/lib/components/core/hooks/use-debounced-callback"
 import type { Registro, ARLFormData } from "../types/arl-registration"
@@ -559,7 +559,7 @@ export function ARLRegistrationForm() {
                   <FormInput
                     label="Salario (IBC)"
                     type="number"
-                    placeholder="Ingrese salario (mínimo 1423500)"
+                    placeholder="Ingrese salario"
                     value={field.value}
                     onChange={(e) => {
                       field.onChange(e.target.value);

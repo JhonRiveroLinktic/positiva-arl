@@ -1,3 +1,6 @@
+// Salario mínimo mensual legal vigente en Colombia
+export const MINIMUM_WAGE = 1750905
+
 // Patrones de validación comunes
 export const VALIDATION_PATTERNS = {
   email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,

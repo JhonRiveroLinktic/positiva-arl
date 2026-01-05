@@ -1,7 +1,5 @@
 import type { RegisterOptions } from "react-hook-form"
 
-const MINIMUM_WAGE = 1423500
-
 /**
  * Reglas de validación para búsqueda de afiliado
  */
@@ -87,6 +85,4 @@ export const actualizacionValorContratoValidationRules = {
     },
   } as RegisterOptions,
 }
-
-export { MINIMUM_WAGE }
 

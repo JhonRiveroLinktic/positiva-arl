@@ -12,10 +12,10 @@ import { ListaRegistros } from "./lista-registros"
 import { 
   getMaxDateCoverage,
   IndependienteConContratoValidationRules, 
-  MINIMUM_WAGE, 
   sanitizeFormData,
   convertSalaryToNumber
 } from "../validations/validation-rules"
+import { MINIMUM_WAGE } from "@/lib/utils/validations"
 import { toast } from "@/lib/utils/toast"
 import type { Registro, IndependienteConContratoFormData } from "../types/independiente-types"
 import { IndependienteConContratoMassiveUpload } from "./massive-upload"

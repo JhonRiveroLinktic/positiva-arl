@@ -90,12 +90,8 @@ const items = [
   // },
 ] as const
 
+/*
 const itemsActualizaciones = [
-  // {
-  //   title: "Actualización Razón Social - Dependientes / Independientes",
-  //   description: "Formulario para actualizar la razón social de trabajadores dependientes e independientes",
-  //   path: "/forms/actualizacion-razon-social-dependientes-independientes"
-  // },
   {
     title: "Actualización Valor Contrato - Independientes",
     description: "Formulario para actualizar el valor del contrato de trabajadores independientes",
@@ -107,9 +103,10 @@ const itemsActualizaciones = [
     path: "/forms/cambio-razon-social"
   }
 ]
+*/
 
 type HomeItem = typeof items[number]
-type HomeItemActualizaciones = typeof itemsActualizaciones[number]
+// type HomeItemActualizaciones = typeof itemsActualizaciones[number]
 
 export default function HomePage() {
   const router = useRouter()
@@ -117,11 +114,11 @@ export default function HomePage() {
 
   const formularios = items.slice(0, 4)
   const novedades = items.slice(4)
-  const actualizaciones = itemsActualizaciones
+  // const actualizaciones = itemsActualizaciones
 
   let visibleFormularios: HomeItem[] = []
   let visibleNovedades: HomeItem[] = []
-  let visibleActualizaciones: HomeItemActualizaciones[] = []
+  // let visibleActualizaciones: HomeItemActualizaciones[] = []
 
   if (user?.user_type === "tipo1") {
     visibleFormularios = [...formularios]
@@ -132,10 +129,10 @@ export default function HomePage() {
   } else if (user?.user_type === "tipo3") {
     visibleFormularios = [...formularios]
     visibleNovedades = [...novedades]
-    visibleActualizaciones = [...actualizaciones]
+    //visibleActualizaciones = [...actualizaciones]
   }
 
-  const renderItemCard = (item: HomeItem | HomeItemActualizaciones) => (
+  const renderItemCard = (item: HomeItem) => (
     <Card
       onClick={() => router.push(item.path)}
       key={item.path}
@@ -212,17 +209,19 @@ export default function HomePage() {
                 </div>
                 </section>
                 
-                <section>
-                  {visibleActualizaciones.length > 0 && (
-                    <section>
-                    <h2 className="text-2xl font-bold text-gray-800">Actualizaciones directas en Balú</h2>
-                    <div className="h-1 w-16 bg-orange-400 rounded-full mt-2 mb-6" />
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {visibleActualizaciones.map(renderItemCard)}
-                      </div>
-                    </section>
-                  )}
-                </section>
+                {/*
+                  <section>
+                    {visibleActualizaciones.length > 0 && (
+                      <section>
+                      <h2 className="text-2xl font-bold text-gray-800">Actualizaciones directas en Balú</h2>
+                      <div className="h-1 w-16 bg-orange-400 rounded-full mt-2 mb-6" />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {visibleActualizaciones.map(renderItemCard)}
+                        </div>
+                      </section>
+                    )}
+                  </section>
+                */}
             </div>
           )}
         </main>
